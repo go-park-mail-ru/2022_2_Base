@@ -32,6 +32,7 @@ import (
 func main() {
 	myRouter := mux.NewRouter()
 	api, err := handlers.NewUserHandler()
+	// need to reset server
 	if err != nil {
 		log.Println("1234")
 	}
