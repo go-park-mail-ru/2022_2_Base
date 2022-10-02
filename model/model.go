@@ -1,5 +1,7 @@
 package model
 
+import "encoding/json"
+
 type User struct {
 	ID       uint   `json:"id"`
 	Username string `json:"username"`
@@ -12,15 +14,20 @@ type UserCreateParams struct {
 }
 
 type Product struct {
-	ID            uint `json:"id"`
-	name          string
-	description   string
-	price         uint
-	discountPrice uint
-	rating        uint
-	imgsrc        string
+	ID            uint    `json:"id"`
+	Name          string  `json:"name"`
+	Description   string  `json:"description"`
+	Price         float64 `json:"price"`
+	DiscountPrice float64 `json:"lowprice"`
+	Rating        float64 `json:"rating"`
+	Imgsrc        string  `json:"imgsrc"`
 }
 
 type Error struct {
 	Message string
+}
+
+func UserToString(user User) string {
+	res, _ := json.Marshal(user)
+	return string(res)
 }

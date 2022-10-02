@@ -1,0 +1,140 @@
+definitions:
+  model.Error:
+    properties:
+      message:
+        type: string
+    type: object
+  model.User:
+    properties:
+      id:
+        type: integer
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  model.UserCreateParams:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /getuser/{username}:
+    get:
+      consumes:
+      - application/json
+      description: gets user by username
+      operationId: getUser
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Get current user
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Log in user
+      operationId: login
+      parameters:
+      - description: User params
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserCreateParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Logs in and returns the authentication  cookie
+  /logout:
+    delete:
+      consumes:
+      - application/json
+      description: Logs out user
+      operationId: logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Logs out user
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Sign up user
+      operationId: signup
+      parameters:
+      - description: User params
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserCreateParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "409":
+          description: Conflict - User already exists
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Signs up and returns the authentication  cookie
+swagger: "2.0"
