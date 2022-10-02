@@ -17,6 +17,11 @@ func NewUserHandler() (*UserHandler, error) {
 		store:    *NewUserStore(),
 	}, nil
 }
+func NewProductHandler() (*ProductHandler, error) {
+	return &ProductHandler{
+		store: *NewProductStore(),
+	}, nil
+}
 
 func (api *UserHandler) Root(w http.ResponseWriter, r *http.Request) {
 	authorized := false
@@ -50,16 +55,12 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-	user, err := api.UserByUsername(username)
+	user, err := api.GetUserByUsername(username)
 	if err != nil {
-		http.Error(w, err.Error(), 404)
+		http.Error(w, baseErrors.ErrNotFound404.Error(), 404)
 		return
 	}
-	//users, err := api.store.GetUsers()
-	//log.Println("123", users)
-	//user = model.User{ID: 4, Username: "22", Password: "33"}
-	//ss, err := api.store.AddUser(&user)
-	//log.Println("ss", ss)
+
 	json.NewEncoder(w).Encode(user)
 }
 
@@ -84,7 +85,7 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 	}
 
-	user, err := api.UserByUsername(req.Username)
+	user, err := api.GetUserByUsername(req.Username)
 	if err != nil {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
@@ -160,7 +161,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 	}
 
-	user, err := api.UserByUsername(req.Username)
+	user, err := api.GetUserByUsername(req.Username)
 	if err != nil && err != baseErrors.ErrNotFound404 {
 		http.Error(w, baseErrors.ErrServerError500.Error(), 500)
 		return
@@ -191,4 +192,72 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
 	json.NewEncoder(w).Encode(cookie)
+}
+
+// GetSession godoc
+// @Summary Checks if user has active session
+// @Description Checks if user has active session
+// @ID session
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} string "OK"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Router /session [get]
+func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
+
+	session, err := r.Cookie("session_id")
+	if err == http.ErrNoCookie {
+		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
+		return
+	}
+
+	if _, ok := api.sessions[session.Value]; !ok {
+		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
+		return
+	}
+
+	// delete(api.sessions, session.Value)
+
+	// session.Expires = time.Now().AddDate(0, 0, -1)
+	//http.SetCookie(w, session)
+	json.NewEncoder(w).Encode(r.Cookies()[0])
+}
+
+type ProductCollection struct {
+	Body interface{} `json:"body,omitempty"`
+}
+
+// GetHomePage godoc
+// @Summary Gets products for main page
+// @Description Gets products for main page
+// @ID getMain
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request"
+// @Failure 404 {object} model.Error "Products not found"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /main [get]
+func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
+
+	//vars := mux.Vars(r)
+
+	products, err := api.GetProducts()
+	if err != nil {
+		http.Error(w, baseErrors.ErrServerError500.Error(), 500)
+		return
+	}
+	if len(products) == 0 {
+		http.Error(w, baseErrors.ErrNotFound404.Error(), 404)
+		return
+	}
+	//users, err := api.store.GetUsers()
+	//log.Println("123", users)
+	//user = model.User{ID: 4, Username: "22", Password: "33"}
+	//ss, err := api.store.AddUser(&user)
+	//log.Println("ss", ss)
+	//res, _ := json.Marshal(products)
+	//json.NewEncoder(w).Encode(string(res))
+	//&Result{Body: body}
+	json.NewEncoder(w).Encode(&ProductCollection{Body: products})
 }

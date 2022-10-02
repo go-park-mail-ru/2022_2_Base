@@ -4,6 +4,23 @@ definitions:
       message:
         type: string
     type: object
+  model.Product:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      imgsrc:
+        type: string
+      lowprice:
+        type: number
+      name:
+        type: string
+      price:
+        type: number
+      rating:
+        type: number
+    type: object
   model.User:
     properties:
       id:
@@ -103,6 +120,51 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Logs out user
+  /main:
+    get:
+      consumes:
+      - application/json
+      description: Gets products for main page
+      operationId: getMain
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "404":
+          description: Products not found
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets products for main page
+  /session:
+    get:
+      consumes:
+      - application/json
+      description: Checks if user has active session
+      operationId: session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Checks if user has active session
   /signup:
     post:
       consumes:

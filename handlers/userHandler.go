@@ -37,7 +37,7 @@ func (api *UserHandler) AddUser(params *model.UserCreateParams) (uint, error) {
 	return id, nil
 }
 
-func (api *UserHandler) UserByUsername(username string) (model.User, error) {
+func (api *UserHandler) GetUserByUsername(username string) (model.User, error) {
 
 	users, err := api.store.GetUsers()
 	if err != nil {

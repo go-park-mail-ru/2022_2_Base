@@ -36,11 +36,19 @@ func main() {
 	if err != nil {
 		log.Println("1234")
 	}
+
+	prodHandler, err := handlers.NewProductHandler()
+	// need to reset server
+	if err != nil {
+		log.Println("1234")
+	}
 	myRouter.HandleFunc("/", api.Root).Methods("GET")
 	myRouter.HandleFunc("/login", api.Login).Methods("Post")
 	myRouter.HandleFunc("/logout", api.Logout).Methods("Delete")
 	myRouter.HandleFunc("/signup", api.SignUp).Methods("Post")
 	myRouter.HandleFunc("/getuser/{username}", api.GetUser).Methods("GET")
+	myRouter.HandleFunc("/session", api.GetSession).Methods("GET")
+	myRouter.HandleFunc("/main", prodHandler.GetHomePage).Methods("GET")
 	myRouter.PathPrefix("/docs/").Handler(httpSwagger.WrapHandler)
 	http.ListenAndServe(":8080", myRouter)
 
