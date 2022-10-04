@@ -5,25 +5,10 @@ import (
 	"serv/model"
 )
 
-// type Result struct {
-// 	Body interface{} `json:"body,omitempty"`
-// 	Err  string      `json:"err,omitempty"`
-// }
-
 type UserHandler struct {
 	sessions map[string]uint
 	store    UserStore
 }
-
-// func (api *UserHandler) List(w http.ResponseWriter, r *http.Request) {
-
-// 	users, err := api.store.GetUsers()
-// 	if err != nil {
-// 		http.Error(w, `{"error":"db"}`, 500)
-// 		return
-// 	}
-// 	json.NewEncoder(w).Encode(users)
-// }
 
 func (api *UserHandler) AddUser(params *model.UserCreateParams) (uint, error) {
 	username := params.Username

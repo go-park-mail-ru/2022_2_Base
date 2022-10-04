@@ -11,29 +11,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func NewUserHandler() (*UserHandler, error) {
+func NewUserHandler() *UserHandler {
 	return &UserHandler{
-		sessions: make(map[string]uint, 10),
+		sessions: make(map[string]uint),
 		store:    *NewUserStore(),
-	}, nil
+	}
 }
-func NewProductHandler() (*ProductHandler, error) {
+func NewProductHandler() *ProductHandler {
 	return &ProductHandler{
 		store: *NewProductStore(),
-	}, nil
-}
-
-func (api *UserHandler) Root(w http.ResponseWriter, r *http.Request) {
-	authorized := false
-	session, err := r.Cookie("session_id")
-	if err == nil && session != nil {
-		_, authorized = api.sessions[session.Value]
-	}
-
-	if authorized {
-		w.Write([]byte("autrorized"))
-	} else {
-		w.Write([]byte("not autrorized"))
 	}
 }
 
@@ -83,6 +69,7 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&req)
 	if err != nil {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
+		return
 	}
 
 	user, err := api.GetUserByUsername(req.Username)
@@ -159,6 +146,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&req)
 	if err != nil {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
+		return
 	}
 
 	user, err := api.GetUserByUsername(req.Username)
@@ -210,16 +198,10 @@ func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
 		return
 	}
-
 	if _, ok := api.sessions[session.Value]; !ok {
 		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
 		return
 	}
-
-	// delete(api.sessions, session.Value)
-
-	// session.Expires = time.Now().AddDate(0, 0, -1)
-	//http.SetCookie(w, session)
 	json.NewEncoder(w).Encode(r.Cookies()[0])
 }
 
@@ -234,13 +216,10 @@ type ProductCollection struct {
 // @Accept  json
 // @Produce  json
 // @Success 200 {object} model.Product
-// @Failure 400 {object} model.Error "Bad request"
 // @Failure 404 {object} model.Error "Products not found"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /main [get]
+// @Router / [get]
 func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
-
-	//vars := mux.Vars(r)
 
 	products, err := api.GetProducts()
 	if err != nil {
@@ -251,13 +230,6 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, baseErrors.ErrNotFound404.Error(), 404)
 		return
 	}
-	//users, err := api.store.GetUsers()
-	//log.Println("123", users)
-	//user = model.User{ID: 4, Username: "22", Password: "33"}
-	//ss, err := api.store.AddUser(&user)
-	//log.Println("ss", ss)
-	//res, _ := json.Marshal(products)
-	//json.NewEncoder(w).Encode(string(res))
-	//&Result{Body: body}
+
 	json.NewEncoder(w).Encode(&ProductCollection{Body: products})
 }

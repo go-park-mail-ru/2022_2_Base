@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	_ "serv/docs"
@@ -9,6 +8,8 @@ import (
 	"github.com/gorilla/mux"
 
 	handlers "serv/handlers"
+
+	conf "serv/config"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -31,25 +32,18 @@ import (
 //x// @BasePath /api/v1
 func main() {
 	myRouter := mux.NewRouter()
-	api, err := handlers.NewUserHandler()
-	// need to reset server
-	if err != nil {
-		log.Println("1234")
-	}
+	userHandler := handlers.NewUserHandler()
 
-	prodHandler, err := handlers.NewProductHandler()
-	// need to reset server
-	if err != nil {
-		log.Println("1234")
-	}
-	myRouter.HandleFunc("/", api.Root).Methods("GET")
-	myRouter.HandleFunc("/login", api.Login).Methods("Post")
-	myRouter.HandleFunc("/logout", api.Logout).Methods("Delete")
-	myRouter.HandleFunc("/signup", api.SignUp).Methods("Post")
-	myRouter.HandleFunc("/getuser/{username}", api.GetUser).Methods("GET")
-	myRouter.HandleFunc("/session", api.GetSession).Methods("GET")
-	myRouter.HandleFunc("/main", prodHandler.GetHomePage).Methods("GET")
+	productHandler := handlers.NewProductHandler()
+
+	//myRouter.HandleFunc("/", userHandler.Root).Methods("GET")
+	myRouter.HandleFunc(conf.PathLogin, userHandler.Login).Methods("Post")
+	myRouter.HandleFunc(conf.PathLogOut, userHandler.Logout).Methods("Delete")
+	myRouter.HandleFunc(conf.PathSignUp, userHandler.SignUp).Methods("Post")
+	myRouter.HandleFunc(conf.PathGetUser, userHandler.GetUser).Methods("GET")
+	myRouter.HandleFunc(conf.PathSessions, userHandler.GetSession).Methods("GET")
+	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods("GET")
 	myRouter.PathPrefix("/docs/").Handler(httpSwagger.WrapHandler)
-	http.ListenAndServe(":8080", myRouter)
+	http.ListenAndServe(conf.Port, myRouter)
 
 }
