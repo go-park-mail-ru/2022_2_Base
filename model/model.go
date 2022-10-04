@@ -5,7 +5,7 @@ import "encoding/json"
 type User struct {
 	ID       uint   `json:"id"`
 	Username string `json:"username"`
-	Password string `json:"password"`
+	Password string `json:"-"`
 }
 
 type UserCreateParams struct {

@@ -27,9 +27,8 @@ import (
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host 127.0.0.1:8080
-// @BasePath /
+// @BasePath /api/v1
 
-//x// @BasePath /api/v1
 func main() {
 	myRouter := mux.NewRouter()
 	userHandler := handlers.NewUserHandler()
@@ -43,7 +42,7 @@ func main() {
 	myRouter.HandleFunc(conf.PathGetUser, userHandler.GetUser).Methods("GET")
 	myRouter.HandleFunc(conf.PathSessions, userHandler.GetSession).Methods("GET")
 	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods("GET")
-	myRouter.PathPrefix("/docs/").Handler(httpSwagger.WrapHandler)
+	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	http.ListenAndServe(conf.Port, myRouter)
 
 }

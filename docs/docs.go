@@ -287,9 +287,6 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "password": {
-                    "type": "string"
-                },
                 "username": {
                     "type": "string"
                 }
