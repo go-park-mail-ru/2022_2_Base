@@ -25,5 +25,6 @@ func main() {
 	myRouter.HandleFunc(conf.PathSessions, userHandler.GetSession).Methods("GET")
 	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods("GET")
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
+	myRouter.Use(mux.CORSMethodMiddleware(myRouter))
 	http.ListenAndServe(conf.Port, myRouter)
 }
