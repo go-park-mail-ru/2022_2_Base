@@ -1,0 +1,173 @@
+basePath: /api/v1
+definitions:
+  model.Error:
+    properties:
+      message:
+        type: string
+    type: object
+  model.Product:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      imgsrc:
+        type: string
+      lowprice:
+        type: number
+      name:
+        type: string
+      price:
+        type: number
+      rating:
+        type: number
+    type: object
+  model.UserCreateParams:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+host: 89.208.198.137:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: Reazon back server.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Reozon API
+  version: "1.0"
+paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: Gets products for main page
+      operationId: getMain
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "404":
+          description: Products not found
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets products for main page
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Log in user
+      operationId: login
+      parameters:
+      - description: UserDB params
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserCreateParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Logs in and returns the authentication  cookie
+  /logout:
+    delete:
+      consumes:
+      - application/json
+      description: Logs out user
+      operationId: logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Logs out user
+  /session:
+    get:
+      consumes:
+      - application/json
+      description: Checks if user has active session
+      operationId: session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Checks if user has active session
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Sign up user
+      operationId: signup
+      parameters:
+      - description: UserDB params
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserCreateParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "409":
+          description: Conflict - UserDB already exists
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Signs up and returns the authentication  cookie
+swagger: "2.0"
