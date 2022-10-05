@@ -53,6 +53,8 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
+	w.Header().Set("accept", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -90,9 +92,7 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
 	//w.WriteHeader("A")
-	w.Header().Set("accept", "application/json")
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
+
 	json.NewEncoder(w).Encode(cookie)
 
 }
@@ -107,6 +107,9 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /logout [delete]
 func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
 
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
@@ -138,6 +141,11 @@ func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /signup [post]
 func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
+	w.Header().Set("accept", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
@@ -190,6 +198,11 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /session [get]
 func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
+	w.Header().Set("accept", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
@@ -218,6 +231,11 @@ type ProductCollection struct {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router / [get]
 func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
+	w.Header().Set("accept", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
 	products, err := api.GetProducts()
 	if err != nil {
