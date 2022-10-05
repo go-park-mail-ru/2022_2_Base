@@ -87,7 +87,7 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	//w.WriteHeader("A")
 	w.Header().Set("accept", "application/json")
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:3002")
 	json.NewEncoder(w).Encode(cookie)
 
 }
