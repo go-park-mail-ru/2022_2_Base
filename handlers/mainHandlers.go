@@ -110,6 +110,11 @@ func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
+	w.Header().Set("accept", "application/json")
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method == http.MethodOptions {
+		return
+	}
 
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
@@ -146,6 +151,9 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
 	w.Header().Set("accept", "application/json")
 	w.Header().Set("Content-Type", "application/json")
+	if r.Method == http.MethodOptions {
+		return
+	}
 
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
@@ -203,6 +211,9 @@ func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
 	w.Header().Set("accept", "application/json")
 	w.Header().Set("Content-Type", "application/json")
+	if r.Method == http.MethodOptions {
+		return
+	}
 
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
@@ -236,6 +247,9 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
 	w.Header().Set("accept", "application/json")
 	w.Header().Set("Content-Type", "application/json")
+	if r.Method == http.MethodOptions {
+		return
+	}
 
 	products, err := api.GetProducts()
 	if err != nil {
