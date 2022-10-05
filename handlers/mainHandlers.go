@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	baseErrors "serv/errors"
 	"serv/model"
@@ -51,7 +50,7 @@ func NewProductHandler() *ProductHandler {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /login [post, options]
 func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
+	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081/")
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -59,23 +58,23 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
 	err := decoder.Decode(&req)
-	log.Println("0")
+	//log.Println("0")
 	if err != nil {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-	log.Println("1")
+	//log.Println("1")
 	user, err := api.GetUserByUsername(req.Username)
 	if err != nil {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-	log.Println("2")
+	//log.Println("2")
 	if user.Password != req.Password {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-	log.Println("3")
+	//log.Println("3")
 	newUUID := uuid.New()
 	api.sessions[newUUID.String()] = user.ID
 
