@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
+	"regexp"
 	baseErrors "serv/errors"
 	"serv/model"
 	"time"
@@ -62,23 +64,19 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
 	err := decoder.Decode(&req)
-	//log.Println("0")
 	if err != nil {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-	//log.Println("1")
 	user, err := api.GetUserByUsername(req.Username)
 	if err != nil {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-	//log.Println("2")
 	if user.Password != req.Password {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-	//log.Println("3")
 	newUUID := uuid.New()
 	api.sessions[newUUID.String()] = user.ID
 
@@ -91,7 +89,6 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
-	//w.WriteHeader("A")
 
 	json.NewEncoder(w).Encode(cookie)
 
@@ -158,6 +155,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
 	err := decoder.Decode(&req)
+	log.Println(req.Username)
 	if err != nil {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
@@ -174,7 +172,17 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// add validation of name and pass
+	if len(req.Password) < 6 {
+		http.Error(w, baseErrors.ErrConflict409.Error(), 409)
+		return
+	}
+
+	//validation
+	match, _ := regexp.MatchString(`^(.+)@(.+)$`, req.Username)
+	if !match {
+		http.Error(w, baseErrors.ErrConflict409.Error(), 409)
+		return
+	}
 
 	_, err = api.AddUser(&req)
 	if err != nil {
