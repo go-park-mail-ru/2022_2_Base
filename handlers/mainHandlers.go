@@ -49,8 +49,12 @@ func NewProductHandler() *ProductHandler {
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /login [post]
+// @Router /login [post, options]
 func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
+	if r.Method == http.MethodOptions {
+		return
+	}
 
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams

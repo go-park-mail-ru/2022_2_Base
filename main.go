@@ -19,7 +19,7 @@ func main() {
 	userHandler := handlers.NewUserHandler()
 	productHandler := handlers.NewProductHandler()
 
-	myRouter.HandleFunc(conf.PathLogin, userHandler.Login).Methods("Post")
+	myRouter.HandleFunc(conf.PathLogin, userHandler.Login).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathLogOut, userHandler.Logout).Methods("Delete")
 	myRouter.HandleFunc(conf.PathSignUp, userHandler.SignUp).Methods("Post")
 	myRouter.HandleFunc(conf.PathSessions, userHandler.GetSession).Methods("GET")
