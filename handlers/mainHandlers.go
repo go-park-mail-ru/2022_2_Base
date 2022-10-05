@@ -35,7 +35,7 @@ func NewProductHandler() *ProductHandler {
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 89.208.198.137:8080
+// @host 127.0.0.1:8080
 // @BasePath  /api/v1
 
 // LogIn godoc
@@ -55,21 +55,23 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
 	err := decoder.Decode(&req)
+	log.Println("0")
 	if err != nil {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-
+	log.Println("1")
 	user, err := api.GetUserByUsername(req.Username)
 	if err != nil {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
+	log.Println("2")
 	if user.Password != req.Password {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-	log.Println(user.Password)
+	log.Println("3")
 	newUUID := uuid.New()
 	api.sessions[newUUID.String()] = user.ID
 
@@ -82,6 +84,10 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
+	//w.WriteHeader("A")
+	w.Header().Set("accept", "application/json")
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	json.NewEncoder(w).Encode(cookie)
 
 }
