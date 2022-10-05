@@ -22,15 +22,6 @@ definitions:
       rating:
         type: number
     type: object
-  model.User:
-    properties:
-      id:
-        type: integer
-      password:
-        type: string
-      username:
-        type: string
-    type: object
   model.UserCreateParams:
     properties:
       password:
@@ -75,34 +66,6 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Gets products for main page
-  /getuser/{username}:
-    get:
-      consumes:
-      - application/json
-      description: gets user by username
-      operationId: getUser
-      parameters:
-      - description: Username
-        in: path
-        name: username
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.User'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/model.Error'
-        "404":
-          description: User not found
-          schema:
-            $ref: '#/definitions/model.Error'
-      summary: Get current user
   /login:
     post:
       consumes:
@@ -110,7 +73,7 @@ paths:
       description: Log in user
       operationId: login
       parameters:
-      - description: User params
+      - description: UserDB params
         in: body
         name: user
         required: true
@@ -180,7 +143,7 @@ paths:
       description: Sign up user
       operationId: signup
       parameters:
-      - description: User params
+      - description: UserDB params
         in: body
         name: user
         required: true
@@ -198,7 +161,7 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
         "409":
-          description: Conflict - User already exists
+          description: Conflict - UserDB already exists
           schema:
             $ref: '#/definitions/model.Error'
         "500":

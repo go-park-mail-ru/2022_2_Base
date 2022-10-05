@@ -14,7 +14,7 @@ func (api *UserHandler) AddUser(params *model.UserCreateParams) (uint, error) {
 	username := params.Username
 	password := params.Password
 	var id uint = 7
-	newUser := &model.User{ID: id, Username: username, Password: password}
+	newUser := &model.UserDB{ID: id, Username: username, Password: password}
 	id, err := api.store.AddUser(newUser)
 	if err != nil {
 		return 0, baseErrors.ErrServerError500
@@ -22,14 +22,14 @@ func (api *UserHandler) AddUser(params *model.UserCreateParams) (uint, error) {
 	return id, nil
 }
 
-func (api *UserHandler) GetUserByUsername(username string) (model.User, error) {
+func (api *UserHandler) GetUserByUsername(username string) (model.UserDB, error) {
 
 	users, err := api.store.GetUsers()
 	if err != nil {
-		return model.User{ID: 0, Username: "", Password: ""}, baseErrors.ErrServerError500
+		return model.UserDB{ID: 0, Username: "", Password: ""}, baseErrors.ErrServerError500
 	}
 
-	var user *model.User
+	var user *model.UserDB
 	for _, u := range users {
 		if u.Username == username {
 			user = u
@@ -37,8 +37,7 @@ func (api *UserHandler) GetUserByUsername(username string) (model.User, error) {
 		}
 	}
 	if user == nil {
-		return model.User{ID: 0, Username: "", Password: ""}, baseErrors.ErrNotFound404
+		return model.UserDB{ID: 0, Username: "", Password: ""}, baseErrors.ErrNotFound404
 	}
-
 	return *user, nil
 }

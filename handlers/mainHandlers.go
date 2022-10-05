@@ -2,13 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	baseErrors "serv/errors"
 	"serv/model"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 )
 
 func NewUserHandler() *UserHandler {
@@ -38,40 +38,13 @@ func NewProductHandler() *ProductHandler {
 // @host 127.0.0.1:8080
 // @BasePath  /api/v1
 
-// GetUser godoc
-// @Summary Get current user
-// @Description gets user by username
-// @ID getUser
-// @Accept  json
-// @Produce  json
-// @Param username path string true "Username"
-// @Success 200 {object} model.User
-// @Failure 400 {object} model.Error "Bad request"
-// @Failure 404 {object} model.Error "User not found"
-// @Router /getuser/{username} [get]
-func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	username, ok := vars["username"]
-	if !ok {
-		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
-		return
-	}
-	user, err := api.GetUserByUsername(username)
-	if err != nil {
-		http.Error(w, baseErrors.ErrNotFound404.Error(), 404)
-		return
-	}
-
-	json.NewEncoder(w).Encode(user)
-}
-
 // LogIn godoc
 // @Summary Logs in and returns the authentication  cookie
 // @Description Log in user
 // @ID login
 // @Accept  json
 // @Produce  json
-// @Param user body model.UserCreateParams true "User params"
+// @Param user body model.UserCreateParams true "UserDB params"
 // @Success 201 {object} string
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
@@ -92,12 +65,11 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-
 	if user.Password != req.Password {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-
+	log.Println(user.Password)
 	newUUID := uuid.New()
 	api.sessions[newUUID.String()] = user.ID
 
@@ -148,10 +120,10 @@ func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @ID signup
 // @Accept  json
 // @Produce  json
-// @Param user body model.UserCreateParams true "User params"
+// @Param user body model.UserCreateParams true "UserDB params"
 // @Success 201 {object} string
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
-// @Failure 409 {object} model.Error "Conflict - User already exists"
+// @Failure 409 {object} model.Error "Conflict - UserDB already exists"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /signup [post]
 func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {

@@ -11,7 +11,7 @@ import (
 )
 
 type UserStore struct {
-	users  []*model.User
+	users  []*model.UserDB
 	mu     sync.RWMutex
 	nextID uint
 }
@@ -20,11 +20,11 @@ func NewUserStore() *UserStore {
 
 	return &UserStore{
 		mu:    sync.RWMutex{},
-		users: []*model.User{},
+		users: []*model.UserDB{},
 	}
 }
 
-func (us *UserStore) AddUser(in *model.User) (uint, error) {
+func (us *UserStore) AddUser(in *model.UserDB) (uint, error) {
 	us.mu.Lock()
 	defer us.mu.Unlock()
 
@@ -47,11 +47,11 @@ func (us *UserStore) AddUser(in *model.User) (uint, error) {
 	return in.ID, nil
 }
 
-func (us *UserStore) GetUsers() ([]*model.User, error) {
+func (us *UserStore) GetUsers() ([]*model.UserDB, error) {
 	us.mu.RLock()
 	defer us.mu.RUnlock()
 
-	users := []*model.User{}
+	users := []*model.UserDB{}
 	inpFile := "users.txt"
 	file, err := os.Open(inpFile)
 	if err != nil {
@@ -62,7 +62,7 @@ func (us *UserStore) GetUsers() ([]*model.User, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		txt := scanner.Text()
-		dat := model.User{}
+		dat := model.UserDB{}
 		err := json.Unmarshal([]byte(txt), &dat)
 		if err != nil {
 			return nil, baseErrors.ErrServerError500

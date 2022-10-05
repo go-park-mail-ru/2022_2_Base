@@ -2,7 +2,7 @@ package model
 
 import "encoding/json"
 
-type User struct {
+type UserDB struct {
 	ID       uint   `json:"id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -27,7 +27,7 @@ type Error struct {
 	Message string
 }
 
-func UserToString(user User) string {
+func UserToString(user UserDB) string {
 	res, _ := json.Marshal(user)
 	return string(res)
 }

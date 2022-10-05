@@ -58,48 +58,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/getuser/{username}": {
-            "get": {
-                "description": "gets user by username",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Get current user",
-                "operationId": "getUser",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Username",
-                        "name": "username",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.User"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "User not found",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/login": {
             "post": {
                 "description": "Log in user",
@@ -113,7 +71,7 @@ const docTemplate = `{
                 "operationId": "login",
                 "parameters": [
                     {
-                        "description": "User params",
+                        "description": "UserDB params",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -217,7 +175,7 @@ const docTemplate = `{
                 "operationId": "signup",
                 "parameters": [
                     {
-                        "description": "User params",
+                        "description": "UserDB params",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -240,7 +198,7 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "Conflict - User already exists",
+                        "description": "Conflict - UserDB already exists",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -287,20 +245,6 @@ const docTemplate = `{
                 },
                 "rating": {
                     "type": "number"
-                }
-            }
-        },
-        "model.User": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
                 }
             }
         },

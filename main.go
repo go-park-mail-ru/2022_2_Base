@@ -22,7 +22,6 @@ func main() {
 	myRouter.HandleFunc(conf.PathLogin, userHandler.Login).Methods("Post")
 	myRouter.HandleFunc(conf.PathLogOut, userHandler.Logout).Methods("Delete")
 	myRouter.HandleFunc(conf.PathSignUp, userHandler.SignUp).Methods("Post")
-	myRouter.HandleFunc(conf.PathGetUser, userHandler.GetUser).Methods("GET")
 	myRouter.HandleFunc(conf.PathSessions, userHandler.GetSession).Methods("GET")
 	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods("GET")
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
