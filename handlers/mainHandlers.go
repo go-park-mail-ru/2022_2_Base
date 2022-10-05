@@ -50,7 +50,7 @@ func NewProductHandler() *ProductHandler {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /login [post, options]
 func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081/")
+	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	if r.Method == http.MethodOptions {
 		return
