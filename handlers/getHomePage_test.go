@@ -24,7 +24,9 @@ func TestGetHomePage(t *testing.T) {
 		handler.ServeHTTP(rr, req)
 		assert.Equal(t, http.StatusOK, rr.Code)
 
-		expected := `{"body":[{"id":0,"name":"phone","description":"good phone","price":10000,"lowprice":8000,"rating":5,"imgsrc":""},{"id":1,"name":"notebook","description":"goood","price":70000,"lowprice":55000,"rating":4.3,"imgsrc":""},{"id":2,"name":"key","description":"fake","price":23,"lowprice":1,"rating":1,"imgsrc":""}]}`
+		expected := `{"body":[{ID: 0, Name: "phone", Description: "good phone", Price: 10000, DiscountPrice: 8000, Rating: 5, Imgsrc: "https://s.ek.ua/jpg_zoom1/2090045.jpg"},
+		{ID: 1, Name: "notebook", Description: "goood", Price: 70000, DiscountPrice: 55000, Rating: 4.3, Imgsrc: "https://fainaidea.com/wp-content/uploads/2016/11/324987.jpg"},
+		{ID: 2, Name: "ipad", Description: "old", Price: 3000, DiscountPrice: 3000, Rating: 1, Imgsrc: "https://cdn-files.kimovil.com/default/0005/17/thumb_416447_default_big.jpeg"},]}`
 		assert.Equal(t, rr.Body.String(), expected+"\n")
 	})
 }

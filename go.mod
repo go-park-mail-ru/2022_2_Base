@@ -9,6 +9,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 )
 
@@ -19,6 +20,7 @@ require (
 	github.com/go-openapi/spec v0.20.7 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
 	github.com/google/uuid v1.3.0
+	github.com/gorilla/handlers v1.5.1
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/stretchr/testify v1.8.0

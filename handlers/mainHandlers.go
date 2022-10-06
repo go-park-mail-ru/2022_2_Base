@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"regexp"
 	baseErrors "serv/errors"
@@ -52,11 +51,6 @@ func NewProductHandler() *ProductHandler {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /login [post]
 func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
-	w.Header().Set("accept", "application/json")
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -104,11 +98,6 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /logout [delete]
 func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
-	w.Header().Set("accept", "application/json")
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -143,11 +132,6 @@ func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /signup [post]
 func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
-	w.Header().Set("accept", "application/json")
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -155,7 +139,6 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
 	err := decoder.Decode(&req)
-	log.Println(req.Username)
 	if err != nil {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
@@ -172,15 +155,15 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(req.Password) < 6 {
-		http.Error(w, baseErrors.ErrConflict409.Error(), 409)
-		return
-	}
-
 	//validation
 	match, _ := regexp.MatchString(`^(.+)@(.+)$`, req.Username)
 	if !match {
-		http.Error(w, baseErrors.ErrConflict409.Error(), 409)
+		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
+		return
+	}
+
+	if len(req.Password) < 6 {
+		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
 
@@ -214,11 +197,6 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /session [get]
 func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
-	w.Header().Set("accept", "application/json")
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -250,11 +228,6 @@ type ProductCollection struct {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router / [get]
 func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://89.208.198.137:8081")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, accept")
-	w.Header().Set("accept", "application/json")
-	w.Header().Set("Content-Type", "application/json")
 	if r.Method == http.MethodOptions {
 		return
 	}

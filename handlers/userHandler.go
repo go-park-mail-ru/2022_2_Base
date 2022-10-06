@@ -13,9 +13,10 @@ type UserHandler struct {
 func (api *UserHandler) AddUser(params *model.UserCreateParams) (uint, error) {
 	username := params.Username
 	password := params.Password
-	var id uint = 7
+	users, err := api.store.GetUsers()
+	id := users[len(users)-1].ID + 1
 	newUser := &model.UserDB{ID: id, Username: username, Password: password}
-	id, err := api.store.AddUser(newUser)
+	id, err = api.store.AddUser(newUser)
 	if err != nil {
 		return 0, baseErrors.ErrServerError500
 	}
