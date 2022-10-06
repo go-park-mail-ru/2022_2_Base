@@ -16,7 +16,7 @@ var casesLogin = []struct {
 	wantCode int
 	err      error
 }{
-	{map[string]string{"username": "string", "password": "string"}, 201, nil},
+	{map[string]string{"username": "art", "password": "art"}, 201, nil},
 	{map[string]string{"username": "s", "password": "string"}, 400, nil},
 	{map[string]string{"username": "string", "password": "s"}, 400, nil},
 	{map[string]string{"sdads": "d"}, 400, nil},

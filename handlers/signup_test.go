@@ -16,7 +16,10 @@ var casesSignUp = []struct {
 	wantCode int
 	err      error
 }{
-	{map[string]string{"username": "string", "password": "string"}, 409, nil},
+	{map[string]string{"username": "string", "password": "string"}, 400, nil},
+	{map[string]string{"username": "string", "password": "111"}, 400, nil},
+	{map[string]string{"username": "art", "password": "111111"}, 409, nil},
+	{map[string]string{"username": "artart", "password": "111111"}, 400, nil},
 }
 
 func TestSignUp(t *testing.T) {
