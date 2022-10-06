@@ -15,6 +15,5 @@ var Headers = map[string]string{
 	"Access-Control-Allow-Credentials": "true",
 	"Access-Control-Allow-Headers":     "Origin, Content-Type, accept",
 	"Access-Control-Allow-Methods":     "GET, POST, DELETE, OPTIONS",
-	//"accept":                           "application/json",
-	"Content-Type": "application/json",
+	"Content-Type":                     "application/json",
 }

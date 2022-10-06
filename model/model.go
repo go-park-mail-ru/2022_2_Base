@@ -4,11 +4,13 @@ import "encoding/json"
 
 type UserDB struct {
 	ID       uint   `json:"id"`
+	Email    string `json:"email"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
 type UserCreateParams struct {
+	Email    string `json:"email"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 }

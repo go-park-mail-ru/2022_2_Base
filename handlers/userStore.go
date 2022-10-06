@@ -3,7 +3,6 @@ package handlers
 import (
 	"bufio"
 	"encoding/json"
-	"log"
 	"os"
 	baseErrors "serv/errors"
 	"serv/model"
@@ -34,7 +33,6 @@ func (us *UserStore) AddUser(in *model.UserDB) (uint, error) {
 	var writer *bufio.Writer
 	file, err := os.OpenFile(outFile, os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		log.Println("panic: ", err.Error())
 		return 0, baseErrors.ErrServerError500
 	}
 	defer file.Close()
@@ -55,7 +53,6 @@ func (us *UserStore) GetUsers() ([]*model.UserDB, error) {
 	inpFile := "users.txt"
 	file, err := os.Open(inpFile)
 	if err != nil {
-		log.Println("panic: ", err.Error())
 		return nil, baseErrors.ErrServerError500
 	}
 

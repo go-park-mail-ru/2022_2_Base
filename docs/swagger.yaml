@@ -24,12 +24,14 @@ definitions:
     type: object
   model.UserCreateParams:
     properties:
+      email:
+        type: string
       password:
         type: string
       username:
         type: string
     type: object
-host: 127.0.0.1:8080
+host: 89.208.198.137:8080
 info:
   contact:
     email: support@swagger.io

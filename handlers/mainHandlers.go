@@ -61,13 +61,13 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
 		return
 	}
-	user, err := api.GetUserByUsername(req.Username)
+	user, err := api.GetUserByUsername(req.Email)
 	if err != nil {
-		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
+		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
 		return
 	}
 	if user.Password != req.Password {
-		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
+		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
 		return
 	}
 	newUUID := uuid.New()
@@ -140,26 +140,26 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := api.GetUserByUsername(req.Username)
+	user, err := api.GetUserByUsername(req.Email)
 	if err != nil && err != baseErrors.ErrNotFound404 {
 		http.Error(w, baseErrors.ErrServerError500.Error(), 500)
 		return
 	}
 
-	if user.Username != "" {
+	if user.Email != "" {
 		http.Error(w, baseErrors.ErrConflict409.Error(), 409)
 		return
 	}
 
 	//validation
-	match, _ := regexp.MatchString(`^(.+)@(.+)$`, req.Username)
+	match, _ := regexp.MatchString(`^(.+)@(.+)$`, req.Email)
 	if !match {
-		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
+		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
 		return
 	}
 
 	if len(req.Password) < 6 {
-		http.Error(w, baseErrors.ErrBadRequest400.Error(), 400)
+		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
 		return
 	}
 
