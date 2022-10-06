@@ -35,7 +35,7 @@ func NewProductHandler() *ProductHandler {
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 127.0.0.1:8080
+// @host 89.208.198.137:8080
 // @BasePath  /api/v1
 
 // LogIn godoc
@@ -51,10 +51,6 @@ func NewProductHandler() *ProductHandler {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /login [post]
 func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
-
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
 	err := decoder.Decode(&req)
@@ -83,9 +79,7 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
-
-	json.NewEncoder(w).Encode(cookie)
-
+	//json.NewEncoder(w).Encode(cookie)
 }
 
 // LogOut godoc
@@ -98,10 +92,6 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /logout [delete]
 func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
-
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
@@ -132,10 +122,6 @@ func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /signup [post]
 func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
-
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
 	err := decoder.Decode(&req)
@@ -184,7 +170,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
-	json.NewEncoder(w).Encode(cookie)
+	//json.NewEncoder(w).Encode(cookie)
 }
 
 // GetSession godoc
@@ -197,10 +183,6 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /session [get]
 func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
-
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
