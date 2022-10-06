@@ -21,7 +21,6 @@ func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 		for header := range conf.Headers {
 			w.Header().Set(header, conf.Headers[header])
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }
@@ -31,11 +30,11 @@ func main() {
 	userHandler := handlers.NewUserHandler()
 	productHandler := handlers.NewProductHandler()
 
-	myRouter.HandleFunc(conf.PathLogin, userHandler.Login).Methods(http.MethodPost, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathLogOut, userHandler.Logout).Methods(http.MethodDelete, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathSignUp, userHandler.SignUp).Methods(http.MethodPost, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathSessions, userHandler.GetSession).Methods(http.MethodGet, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods(http.MethodGet, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathLogin, userHandler.Login).Methods(http.MethodPost)
+	myRouter.HandleFunc(conf.PathLogOut, userHandler.Logout).Methods(http.MethodDelete)
+	myRouter.HandleFunc(conf.PathSignUp, userHandler.SignUp).Methods(http.MethodPost)
+	myRouter.HandleFunc(conf.PathSessions, userHandler.GetSession).Methods(http.MethodGet)
+	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods(http.MethodGet)
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	myRouter.Use(loggingAndCORSHeadersMiddleware)
 	http.ListenAndServe(conf.Port, myRouter)

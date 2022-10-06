@@ -51,9 +51,6 @@ func NewProductHandler() *ProductHandler {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /login [post]
 func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
 	err := decoder.Decode(&req)
@@ -95,9 +92,6 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /logout [delete]
 func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
@@ -129,9 +123,6 @@ func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /signup [post]
 func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
 	err := decoder.Decode(&req)
@@ -193,9 +184,6 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /session [get]
 func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
@@ -224,10 +212,6 @@ type ProductCollection struct {
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router / [get]
 func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodOptions {
-		return
-	}
-
 	products, err := api.GetProducts()
 	if err != nil {
 		http.Error(w, baseErrors.ErrServerError500.Error(), 500)
