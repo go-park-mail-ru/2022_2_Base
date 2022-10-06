@@ -35,7 +35,7 @@ func NewProductHandler() *ProductHandler {
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 89.208.198.137:8080
+// @host 127.0.0.1:8080
 // @BasePath  /api/v1
 
 // LogIn godoc
@@ -82,7 +82,7 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
-	//json.NewEncoder(w).Encode(cookie)
+	json.NewEncoder(w).Encode("")
 }
 
 // LogOut godoc
@@ -113,6 +113,7 @@ func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
+	json.NewEncoder(w).Encode("")
 }
 
 // SignUp godoc
@@ -179,7 +180,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
-	//json.NewEncoder(w).Encode(cookie)
+	json.NewEncoder(w).Encode("")
 }
 
 // GetSession godoc
@@ -204,7 +205,8 @@ func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, baseErrors.ErrUnauthorized401.Error(), 401)
 		return
 	}
-	json.NewEncoder(w).Encode(r.Cookies()[0])
+	http.SetCookie(w, r.Cookies()[0])
+	json.NewEncoder(w).Encode("")
 }
 
 type ProductCollection struct {
