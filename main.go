@@ -21,9 +21,7 @@ func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 		for header := range conf.Headers {
 			w.Header().Set(header, conf.Headers[header])
 		}
-		if r.Method == http.MethodOptions {
-			return
-		}
+
 		next.ServeHTTP(w, r)
 	})
 }
