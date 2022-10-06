@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	baseErrors "serv/errors"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,13 +18,27 @@ var casesLogin = []struct {
 	wantCode int
 	err      error
 }{
-	{map[string]string{"username": "string", "password": "string"}, 201, nil},
-	{map[string]string{"username": "s", "password": "string"}, 400, nil},
-	{map[string]string{"username": "string", "password": "s"}, 400, nil},
-	{map[string]string{"sdads": "d"}, 400, nil},
+	{map[string]string{"email": "s", "username": "art", "password": "string"}, 401, baseErrors.ErrUnauthorized401},
+	{map[string]string{"email": "string", "username": "art", "password": "s"}, 401, baseErrors.ErrUnauthorized401},
 }
 
 func TestLogin(t *testing.T) {
+	t.Run("tests", func(t *testing.T) {
+		data, _ := json.Marshal(map[string]string{"email": "art@art", "username": "art", "password": "art"})
+		req, err := http.NewRequest("POST", conf.PathLogin, strings.NewReader(string(data)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		rr := httptest.NewRecorder()
+		userHandler := NewUserHandler()
+		handler := http.HandlerFunc(userHandler.Login)
+		handler.ServeHTTP(rr, req)
+		assert.Equal(t, 201, rr.Code)
+	})
+
+}
+
+func TestLoginErrors(t *testing.T) {
 	for _, c := range casesLogin {
 		t.Run("tests", func(t *testing.T) {
 			data, _ := json.Marshal(c.data)
@@ -33,7 +49,6 @@ func TestLogin(t *testing.T) {
 			rr := httptest.NewRecorder()
 			userHandler := NewUserHandler()
 			handler := http.HandlerFunc(userHandler.Login)
-
 			handler.ServeHTTP(rr, req)
 			assert.Equal(t, c.wantCode, rr.Code)
 		})
@@ -42,13 +57,13 @@ func TestLogin(t *testing.T) {
 
 func TestLoginErr400(t *testing.T) {
 	t.Run("tests", func(t *testing.T) {
-		req, err := http.NewRequest("POST", conf.PathLogin, strings.NewReader("ASDSAD"))
+		req, err := http.NewRequest("POST", conf.PathSignUp, strings.NewReader("ASDSAD"))
 		if err != nil {
 			t.Fatal(err)
 		}
 		rr := httptest.NewRecorder()
 		userHandler := NewUserHandler()
-		handler := http.HandlerFunc(userHandler.Login)
+		handler := http.HandlerFunc(userHandler.SignUp)
 
 		handler.ServeHTTP(rr, req)
 		assert.Equal(t, 400, rr.Code)

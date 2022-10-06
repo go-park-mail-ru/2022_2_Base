@@ -9,3 +9,11 @@ var PathGetUser = BasePath + "/getuser/{username}"
 var PathSessions = BasePath + "/session"
 var PathDocs = BasePath + "/docs"
 var PathMain = BasePath + "/"
+
+var Headers = map[string]string{
+	"Access-Control-Allow-Origin":      "http://89.208.198.137:8081",
+	"Access-Control-Allow-Credentials": "true",
+	"Access-Control-Allow-Headers":     "Origin, Content-Type, accept",
+	"Access-Control-Allow-Methods":     "GET, POST, DELETE, OPTIONS",
+	"Content-Type":                     "application/json",
+}

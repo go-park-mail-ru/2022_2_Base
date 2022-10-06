@@ -251,6 +251,9 @@ const docTemplate = `{
         "model.UserCreateParams": {
             "type": "object",
             "properties": {
+                "email": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
                 },

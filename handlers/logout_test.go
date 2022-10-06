@@ -14,7 +14,7 @@ import (
 
 func TestLogout(t *testing.T) {
 	t.Run("tests", func(t *testing.T) {
-		data, _ := json.Marshal(map[string]string{"username": "string", "password": "string"})
+		data, _ := json.Marshal(map[string]string{"email": "art@art", "username": "art", "password": "art"})
 		req, err := http.NewRequest("POST", conf.PathLogin, strings.NewReader(string(data)))
 		if err != nil {
 			t.Fatal(err)
