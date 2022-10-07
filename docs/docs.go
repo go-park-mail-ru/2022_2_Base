@@ -25,7 +25,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/": {
+        "/getproducts": {
             "get": {
                 "description": "Gets products for main page",
                 "consumes": [
@@ -82,9 +82,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "400": {
@@ -123,7 +123,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "401": {
@@ -150,7 +150,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "401": {
@@ -186,9 +186,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "400": {
@@ -217,9 +217,7 @@ const docTemplate = `{
         "model.Error": {
             "type": "object",
             "properties": {
-                "message": {
-                    "type": "string"
-                }
+                "error": {}
             }
         },
         "model.Product": {
@@ -248,6 +246,12 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Response": {
+            "type": "object",
+            "properties": {
+                "body": {}
+            }
+        },
         "model.UserCreateParams": {
             "type": "object",
             "properties": {
@@ -268,7 +272,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "89.208.198.137:8080",
+	Host:             "127.0.0.1:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Reozon API",

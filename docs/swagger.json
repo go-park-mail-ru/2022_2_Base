@@ -15,10 +15,10 @@
         },
         "version": "1.0"
     },
-    "host": "89.208.198.137:8080",
+    "host": "127.0.0.1:8080",
     "basePath": "/api/v1",
     "paths": {
-        "/": {
+        "/getproducts": {
             "get": {
                 "description": "Gets products for main page",
                 "consumes": [
@@ -75,9 +75,9 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "400": {
@@ -116,7 +116,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "401": {
@@ -143,7 +143,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "401": {
@@ -179,9 +179,9 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "400": {
@@ -210,9 +210,7 @@
         "model.Error": {
             "type": "object",
             "properties": {
-                "message": {
-                    "type": "string"
-                }
+                "error": {}
             }
         },
         "model.Product": {
@@ -239,6 +237,12 @@
                 "rating": {
                     "type": "number"
                 }
+            }
+        },
+        "model.Response": {
+            "type": "object",
+            "properties": {
+                "body": {}
             }
         },
         "model.UserCreateParams": {

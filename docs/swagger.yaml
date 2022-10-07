@@ -2,8 +2,7 @@ basePath: /api/v1
 definitions:
   model.Error:
     properties:
-      message:
-        type: string
+      error: {}
     type: object
   model.Product:
     properties:
@@ -22,6 +21,10 @@ definitions:
       rating:
         type: number
     type: object
+  model.Response:
+    properties:
+      body: {}
+    type: object
   model.UserCreateParams:
     properties:
       email:
@@ -31,7 +34,7 @@ definitions:
       username:
         type: string
     type: object
-host: 89.208.198.137:8080
+host: 127.0.0.1:8080
 info:
   contact:
     email: support@swagger.io
@@ -45,7 +48,7 @@ info:
   title: Reozon API
   version: "1.0"
 paths:
-  /:
+  /getproducts:
     get:
       consumes:
       - application/json
@@ -85,9 +88,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: OK
           schema:
-            type: string
+            $ref: '#/definitions/model.Response'
         "400":
           description: Bad request - Problem with the request
           schema:
@@ -114,7 +117,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/model.Response'
         "401":
           description: Unauthorized - Access token is missing or invalid
           schema:
@@ -132,7 +135,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/model.Response'
         "401":
           description: Unauthorized - Access token is missing or invalid
           schema:
@@ -155,9 +158,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: OK
           schema:
-            type: string
+            $ref: '#/definitions/model.Response'
         "400":
           description: Bad request - Problem with the request
           schema:
