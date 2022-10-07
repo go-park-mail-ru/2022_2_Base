@@ -166,6 +166,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	_, err = api.AddUser(&req)
 	if err != nil {
 		http.Error(w, baseErrors.ErrServerError500.Error(), 500)
+		return
 	}
 
 	newUUID := uuid.New()

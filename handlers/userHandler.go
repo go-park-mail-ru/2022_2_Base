@@ -15,6 +15,9 @@ func (api *UserHandler) AddUser(params *model.UserCreateParams) (uint, error) {
 	password := params.Password
 	email := params.Email
 	users, err := api.store.GetUsers()
+	if err != nil {
+		return 0, baseErrors.ErrServerError500
+	}
 	id := users[len(users)-1].ID + 1
 	newUser := &model.UserDB{ID: id, Email: email, Username: username, Password: password}
 	id, err = api.store.AddUser(newUser)
