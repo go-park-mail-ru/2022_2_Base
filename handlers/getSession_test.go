@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	conf "serv/config"
@@ -20,11 +19,8 @@ func TestGetSesssion(t *testing.T) {
 			t.Fatal(err)
 		}
 		rr := httptest.NewRecorder()
-		productHandler := NewUserHandler()
-		handler := http.HandlerFunc(productHandler.Login)
-
-		handler.ServeHTTP(rr, req)
-
+		userHandler := NewUserHandler()
+		userHandler.Login(rr, req)
 		assert.Equal(t, http.StatusCreated, rr.Code)
 
 		req, err = http.NewRequest("Get", conf.PathSessions, nil)
@@ -33,11 +29,7 @@ func TestGetSesssion(t *testing.T) {
 			t.Fatal(err)
 		}
 		rr = httptest.NewRecorder()
-
-		handler = http.HandlerFunc(productHandler.Logout)
-
-		handler.ServeHTTP(rr, req)
-		log.Println(rr.Body.String())
+		userHandler.GetSession(rr, req)
 		assert.Equal(t, http.StatusOK, rr.Code)
 	})
 }
@@ -52,9 +44,7 @@ func TestGetSesssionErr401(t *testing.T) {
 		}
 		rr := httptest.NewRecorder()
 		userHandler := NewUserHandler()
-		handler := http.HandlerFunc(userHandler.GetSession)
-
-		handler.ServeHTTP(rr, req)
+		userHandler.GetSession(rr, req)
 		assert.Equal(t, 401, rr.Code)
 	})
 

@@ -32,9 +32,7 @@ func TestSignUpErrors(t *testing.T) {
 			}
 			rr := httptest.NewRecorder()
 			userHandler := NewUserHandler()
-			handler := http.HandlerFunc(userHandler.SignUp)
-
-			handler.ServeHTTP(rr, req)
+			userHandler.SignUp(rr, req)
 			assert.Equal(t, c.wantCode, rr.Code)
 		})
 	}
@@ -48,9 +46,7 @@ func TestSignUpErr400(t *testing.T) {
 		}
 		rr := httptest.NewRecorder()
 		userHandler := NewUserHandler()
-		handler := http.HandlerFunc(userHandler.SignUp)
-
-		handler.ServeHTTP(rr, req)
+		userHandler.SignUp(rr, req)
 		assert.Equal(t, 400, rr.Code)
 	})
 }

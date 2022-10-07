@@ -8,7 +8,7 @@ var PathSignUp = BasePath + "/signup"
 var PathGetUser = BasePath + "/getuser/{username}"
 var PathSessions = BasePath + "/session"
 var PathDocs = BasePath + "/docs"
-var PathMain = BasePath + "/"
+var PathMain = BasePath + "/getproducts"
 
 var Headers = map[string]string{
 	"Access-Control-Allow-Origin":      "http://89.208.198.137:8081",

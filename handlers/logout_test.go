@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	conf "serv/config"
@@ -20,10 +19,8 @@ func TestLogout(t *testing.T) {
 			t.Fatal(err)
 		}
 		rr := httptest.NewRecorder()
-		productHandler := NewUserHandler()
-		handler := http.HandlerFunc(productHandler.Login)
-
-		handler.ServeHTTP(rr, req)
+		userHandler := NewUserHandler()
+		userHandler.Login(rr, req)
 
 		assert.Equal(t, http.StatusCreated, rr.Code)
 
@@ -33,11 +30,7 @@ func TestLogout(t *testing.T) {
 			t.Fatal(err)
 		}
 		rr = httptest.NewRecorder()
-
-		handler = http.HandlerFunc(productHandler.Logout)
-
-		handler.ServeHTTP(rr, req)
-		log.Println(rr.Body.String())
+		userHandler.Logout(rr, req)
 		assert.Equal(t, http.StatusOK, rr.Code)
 	})
 }
@@ -52,9 +45,7 @@ func TestLogoutErr401(t *testing.T) {
 		}
 		rr := httptest.NewRecorder()
 		userHandler := NewUserHandler()
-		handler := http.HandlerFunc(userHandler.Logout)
-
-		handler.ServeHTTP(rr, req)
+		userHandler.Logout(rr, req)
 		assert.Equal(t, 401, rr.Code)
 	})
 
