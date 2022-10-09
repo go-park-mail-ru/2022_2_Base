@@ -25,39 +25,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/": {
-            "get": {
-                "description": "Gets products for main page",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Gets products for main page",
-                "operationId": "getMain",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Product"
-                        }
-                    },
-                    "404": {
-                        "description": "Products not found",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error - Request is valid but operation failed at server side",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/login": {
             "post": {
                 "description": "Log in user",
@@ -82,9 +49,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "400": {
@@ -123,11 +90,44 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "401": {
                         "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/products": {
+            "get": {
+                "description": "Gets products for main page",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Gets products for main page",
+                "operationId": "getMain",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "404": {
+                        "description": "Products not found",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -150,7 +150,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "401": {
@@ -186,9 +186,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "400": {
@@ -217,9 +217,7 @@ const docTemplate = `{
         "model.Error": {
             "type": "object",
             "properties": {
-                "message": {
-                    "type": "string"
-                }
+                "error": {}
             }
         },
         "model.Product": {
@@ -246,6 +244,12 @@ const docTemplate = `{
                 "rating": {
                     "type": "number"
                 }
+            }
+        },
+        "model.Response": {
+            "type": "object",
+            "properties": {
+                "body": {}
             }
         },
         "model.UserCreateParams": {

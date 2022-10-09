@@ -2,8 +2,7 @@ basePath: /api/v1
 definitions:
   model.Error:
     properties:
-      message:
-        type: string
+      error: {}
     type: object
   model.Product:
     properties:
@@ -21,6 +20,10 @@ definitions:
         type: number
       rating:
         type: number
+    type: object
+  model.Response:
+    properties:
+      body: {}
     type: object
   model.UserCreateParams:
     properties:
@@ -45,29 +48,6 @@ info:
   title: Reozon API
   version: "1.0"
 paths:
-  /:
-    get:
-      consumes:
-      - application/json
-      description: Gets products for main page
-      operationId: getMain
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Product'
-        "404":
-          description: Products not found
-          schema:
-            $ref: '#/definitions/model.Error'
-        "500":
-          description: Internal Server Error - Request is valid but operation failed
-            at server side
-          schema:
-            $ref: '#/definitions/model.Error'
-      summary: Gets products for main page
   /login:
     post:
       consumes:
@@ -85,9 +65,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: OK
           schema:
-            type: string
+            $ref: '#/definitions/model.Response'
         "400":
           description: Bad request - Problem with the request
           schema:
@@ -114,12 +94,35 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/model.Response'
         "401":
           description: Unauthorized - Access token is missing or invalid
           schema:
             $ref: '#/definitions/model.Error'
       summary: Logs out user
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Gets products for main page
+      operationId: getMain
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "404":
+          description: Products not found
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets products for main page
   /session:
     get:
       consumes:
@@ -132,7 +135,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/model.Response'
         "401":
           description: Unauthorized - Access token is missing or invalid
           schema:
@@ -155,9 +158,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: OK
           schema:
-            type: string
+            $ref: '#/definitions/model.Response'
         "400":
           description: Bad request - Problem with the request
           schema:

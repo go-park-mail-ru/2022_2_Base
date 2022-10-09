@@ -26,7 +26,11 @@ type Product struct {
 }
 
 type Error struct {
-	Message string
+	Error interface{} `json:"error,omitempty"`
+}
+
+type Response struct {
+	Body interface{} `json:"body,omitempty"`
 }
 
 func UserToString(user UserDB) string {

@@ -19,12 +19,10 @@ func TestGetHomePage(t *testing.T) {
 		}
 		rr := httptest.NewRecorder()
 		productHandler := NewProductHandler()
-		handler := http.HandlerFunc(productHandler.GetHomePage)
-
-		handler.ServeHTTP(rr, req)
+		productHandler.GetHomePage(rr, req)
 		assert.Equal(t, http.StatusOK, rr.Code)
 
-		var expected = `{"body":[{"id":0,"name":"phone","description":"good phone","price":10000,"lowprice":8000,"rating":5,"imgsrc":"https://media.4rgos.it/i/Argos/9520055_R_Z001A?w=1500\u0026h=880\u0026qlt=70\u0026fmt=webp"},{"id":1,"name":"notebook","description":"goood","price":70000,"lowprice":55000,"rating":4.3,"imgsrc":"https://www.notebookcheck-ru.com/uploads/tx_nbc2/MicrosoftSurfaceLaptop3-15__1_.JPG"},{"id":2,"name":"ipad","description":"old","price":3000,"lowprice":3000,"rating":1,"imgsrc":"https://cdn-files.kimovil.com/default/0005/17/thumb_416447_default_big.jpeg"}]}`
+		var expected = `{"body":[{"id":0,"name":"Монитор Xiaomi Mi 27","description":"good","price":14999,"lowprice":13999,"rating":4,"imgsrc":"https://img.mvideo.ru/Big/30058309bb.jpg"},{"id":1,"name":"Телевизор Haier 55","description":"goood","price":59999,"lowprice":41999,"rating":4.3,"imgsrc":"https://img.mvideo.ru/Big/10030234bb.jpg"},{"id":2,"name":"Apple iPad 10.2","description":"old","price":49999,"lowprice":49999,"rating":3.7,"imgsrc":"https://img.mvideo.ru/Pdb/30064043b.jpg"},{"id":3,"name":"Tecno Spark 8с","description":"good phone","price":12999,"lowprice":8999,"rating":4.5,"imgsrc":"https://img.mvideo.ru/Big/30062036bb.jpg"},{"id":4,"name":"realme GT Master","description":"goood","price":29999,"lowprice":21999,"rating":4.3,"imgsrc":"https://img.mvideo.ru/Big/30058843bb.jpg"},{"id":5,"name":"Apple iPhone 11","description":"old","price":62999,"lowprice":54999,"rating":5,"imgsrc":"https://img.mvideo.ru/Big/30063237bb.jpg"}]}`
 		assert.Equal(t, rr.Body.String(), expected+"\n")
 	})
 }
@@ -45,11 +43,7 @@ func TestGetHomePageError404(t *testing.T) {
 		rr := httptest.NewRecorder()
 
 		productHandler := ProductHandler{store: *MockProductStore()}
-
-		handler := http.HandlerFunc(productHandler.GetHomePage)
-
-		handler.ServeHTTP(rr, req)
+		productHandler.GetHomePage(rr, req)
 		assert.Equal(t, http.StatusNotFound, rr.Code)
-
 	})
 }
