@@ -225,7 +225,7 @@ func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} model.Product
 // @Failure 404 {object} model.Error "Products not found"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /getproducts [get]
+// @Router /products [get]
 func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
