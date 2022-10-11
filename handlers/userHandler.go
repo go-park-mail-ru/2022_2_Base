@@ -6,7 +6,7 @@ import (
 )
 
 type UserHandler struct {
-	sessions map[string]uint
+	sessions map[string]string
 	store    UserStore
 }
 

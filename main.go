@@ -36,6 +36,7 @@ func main() {
 	myRouter.HandleFunc(conf.PathSignUp, userHandler.SignUp).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathSessions, userHandler.GetSession).Methods(http.MethodGet, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods(http.MethodGet, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathGetUser, userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	myRouter.Use(loggingAndCORSHeadersMiddleware)
 	http.ListenAndServe(conf.Port, myRouter)

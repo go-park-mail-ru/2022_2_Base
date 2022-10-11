@@ -13,7 +13,7 @@ import (
 
 func NewUserHandler() *UserHandler {
 	return &UserHandler{
-		sessions: make(map[string]uint),
+		sessions: make(map[string]string),
 		store:    *NewUserStore(),
 	}
 }
@@ -35,7 +35,7 @@ func NewProductHandler() *ProductHandler {
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 89.208.198.137:8080
+// @host 127.0.0.1:8080
 // @BasePath  /api/v1
 
 func ReturnErrorJSON(w http.ResponseWriter, err error, errCode int) {
@@ -77,7 +77,7 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	newUUID := uuid.New()
-	api.sessions[newUUID.String()] = user.ID
+	api.sessions[newUUID.String()] = user.Email
 
 	cookie := &http.Cookie{
 		Name:     "session_id",
@@ -176,7 +176,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUUID := uuid.New()
-	api.sessions[newUUID.String()] = user.ID
+	api.sessions[newUUID.String()] = user.Email
 
 	cookie := &http.Cookie{
 		Name:     "session_id",
@@ -241,4 +241,36 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
+}
+
+// GetUser godoc
+// @Summary Get current user
+// @Description gets user by username in cookies
+// @ID getUser
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.UserProfile
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /profile [get]
+func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	session, err := r.Cookie("session_id")
+	if err == http.ErrNoCookie {
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
+	user, err := api.GetUserByUsername(api.sessions[session.Value])
+	if err != nil && err != baseErrors.ErrNotFound404 {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
+	userProfile := model.UserProfile{Email: user.Email, Username: user.Username, Phone: "111", Avatar: ""}
+	json.NewEncoder(w).Encode(&model.Response{Body: userProfile})
 }

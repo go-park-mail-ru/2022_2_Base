@@ -34,7 +34,22 @@ definitions:
       username:
         type: string
     type: object
-host: 89.208.198.137:8080
+  model.UserProfile:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      paymentmethods:
+        items:
+          type: string
+        type: array
+      phone:
+        type: string
+      username:
+        type: string
+    type: object
+host: 127.0.0.1:8080
 info:
   contact:
     email: support@swagger.io
@@ -123,6 +138,28 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Gets products for main page
+  /profile:
+    get:
+      consumes:
+      - application/json
+      description: gets user by username
+      operationId: getUser
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UserProfile'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Get current user
   /session:
     get:
       consumes:
