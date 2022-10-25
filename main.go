@@ -6,6 +6,8 @@ import (
 
 	_ "serv/docs"
 
+	_ "github.com/lib/pq"
+
 	"github.com/gorilla/mux"
 
 	handlers "serv/handlers"
