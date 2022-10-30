@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"regexp"
@@ -11,15 +12,15 @@ import (
 	"github.com/google/uuid"
 )
 
-func NewUserHandler() *UserHandler {
+func NewUserHandler(db *sql.DB) *UserHandler {
 	return &UserHandler{
 		sessions: make(map[string]uint),
-		store:    *NewUserStore(),
+		store:    UserStore{DB: db},
 	}
 }
-func NewProductHandler() *ProductHandler {
+func NewProductHandler(db *sql.DB) *ProductHandler {
 	return &ProductHandler{
-		store: *NewProductStore(),
+		store: ProductStore{DB: db},
 	}
 }
 
@@ -35,7 +36,7 @@ func NewProductHandler() *ProductHandler {
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 89.208.198.137:8080
+// @host 127.0.0.1:8080
 // @BasePath  /api/v1
 
 func ReturnErrorJSON(w http.ResponseWriter, err error, errCode int) {

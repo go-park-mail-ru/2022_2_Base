@@ -28,7 +28,6 @@ func (api *UserHandler) AddUser(params *model.UserCreateParams) (uint, error) {
 }
 
 func (api *UserHandler) GetUserByUsername(email string) (model.UserDB, error) {
-
 	users, err := api.store.GetUsers()
 	if err != nil {
 		return model.UserDB{ID: 0, Email: "", Username: "", Password: ""}, baseErrors.ErrServerError500

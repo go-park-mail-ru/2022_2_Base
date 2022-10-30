@@ -6,8 +6,6 @@ import (
 
 	_ "serv/docs"
 
-	_ "github.com/lib/pq"
-
 	"github.com/gorilla/mux"
 
 	handlers "serv/handlers"
@@ -15,6 +13,10 @@ import (
 	conf "serv/config"
 
 	httpSwagger "github.com/swaggo/http-swagger"
+
+	"database/sql"
+
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
@@ -30,8 +32,21 @@ func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 
 func main() {
 	myRouter := mux.NewRouter()
-	userHandler := handlers.NewUserHandler()
-	productHandler := handlers.NewProductHandler()
+
+	urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
+	db, err := sql.Open("pgx", urlDB)
+	if err != nil {
+		log.Println("could not connect to database")
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		log.Println("unable to reach database")
+	}
+	log.Println("database is reachable")
+
+	userHandler := handlers.NewUserHandler(db)
+	productHandler := handlers.NewProductHandler(db)
 
 	myRouter.HandleFunc(conf.PathLogin, userHandler.Login).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathLogOut, userHandler.Logout).Methods(http.MethodDelete, http.MethodOptions)
