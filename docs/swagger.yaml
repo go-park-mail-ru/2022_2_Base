@@ -34,6 +34,21 @@ definitions:
       username:
         type: string
     type: object
+  model.UserProfile:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      paymentmethods:
+        items:
+          type: string
+        type: array
+      phone:
+        type: string
+      username:
+        type: string
+    type: object
 host: 127.0.0.1:8080
 info:
   contact:
@@ -123,6 +138,62 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Gets products for main page
+  /profile:
+    get:
+      consumes:
+      - application/json
+      description: gets user by username in cookies
+      operationId: getUser
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UserProfile'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Get current user
+    post:
+      consumes:
+      - application/json
+      description: changes user parameters
+      operationId: changeUserParameters
+      parameters:
+      - description: UserDB params
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserProfile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: changes user parameters
   /session:
     get:
       consumes:

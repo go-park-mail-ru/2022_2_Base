@@ -14,7 +14,7 @@ import (
 
 func NewUserHandler(db *sql.DB) *UserHandler {
 	return &UserHandler{
-		sessions: make(map[string]uint),
+		sessions: make(map[string]string),
 		store:    UserStore{DB: db},
 	}
 }
@@ -68,17 +68,23 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	user, err := api.GetUserByUsernameAndPassword(req.Email, req.Password)
-	if err != nil {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
+	user, err := api.GetUserByUsername(req.Email)
 	if user.Email == "" {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	if user.Password != req.Password {
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
 	newUUID := uuid.New()
-	api.sessions[newUUID.String()] = user.ID
+	api.sessions[newUUID.String()] = user.Email
 
 	cookie := &http.Cookie{
 		Name:     "session_id",
@@ -147,7 +153,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := api.GetUserByUsernameAndPassword(req.Email, req.Password)
+	user, err := api.GetUserByUsername(req.Email)
 	if err != nil && err != baseErrors.ErrNotFound404 {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -177,7 +183,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUUID := uuid.New()
-	api.sessions[newUUID.String()] = user.ID
+	api.sessions[newUUID.String()] = user.Email
 
 	cookie := &http.Cookie{
 		Name:     "session_id",
@@ -242,4 +248,85 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
+}
+
+// GetUser godoc
+// @Summary Get current user
+// @Description gets user by username in cookies
+// @ID getUser
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} model.UserProfile
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /profile [get]
+func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	session, err := r.Cookie("session_id")
+	if err == http.ErrNoCookie {
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
+	user, err := api.GetUserByUsername(api.sessions[session.Value])
+	if user.Email == "" {
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	userProfile := model.UserProfile{Email: user.Email, Username: user.Username, Phone: "", Avatar: ""}
+	json.NewEncoder(w).Encode(&model.Response{Body: userProfile})
+}
+
+// ChangeUser godoc
+// @Summary changes user parameters
+// @Description changes user parameters
+// @ID changeUserParameters
+// @Accept  json
+// @Produce  json
+// @Param user body model.UserProfile true "UserDB params"
+// @Success 200 {object} model.Response "OK"
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /profile [post]
+func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	_, err := r.Cookie("session_id")
+	if err == http.ErrNoCookie {
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var req model.UserProfile
+	err = decoder.Decode(&req)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	oldUserData, err := api.GetUserByUsername(req.Email)
+	if oldUserData.Email == "" {
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	//newUser := &model.UserProfile{Email: req.Email, Username: req.Username}
+	count, err := api.ChangeUser(oldUserData.Email, req)
+	if err != nil && count == 0 {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	json.NewEncoder(w).Encode(&model.Response{})
 }
