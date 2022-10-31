@@ -41,7 +41,7 @@ func main() {
 	defer db.Close()
 
 	if err := db.Ping(); err != nil {
-		log.Println("unable to reach database")
+		log.Println("unable to reach database ", err)
 	}
 	log.Println("database is reachable")
 

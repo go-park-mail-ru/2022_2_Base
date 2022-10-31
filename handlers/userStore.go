@@ -21,22 +21,22 @@ func (us *UserStore) AddUser(in *model.UserDB) (uint, error) {
 	return uint(lastID), nil
 }
 
-func (us *UserStore) GetUsers() ([]*model.UserDB, error) {
-	users := []*model.UserDB{}
-	rows, err := us.DB.Query("SELECT * FROM users")
+func (us *UserStore) GetUserByUsernameAndPasswordFromDB(userEmail string, password string) (*model.UserDB, error) {
+	rows, err := us.DB.Query("SELECT * FROM users WHERE email = $1 AND password = $2", userEmail, password)
+	if err == sql.ErrNoRows {
+		return nil, baseErrors.ErrUnauthorized401
+	}
 	if err != nil {
 		return nil, baseErrors.ErrServerError500
 	}
 	defer rows.Close()
-
+	user := model.UserDB{}
 	for rows.Next() {
-		dat := model.UserDB{}
-		err := rows.Scan(&dat.ID, &dat.Email, &dat.Username, &dat.Password)
+		err := rows.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
 		if err != nil {
 			return nil, baseErrors.ErrServerError500
 		}
-		users = append(users, &dat)
-	}
 
-	return users, nil
+	}
+	return &user, nil
 }

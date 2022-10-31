@@ -68,12 +68,12 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	user, err := api.GetUserByUsername(req.Email)
+	user, err := api.GetUserByUsernameAndPassword(req.Email, req.Password)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
-	if user.Password != req.Password {
+	if user.Email == "" {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
@@ -147,7 +147,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := api.GetUserByUsername(req.Email)
+	user, err := api.GetUserByUsernameAndPassword(req.Email, req.Password)
 	if err != nil && err != baseErrors.ErrNotFound404 {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
