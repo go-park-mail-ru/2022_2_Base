@@ -7,33 +7,33 @@ import (
 	rep "serv/repository"
 )
 
-type UserHandler struct {
+type UserUsecase struct {
 	sessions map[string]string
 	store    rep.UserStore
 }
 
-func NewUserHandler(db *sql.DB) *UserHandler {
-	return &UserHandler{
+func NewUserUsecase(db *sql.DB) *UserUsecase {
+	return &UserUsecase{
 		sessions: make(map[string]string),
 		store:    *rep.NewUserStore(db),
 	}
 }
 
-func SetSession(uh *UserHandler, key string, value string) {
+func SetSession(uh *UserUsecase, key string, value string) {
 	uh.sessions[key] = value
 }
-func GetSession(uh *UserHandler, key string) (string, error) {
+func GetSession(uh *UserUsecase, key string) (string, error) {
 	if res, ok := uh.sessions[key]; ok {
 		return res, nil
 	}
 	return "", baseErrors.ErrUnauthorized401
 }
 
-func DeleteSession(uh *UserHandler, value string) {
+func DeleteSession(uh *UserUsecase, value string) {
 	delete(uh.sessions, value)
 }
 
-func (api *UserHandler) AddUser(params *model.UserCreateParams) (uint, error) {
+func (api *UserUsecase) AddUser(params *model.UserCreateParams) (uint, error) {
 	username := params.Username
 	password := params.Password
 	email := params.Email
@@ -45,7 +45,7 @@ func (api *UserHandler) AddUser(params *model.UserCreateParams) (uint, error) {
 	return id, nil
 }
 
-func (api *UserHandler) GetUserByUsername(email string) (model.UserDB, error) {
+func (api *UserUsecase) GetUserByUsername(email string) (model.UserDB, error) {
 	user, err := api.store.GetUserByUsernameFromDB(email)
 	if err != nil {
 		return model.UserDB{ID: 0, Email: "", Username: "", Password: ""}, baseErrors.ErrServerError500
@@ -57,7 +57,7 @@ func (api *UserHandler) GetUserByUsername(email string) (model.UserDB, error) {
 	return *user, nil
 }
 
-func (api *UserHandler) ChangeUser(oldEmail string, params model.UserProfile) (int64, error) {
+func (api *UserUsecase) ChangeUser(oldEmail string, params model.UserProfile) (int64, error) {
 	username := params.Username
 	email := params.Email
 	newUser := &model.UserProfile{Email: email, Username: username}

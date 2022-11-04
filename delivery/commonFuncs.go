@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"serv/domain/model"
-	uc "serv/usecase"
 )
 
 // @title Reozon API
@@ -21,18 +20,6 @@ import (
 
 // @host 127.0.0.1:8080
 // @BasePath  /api/v1
-
-type WebHandler struct {
-	usHandler   uc.UserHandler
-	prodHandler uc.ProductHandler
-}
-
-func NewWebHandler(uh *uc.UserHandler, ph *uc.ProductHandler) *WebHandler {
-	return &WebHandler{
-		usHandler:   *uh,
-		prodHandler: *ph,
-	}
-}
 
 func ReturnErrorJSON(w http.ResponseWriter, err error, errCode int) {
 	w.WriteHeader(errCode)

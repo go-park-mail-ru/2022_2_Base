@@ -5,7 +5,18 @@ import (
 	"net/http"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
+	usecase "serv/usecase"
 )
+
+type ProductHandler struct {
+	handler usecase.ProductUsecase
+}
+
+func NewProductHandler(puc *usecase.ProductUsecase) *ProductHandler {
+	return &ProductHandler{
+		handler: *puc,
+	}
+}
 
 // GetHomePage godoc
 // @Summary Gets products for main page
@@ -17,11 +28,11 @@ import (
 // @Failure 404 {object} model.Error "Products not found"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /products [get]
-func (api *WebHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
+func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
-	products, err := api.prodHandler.GetProducts()
+	products, err := api.handler.GetProducts()
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return

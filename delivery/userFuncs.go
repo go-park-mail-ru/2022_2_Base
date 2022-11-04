@@ -13,6 +13,16 @@ import (
 	usecase "serv/usecase"
 )
 
+type UserHandler struct {
+	handler usecase.UserUsecase
+}
+
+func NewUserHandler(uuc *usecase.UserUsecase) *UserHandler {
+	return &UserHandler{
+		handler: *uuc,
+	}
+}
+
 // LogIn godoc
 // @Summary Logs in and returns the authentication  cookie
 // @Description Log in user
@@ -25,7 +35,7 @@ import (
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /login [post]
-func (api *WebHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -36,7 +46,7 @@ func (api *WebHandler) Login(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	user, err := api.usHandler.GetUserByUsername(req.Email)
+	user, err := api.handler.GetUserByUsername(req.Email)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -51,7 +61,7 @@ func (api *WebHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUUID := uuid.New()
-	usecase.SetSession(&api.usHandler, newUUID.String(), user.Email)
+	usecase.SetSession(&api.handler, newUUID.String(), user.Email)
 
 	cookie := &http.Cookie{
 		Name:     "session_id",
@@ -74,7 +84,7 @@ func (api *WebHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} model.Response "OK"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /logout [delete]
-func (api *WebHandler) Logout(w http.ResponseWriter, r *http.Request) {
+func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -84,13 +94,13 @@ func (api *WebHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := usecase.GetSession(&api.usHandler, session.Value)
+	res, err := usecase.GetSession(&api.handler, session.Value)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
-	usecase.DeleteSession(&api.usHandler, res)
+	usecase.DeleteSession(&api.handler, res)
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
@@ -109,7 +119,7 @@ func (api *WebHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @Failure 409 {object} model.Error "Conflict - UserDB already exists"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /signup [post]
-func (api *WebHandler) SignUp(w http.ResponseWriter, r *http.Request) {
+func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -121,7 +131,7 @@ func (api *WebHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := api.usHandler.GetUserByUsername(req.Email)
+	user, err := api.handler.GetUserByUsername(req.Email)
 	if err != nil && err != baseErrors.ErrNotFound404 {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -144,14 +154,14 @@ func (api *WebHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = api.usHandler.AddUser(&req)
+	_, err = api.handler.AddUser(&req)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
 
 	newUUID := uuid.New()
-	usecase.SetSession(&api.usHandler, newUUID.String(), user.Email)
+	usecase.SetSession(&api.handler, newUUID.String(), user.Email)
 
 	cookie := &http.Cookie{
 		Name:     "session_id",
@@ -174,7 +184,7 @@ func (api *WebHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} model.Response "OK"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /session [get]
-func (api *WebHandler) GetSession(w http.ResponseWriter, r *http.Request) {
+func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -184,7 +194,7 @@ func (api *WebHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = usecase.GetSession(&api.usHandler, session.Value)
+	_, err = usecase.GetSession(&api.handler, session.Value)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
@@ -203,19 +213,19 @@ func (api *WebHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /profile [get]
-func (api *WebHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
-	usName, err := usecase.GetSession(&api.usHandler, session.Value)
+	usName, err := usecase.GetSession(&api.handler, session.Value)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
-	user, err := api.usHandler.GetUserByUsername(usName)
+	user, err := api.handler.GetUserByUsername(usName)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -241,7 +251,7 @@ func (api *WebHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /profile [post]
-func (api *WebHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
+func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -259,7 +269,7 @@ func (api *WebHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oldUserData, err := api.usHandler.GetUserByUsername(req.Email)
+	oldUserData, err := api.handler.GetUserByUsername(req.Email)
 	if oldUserData.Email == "" {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
@@ -269,7 +279,7 @@ func (api *WebHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	count, err := api.usHandler.ChangeUser(oldUserData.Email, req)
+	count, err := api.handler.ChangeUser(oldUserData.Email, req)
 	if err != nil && count == 0 {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return

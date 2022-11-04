@@ -7,17 +7,17 @@ import (
 	rep "serv/repository"
 )
 
-type ProductHandler struct {
+type ProductUsecase struct {
 	store rep.ProductStore
 }
 
-func NewProductHandler(db *sql.DB) *ProductHandler {
-	return &ProductHandler{
+func NewProductUsecase(db *sql.DB) *ProductUsecase {
+	return &ProductUsecase{
 		store: *rep.NewProductStore(db),
 	}
 }
 
-func (api *ProductHandler) GetProducts() ([]*model.Product, error) {
+func (api *ProductUsecase) GetProducts() ([]*model.Product, error) {
 
 	products, err := api.store.GetProductsFromStore()
 	if err != nil {
