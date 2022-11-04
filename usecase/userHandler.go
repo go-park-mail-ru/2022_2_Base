@@ -1,13 +1,36 @@
-package handlers
+package usecase
 
 import (
-	baseErrors "serv/errors"
-	"serv/model"
+	"database/sql"
+	baseErrors "serv/domain/errors"
+	"serv/domain/model"
+	rep "serv/repository"
 )
 
 type UserHandler struct {
 	sessions map[string]string
-	store    UserStore
+	store    rep.UserStore
+}
+
+func NewUserHandler(db *sql.DB) *UserHandler {
+	return &UserHandler{
+		sessions: make(map[string]string),
+		store:    *rep.NewUserStore(db),
+	}
+}
+
+func SetSession(uh *UserHandler, key string, value string) {
+	uh.sessions[key] = value
+}
+func GetSession(uh *UserHandler, key string) (string, error) {
+	if res, ok := uh.sessions[key]; ok {
+		return res, nil
+	}
+	return "", baseErrors.ErrUnauthorized401
+}
+
+func DeleteSession(uh *UserHandler, value string) {
+	delete(uh.sessions, value)
 }
 
 func (api *UserHandler) AddUser(params *model.UserCreateParams) (uint, error) {

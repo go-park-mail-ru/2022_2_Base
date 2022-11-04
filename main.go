@@ -8,7 +8,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	handlers "serv/handlers"
+	deliv "serv/delivery"
+	usecase "serv/usecase"
 
 	conf "serv/config"
 
@@ -45,16 +46,18 @@ func main() {
 	}
 	log.Println("database is reachable")
 
-	userHandler := handlers.NewUserHandler(db)
-	productHandler := handlers.NewProductHandler(db)
+	userHandler := usecase.NewUserHandler(db)
+	productHandler := usecase.NewProductHandler(db)
 
-	myRouter.HandleFunc(conf.PathLogin, userHandler.Login).Methods(http.MethodPost, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathLogOut, userHandler.Logout).Methods(http.MethodDelete, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathSignUp, userHandler.SignUp).Methods(http.MethodPost, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathSessions, userHandler.GetSession).Methods(http.MethodGet, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods(http.MethodGet, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathProfile, userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathProfile, userHandler.ChangeProfile).Methods(http.MethodPost, http.MethodOptions)
+	webHandler := deliv.NewWebHandler(userHandler, productHandler)
+
+	myRouter.HandleFunc(conf.PathLogin, webHandler.Login).Methods(http.MethodPost, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathLogOut, webHandler.Logout).Methods(http.MethodDelete, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathSignUp, webHandler.SignUp).Methods(http.MethodPost, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathSessions, webHandler.GetSession).Methods(http.MethodGet, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathMain, webHandler.GetHomePage).Methods(http.MethodGet, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathProfile, webHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathProfile, webHandler.ChangeProfile).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	myRouter.Use(loggingAndCORSHeadersMiddleware)
 	http.ListenAndServe(conf.Port, myRouter)

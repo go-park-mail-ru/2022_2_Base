@@ -1,34 +1,43 @@
-package handlers
+package repository
 
 import (
 	"database/sql"
-	baseErrors "serv/errors"
-	"serv/model"
+	baseErrors "serv/domain/errors"
+	"serv/domain/model"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 type UserStore struct {
-	DB *sql.DB
+	db *sql.DB
+}
+
+func NewUserStore(db *sql.DB) *UserStore {
+	return &UserStore{
+		db: db,
+	}
 }
 
 func (us *UserStore) AddUser(in *model.UserDB) (uint, error) {
-	result, err := us.DB.Exec(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
+	result, err := us.db.Exec(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
 	if err != nil {
-		return 0, baseErrors.ErrServerError500
+		return 0, err
 	}
 	lastID, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
 	return uint(lastID), nil
 }
 
 func (us *UserStore) UpdateUser(oldEmail string, in *model.UserProfile) (int64, error) {
-	result, err := us.DB.Exec(`UPDATE users SET username = $1 WHERE email = $2;`, in.Username, oldEmail)
+	result, err := us.db.Exec(`UPDATE users SET username = $1 WHERE email = $2;`, in.Username, oldEmail)
 	if err != nil {
-		return 0, baseErrors.ErrServerError500
+		return 0, err
 	}
 	count, err := result.RowsAffected()
 	if err != nil {
-		return 0, baseErrors.ErrServerError500
+		return 0, err
 	}
 	if count == 0 {
 		return 0, baseErrors.ErrNotFound404
@@ -37,19 +46,19 @@ func (us *UserStore) UpdateUser(oldEmail string, in *model.UserProfile) (int64, 
 }
 
 func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, error) {
-	rows, err := us.DB.Query("SELECT * FROM users WHERE email = $1", userEmail)
+	rows, err := us.db.Query("SELECT * FROM users WHERE email = $1", userEmail)
 	if err == sql.ErrNoRows {
 		return nil, baseErrors.ErrUnauthorized401
 	}
 	if err != nil {
-		return nil, baseErrors.ErrServerError500
+		return nil, err
 	}
 	defer rows.Close()
 	user := model.UserDB{}
 	for rows.Next() {
 		err := rows.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
 		if err != nil {
-			return nil, baseErrors.ErrServerError500
+			return nil, err
 		}
 
 	}
