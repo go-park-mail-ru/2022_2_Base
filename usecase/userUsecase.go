@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"database/sql"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	rep "serv/repository"
@@ -12,24 +11,24 @@ type UserUsecase struct {
 	store    rep.UserStore
 }
 
-func NewUserUsecase(db *sql.DB) *UserUsecase {
+func NewUserUsecase(us *rep.UserStore) *UserUsecase {
 	return &UserUsecase{
 		sessions: make(map[string]string),
-		store:    *rep.NewUserStore(db),
+		store:    *us,
 	}
 }
 
-func SetSession(uh *UserUsecase, key string, value string) {
+func (uh *UserUsecase) SetSession(key string, value string) {
 	uh.sessions[key] = value
 }
-func GetSession(uh *UserUsecase, key string) (string, error) {
+func (uh *UserUsecase) GetSession(key string) (string, error) {
 	if res, ok := uh.sessions[key]; ok {
 		return res, nil
 	}
 	return "", baseErrors.ErrUnauthorized401
 }
 
-func DeleteSession(uh *UserUsecase, value string) {
+func (uh *UserUsecase) DeleteSession(value string) {
 	delete(uh.sessions, value)
 }
 

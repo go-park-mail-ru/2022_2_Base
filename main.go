@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	_ "serv/docs"
+	"serv/repository"
 
 	"github.com/gorilla/mux"
 
@@ -43,11 +44,15 @@ func main() {
 
 	if err := db.Ping(); err != nil {
 		log.Println("unable to reach database ", err)
+	} else {
+		log.Println("database is reachable")
 	}
-	log.Println("database is reachable")
 
-	userUsecase := usecase.NewUserUsecase(db)
-	productUsecase := usecase.NewProductUsecase(db)
+	userStore := repository.NewUserStore(db)
+	productStore := repository.NewProductStore(db)
+
+	userUsecase := usecase.NewUserUsecase(userStore)
+	productUsecase := usecase.NewProductUsecase(productStore)
 
 	userHandler := deliv.NewUserHandler(userUsecase)
 	productHandler := deliv.NewProductHandler(productUsecase)

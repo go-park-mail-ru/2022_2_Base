@@ -9,12 +9,12 @@ import (
 )
 
 type ProductHandler struct {
-	handler usecase.ProductUsecase
+	usecase usecase.ProductUsecase
 }
 
 func NewProductHandler(puc *usecase.ProductUsecase) *ProductHandler {
 	return &ProductHandler{
-		handler: *puc,
+		usecase: *puc,
 	}
 }
 
@@ -32,7 +32,7 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
-	products, err := api.handler.GetProducts()
+	products, err := api.usecase.GetProducts()
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return

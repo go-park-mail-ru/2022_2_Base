@@ -18,12 +18,12 @@ import (
 )
 
 type UserHandler struct {
-	handler usecase.UserUsecase
+	usecase usecase.UserUsecase
 }
 
 func NewUserHandler(uuc *usecase.UserUsecase) *UserHandler {
 	return &UserHandler{
-		handler: *uuc,
+		usecase: *uuc,
 	}
 }
 
@@ -50,7 +50,7 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	user, err := api.handler.GetUserByUsername(req.Email)
+	user, err := api.usecase.GetUserByUsername(req.Email)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -65,7 +65,7 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUUID := uuid.New()
-	usecase.SetSession(&api.handler, newUUID.String(), user.Email)
+	api.usecase.SetSession(newUUID.String(), user.Email)
 
 	cookie := &http.Cookie{
 		Name:     "session_id",
@@ -98,13 +98,13 @@ func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := usecase.GetSession(&api.handler, session.Value)
+	res, err := api.usecase.GetSession(session.Value)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
-	usecase.DeleteSession(&api.handler, res)
+	api.usecase.DeleteSession(res)
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
@@ -135,7 +135,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := api.handler.GetUserByUsername(req.Email)
+	user, err := api.usecase.GetUserByUsername(req.Email)
 	if err != nil && err != baseErrors.ErrNotFound404 {
 		log.Println("error ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -162,7 +162,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = api.handler.AddUser(&req)
+	_, err = api.usecase.AddUser(&req)
 	if err != nil {
 		log.Println("error while adding user to db: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -171,7 +171,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	newUUID := uuid.New()
 
-	usecase.SetSession(&api.handler, newUUID.String(), req.Email)
+	api.usecase.SetSession(newUUID.String(), req.Email)
 
 	cookie := &http.Cookie{
 		Name:     "session_id",
@@ -204,7 +204,7 @@ func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = usecase.GetSession(&api.handler, session.Value)
+	_, err = api.usecase.GetSession(session.Value)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
@@ -230,15 +230,14 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
-	usName, err := usecase.GetSession(&api.handler, session.Value)
-	log.Println("getses ", usName)
+	usName, err := api.usecase.GetSession(session.Value)
 	if err != nil {
 		log.Println("no session2")
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
-	user, err := api.handler.GetUserByUsername(usName)
+	user, err := api.usecase.GetUserByUsername(usName)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -293,7 +292,7 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oldUserData, err := api.handler.GetUserByUsername(req.Email)
+	oldUserData, err := api.usecase.GetUserByUsername(req.Email)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -305,7 +304,7 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ansRowCount, err := api.handler.ChangeUser(oldUserData.Email, req)
+	ansRowCount, err := api.usecase.ChangeUser(oldUserData.Email, req)
 	if err != nil && ansRowCount == 0 {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -331,14 +330,14 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
-	usName, err := usecase.GetSession(&api.handler, session.Value)
+	usName, err := api.usecase.GetSession(session.Value)
 	if err != nil {
 		log.Println("no session")
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
-	user, err := api.handler.GetUserByUsername(usName)
+	user, err := api.usecase.GetUserByUsername(usName)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -383,7 +382,7 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		newUserData.Phone = ""
 	}
 
-	ansRowCount, err := api.handler.ChangeUser(userDB.Email, newUserData)
+	ansRowCount, err := api.usecase.ChangeUser(userDB.Email, newUserData)
 	if err != nil && ansRowCount == 0 {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return

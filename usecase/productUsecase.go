@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"database/sql"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	rep "serv/repository"
@@ -11,9 +10,9 @@ type ProductUsecase struct {
 	store rep.ProductStore
 }
 
-func NewProductUsecase(db *sql.DB) *ProductUsecase {
+func NewProductUsecase(ps *rep.ProductStore) *ProductUsecase {
 	return &ProductUsecase{
-		store: *rep.NewProductStore(db),
+		store: *ps,
 	}
 }
 
