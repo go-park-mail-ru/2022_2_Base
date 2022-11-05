@@ -57,14 +57,22 @@ func main() {
 	userHandler := deliv.NewUserHandler(userUsecase)
 	productHandler := deliv.NewProductHandler(productUsecase)
 
+	webHandler := deliv.NewWebHandler(userHandler, productHandler)
+
 	myRouter.HandleFunc(conf.PathLogin, userHandler.Login).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathLogOut, userHandler.Logout).Methods(http.MethodDelete, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathSignUp, userHandler.SignUp).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathSessions, userHandler.GetSession).Methods(http.MethodGet, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods(http.MethodGet, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathProfile, userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathProfile, userHandler.ChangeProfile).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathAvatar, userHandler.SetAvatar).Methods(http.MethodPost, http.MethodOptions)
+
+	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods(http.MethodGet, http.MethodOptions)
+
+	myRouter.HandleFunc(conf.PathCart, webHandler.GetCart).Methods(http.MethodGet, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathCart, webHandler.UpdateCart).Methods(http.MethodPost, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathMakeOrder, webHandler.MakeOrder).Methods(http.MethodPost, http.MethodOptions)
+
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	myRouter.Use(loggingAndCORSHeadersMiddleware)
 	http.ListenAndServe(conf.Port, myRouter)

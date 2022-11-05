@@ -33,6 +33,7 @@ func NewUserHandler(uuc *usecase.UserUsecase) *UserHandler {
 // @ID login
 // @Accept  json
 // @Produce  json
+// @Tags User
 // @Param user body model.UserCreateParams true "UserDB params"
 // @Success 201 {object} model.Response "OK"
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
@@ -85,6 +86,7 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @ID logout
 // @Accept  json
 // @Produce  json
+// @Tags User
 // @Success 200 {object} model.Response "OK"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /logout [delete]
@@ -117,6 +119,7 @@ func (api *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @ID signup
 // @Accept  json
 // @Produce  json
+// @Tags User
 // @Param user body model.UserCreateParams true "UserDB params"
 // @Success 201 {object} model.Response "OK"
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
@@ -191,6 +194,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 // @ID session
 // @Accept  json
 // @Produce  json
+// @Tags User
 // @Success 200 {object} model.Response "OK"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Router /session [get]
@@ -219,11 +223,15 @@ func (api *UserHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 // @ID getUser
 // @Accept  json
 // @Produce  json
+// @Tags User
 // @Success 200 {object} model.UserProfile
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /profile [get]
 func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		log.Println("no session")
@@ -268,6 +276,7 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 // @ID changeUserParameters
 // @Accept  json
 // @Produce  json
+// @Tags User
 // @Param user body model.UserProfile true "UserProfile params"
 // @Success 200 {object} model.Response "OK"
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
@@ -319,12 +328,16 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 // @ID setAvatar
 // @Accept  multipart/form-data
 // @Produce  json
+// @Tags User
 // @Param file formData file true "user's avatar"
 // @Success 200 {object} model.Response "OK"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /avatar [post]
 func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)

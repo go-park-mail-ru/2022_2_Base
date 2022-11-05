@@ -10,6 +10,8 @@ var PathDocs = BasePath + "/docs"
 var PathMain = BasePath + "/products"
 var PathProfile = BasePath + "/profile"
 var PathAvatar = BasePath + "/avatar"
+var PathCart = BasePath + "/cart"
+var PathMakeOrder = BasePath + "/makeorder"
 
 var Headers = map[string]string{
 	"Access-Control-Allow-Origin":      "http://89.208.198.137:8081",

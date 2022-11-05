@@ -25,3 +25,40 @@ func (api *ProductUsecase) GetProducts() ([]*model.Product, error) {
 
 	return products, nil
 }
+
+func (api *ProductUsecase) GetCart(userID int) (*model.Order, error) {
+	cart, err := api.store.GetCart(userID)
+
+	if cart == nil || cart.ID == 0 {
+		err = api.store.CreateCart(userID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	cart, err = api.store.GetCart(userID)
+	if err != nil {
+		return nil, err
+	}
+	return cart, nil
+}
+
+func (api *ProductUsecase) UpdateOrder(userID int, items *[]int) error {
+	err := api.store.UpdateCart(userID, items)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (api *ProductUsecase) MakeOrder(userID int) error {
+
+	err := api.store.MakeOrder(userID)
+	if err != nil {
+		return err
+	}
+	err = api.store.CreateCart(userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}

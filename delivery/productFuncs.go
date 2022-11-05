@@ -24,6 +24,7 @@ func NewProductHandler(puc *usecase.ProductUsecase) *ProductHandler {
 // @ID getMain
 // @Accept  json
 // @Produce  json
+// @Tags Products
 // @Success 200 {object} model.Product
 // @Failure 404 {object} model.Error "Products not found"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
