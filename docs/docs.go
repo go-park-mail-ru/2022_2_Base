@@ -25,6 +25,48 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/avatar": {
+            "post": {
+                "description": "sets user's avatar",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Set user's avatar",
+                "operationId": "setAvatar",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "user's avatar",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Log in user",
@@ -179,7 +221,7 @@ const docTemplate = `{
                 "operationId": "changeUserParameters",
                 "parameters": [
                     {
-                        "description": "UserDB params",
+                        "description": "UserProfile params",
                         "name": "user",
                         "in": "body",
                         "required": true,

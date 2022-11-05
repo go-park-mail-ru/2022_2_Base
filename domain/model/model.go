@@ -3,10 +3,13 @@ package model
 import "encoding/json"
 
 type UserDB struct {
-	ID       uint   `json:"id"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	ID                  uint     `json:"id"`
+	Email               string   `json:"email"`
+	Username            string   `json:"username"`
+	Password            string   `json:"password"`
+	Phone               *string  `json:"phone,omitempty"`
+	Avatar              *string  `json:"avatar,omitempty"`
+	PaymentMethodsUUIDs []string `json:"paymentmethods,omitempty"`
 }
 
 type UserCreateParams struct {

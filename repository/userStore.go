@@ -23,15 +23,15 @@ func (us *UserStore) AddUser(in *model.UserDB) (uint, error) {
 	if err != nil {
 		return 0, err
 	}
-	lastID, err := result.LastInsertId()
+	affected, err := result.RowsAffected()
 	if err != nil {
 		return 0, err
 	}
-	return uint(lastID), nil
+	return uint(affected), nil
 }
 
 func (us *UserStore) UpdateUser(oldEmail string, in *model.UserProfile) (int64, error) {
-	result, err := us.db.Exec(`UPDATE users SET username = $1 WHERE email = $2;`, in.Username, oldEmail)
+	result, err := us.db.Exec(`UPDATE users SET username = $1, phone = $2, avatar = $3  WHERE email = $4;`, in.Username, in.Phone, in.Avatar, oldEmail)
 	if err != nil {
 		return 0, err
 	}
@@ -56,7 +56,7 @@ func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, e
 	defer rows.Close()
 	user := model.UserDB{}
 	for rows.Next() {
-		err := rows.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
+		err := rows.Scan(&user.ID, &user.Email, &user.Username, &user.Password, &user.Phone, &user.Avatar)
 		if err != nil {
 			return nil, err
 		}

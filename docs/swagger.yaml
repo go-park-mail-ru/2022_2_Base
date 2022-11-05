@@ -63,6 +63,35 @@ info:
   title: Reozon API
   version: "1.0"
 paths:
+  /avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      description: sets user's avatar
+      operationId: setAvatar
+      parameters:
+      - description: user's avatar
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Set user's avatar
   /login:
     post:
       consumes:
@@ -167,7 +196,7 @@ paths:
       description: changes user parameters
       operationId: changeUserParameters
       parameters:
-      - description: UserDB params
+      - description: UserProfile params
         in: body
         name: user
         required: true

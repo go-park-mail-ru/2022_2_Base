@@ -40,7 +40,7 @@ func (api *UserUsecase) AddUser(params *model.UserCreateParams) (uint, error) {
 	newUser := &model.UserDB{ID: 0, Email: email, Username: username, Password: password}
 	id, err := api.store.AddUser(newUser)
 	if err != nil {
-		return 0, baseErrors.ErrServerError500
+		return 0, err
 	}
 	return id, nil
 }
@@ -48,7 +48,7 @@ func (api *UserUsecase) AddUser(params *model.UserCreateParams) (uint, error) {
 func (api *UserUsecase) GetUserByUsername(email string) (model.UserDB, error) {
 	user, err := api.store.GetUserByUsernameFromDB(email)
 	if err != nil {
-		return model.UserDB{ID: 0, Email: "", Username: "", Password: ""}, baseErrors.ErrServerError500
+		return model.UserDB{ID: 0, Email: "", Username: "", Password: ""}, err
 	}
 
 	if user == nil {
@@ -60,10 +60,12 @@ func (api *UserUsecase) GetUserByUsername(email string) (model.UserDB, error) {
 func (api *UserUsecase) ChangeUser(oldEmail string, params model.UserProfile) (int64, error) {
 	username := params.Username
 	email := params.Email
-	newUser := &model.UserProfile{Email: email, Username: username}
+	phone := params.Phone
+	avatar := params.Avatar
+	newUser := &model.UserProfile{Email: email, Username: username, Phone: phone, Avatar: avatar}
 	count, err := api.store.UpdateUser(oldEmail, newUser)
 	if err != nil {
-		return 0, baseErrors.ErrServerError500
+		return 0, err
 	}
 	return count, nil
 }
