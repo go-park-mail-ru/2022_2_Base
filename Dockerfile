@@ -12,5 +12,5 @@ COPY . .
 RUN go build -o main .
 
 EXPOSE 8080
-EXPOSE 5432
+# EXPOSE 5432
 CMD ["./main"]
