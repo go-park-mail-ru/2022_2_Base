@@ -6,7 +6,7 @@ LABEL maintainer="Base"
 # Git is required for fetching the dependencies.
 #RUN apk update && apk add --no-cache git && apk add --no-cach bash && apk add build-base
 # Specify that we now need to execute any commands in this directory.
-WORKDIR /reazon
+WORKDIR /app
 # Copy everything from this project into the filesystem of the container.
 COPY . .
 # Obtain the package needed to run code. Alternatively use GO Modules. 
@@ -21,6 +21,6 @@ COPY . .
 # Compile the binary exe for our app.
 RUN go build -o main .
 # Expose port 8080 to the outside world
-EXPOSE 8000
+EXPOSE 8080
 # Start the application.
 CMD ["./main"]

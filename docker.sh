@@ -9,3 +9,8 @@ docker-compose up -d --build
 # psql -U spuser --dbname=base
 # docker exec -it postgres bash
 # psql -U spuser --dbname=base -a -f init.sql
+
+
+#docker-compose --env-file ./.env  up -d --build
+# docker exec -it postgres bash
+#psql -U spuser --dbname=base

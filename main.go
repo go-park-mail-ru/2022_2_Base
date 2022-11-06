@@ -38,6 +38,7 @@ func main() {
 
 	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
 	urlDB := "postgres://" + os.Getenv("POSTGRES_USER") + ":" + os.Getenv("POSTGRES_PASSWORD") + "@" + os.Getenv("DATABASE_HOST") + ":" + os.Getenv("DATABASE_PORT") + "/" + os.Getenv("POSTGRES_DB")
+	log.Println("connect to db: ", urlDB)
 	db, err := sql.Open("pgx", urlDB)
 	if err != nil {
 		log.Println("could not connect to database")
