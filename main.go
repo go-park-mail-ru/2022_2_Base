@@ -35,9 +35,8 @@ func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 
 func main() {
 	myRouter := mux.NewRouter()
-
 	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
-	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("TEST_DATABASE_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
+	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	db, err := sql.Open("pgx", urlDB)
 	if err != nil {
 		log.Println("could not connect to database")
