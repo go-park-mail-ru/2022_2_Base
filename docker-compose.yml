@@ -1,123 +1,79 @@
-# # Specify the version for docker-compose.yml
-# version: "3.9"
-
-# # add the serivces needed (postgres,go)
-# services:
-#   postgres:
-#     container_name: postgres
-#     image: postgres:latest
-#     environment:
-#     - POSTGRES_USER=${TEST_DB_USER}
-#     - POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
-#     - POSTGRES_DB=${TEST_DB_NAME}
-#     - DATABASE_HOST=${TEST_DB_HOST}
-#     - DATABASE_PORT=${TEST_DB_PORT}
-#     ports:
-#       - '${TEST_DB_PORT}:${TEST_DB_PORT}'
-#     volumes: 
-#       # - './_postgres/init.sql:/docker-entrypoint/init.sql'
-#       # - './_postgres/drop.sql:/docker-entrypoint/drop.sql'
-#       # - './_postgres/populate.sql:/docker-entrypoint/populate.sql'
-#       #- './_postgres:/docker-entrypoint'
-#       - 'dbData:/var/lib/postgresql/data'
-     
-#   # postgres:
-#   #   container_name: postgres
-#   #   image: postgres:latest
-#   #   environment:
-#   #     POSTGRES_PASSWORD: 12345
-#   #     POSTGRES_DB: golang
-#   #   ports:
-#   #     - '4568:5432'
-#   #   volumes:
-#   #     - dbData:/var/lib/postgresql/data
-  
-#   # postgresdb_test:
-#   #   image: postgres:latest
-#   #   container_name: postgres_test_container
-#   #   environment:
-#   #     - POSTGRES_USER=${TEST_DB_USER}
-#   #     - POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
-#   #     - POSTGRES_DB=${TEST_DB_NAME}
-#   #     - DATABASE_HOST=${TEST_DB_HOST}
-#   #   ports:
-#   #     - '4568:5432'
-#   #   volumes:
-#   #     - dbData-test:/var/lib/postgresql/data
-#   #   networks:
-#   #     - learning    
-
-#   app:
-#     container_name: go
-#     image: docker-golang-image:latest
-#     environment:
-#       - POSTGRES_USER=${DB_USER}
-#       - POSTGRES_PASSWORD=${DB_PASSWORD}
-#       - POSTGRES_DB=${DB_NAME}
-#       - DATABASE_HOST=${DB_HOST}
-#       - DATABASE_PORT=${DB_PORT}
-#       - TEST_POSTGRES_USER=${TEST_DB_USER}
-#       - TEST_POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
-#       - TEST_POSTGRES_DB=${TEST_DB_NAME}
-#       - TEST_DATABASE_HOST=${TEST_DB_HOST}
-#       - TEST_DATABASE_PORT=${TEST_DB_PORT}
-#     # build the Dockerfile, alternatively use an image.
-#     build:
-#       context: .
-#     ports:
-#       - 8000:8000
-#     restart: on-failure
-#     volumes:
-#       - .:/app  
-#     depends_on:
-#       - "postgres"
-
-# volumes:
-#   # dbData-test: # create the volume for persisting data test.
-#   dbData: # create the volume for persisting data.
-
-# # Networks to be created to facilitate communication between containers
-# networks:
-#   learning:
-#     driver: bridge
-
-
+version: "3.9"
 
 services:
-  serv:
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${TEST_DB_USER}
+      - POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
+      - POSTGRES_DB=${TEST_DB_NAME}
+      - DATABASE_HOST=${TEST_DB_HOST}
+      - DATABASE_PORT=${TEST_DB_PORT}
+    networks:
+      - mynet
+    ports:
+      - '${TEST_DB_PORT}:${TEST_DB_PORT}'
+    volumes:
+      - './_postgres:/docker-entrypoint'
+      - 'dbData:/var/lib/postgresql/data'
+
+  # postgres:
+  #   container_name: postgres
+  #   image: postgres:latest
+  #   environment:
+  #     POSTGRES_PASSWORD: 12345
+  #     POSTGRES_DB: golang
+  #   ports:
+  #     - '4568:5432'
+  #   volumes:
+  #     - dbData:/var/lib/postgresql/data
+
+  # postgresdb_test:
+  #   image: postgres:latest
+  #   container_name: postgres_test_container
+  #   environment:
+  #     - POSTGRES_USER=${TEST_DB_USER}
+  #     - POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
+  #     - POSTGRES_DB=${TEST_DB_NAME}
+  #     - DATABASE_HOST=${TEST_DB_HOST}
+  #   ports:
+  #     - '4568:5432'
+  #   volumes:
+  #     - dbData-test:/var/lib/postgresql/data
+  #   networks:
+  #     - learning    
+
+  app:
+    container_name: go
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
       - DATABASE_HOST=${DB_HOST}
-      - DATABASE_PORT=${LOCAL_DB_PORT}
-      - DB_CONTAINER_NAME=${DB_CONTAINER_NAME}
-    build: ./
+      - DATABASE_PORT=${DB_PORT}
+      - TEST_POSTGRES_USER=${TEST_DB_USER}
+      - TEST_POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
+      - TEST_POSTGRES_DB=${TEST_DB_NAME}
+      - TEST_DATABASE_HOST=${TEST_DB_HOST}
+      - TEST_DATABASE_PORT=${TEST_DB_PORT}
+    # build the Dockerfile, alternatively use an image.
+    build:
+      context: .
     ports:
-      - '8080:8080'
-    container_name: go
+      - 8080:8080
+    restart: on-failure
     volumes:
-      - .:/serv
+      - .:/app
     depends_on:
-      - postgres
+      - "postgres"
     networks:
       - mynet
-  postgres:
-    image: postgres:latest
-    container_name: postgres
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - '${DB_PORT}:${DB_PORT}'
-    volumes:
-      - 'dbData:/var/lib/postgresql/data'
-    networks:
-      - mynet
-      
+
 volumes:
+  # dbData-test: # create the volume for persisting data test.
   dbData:
+
 
 networks:
   mynet:
