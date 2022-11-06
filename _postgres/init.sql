@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS "typesOfItems" (
-    "id" uuid PRIMARY KEY,
+    "id" BIGSERIAL PRIMARY KEY,
     "title" varchar(100) UNIQUE NOT NULL,
     "description" varchar(100) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "items" (
-    "id" uuid PRIMARY KEY,
+    "id" BIGSERIAL PRIMARY KEY,
     "title" varchar(100) UNIQUE NOT NULL,
-    "typeID" uuid REFERENCES "typesOfItems" ("id") ON DELETE CASCADE,
+    "typeID" BIGSERIAL REFERENCES "typesOfItems" ("id") ON DELETE CASCADE,
     "price" money NOT NULL,
     "salePrice" money NULL,
     "weight" int NOT NULL,
@@ -26,24 +26,24 @@ CREATE TABLE IF NOT EXISTS "items" (
 CREATE TYPE "TypesOfPayment" AS ENUM ('card');
 
 CREATE TABLE IF NOT EXISTS "paymentsOfUsers" (
-    "id" uuid PRIMARY KEY,
-    -- "userID" uuid REFERENCES "users" ("id") ON DELETE CASCADE,
+    "id" BIGSERIAL PRIMARY KEY,
+    -- "userID" BIGSERIAL REFERENCES "users" ("id") ON DELETE CASCADE,
     "type" "TypesOfPayment" NOT NULL,
-    "cardNumber" int2 NOT NULL,
+    "cardNumber" char(16) NOT NULL,
     "exiryDate" varchar(5) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "addressesOfUsers" (
-    "id" uuid PRIMARY KEY,
-    -- "userID" uuid REFERENCES "users" ("id") ON DELETE CASCADE,
+    "id" BIGSERIAL PRIMARY KEY,
+    -- "userID" BIGSERIAL REFERENCES "users" ("id") ON DELETE CASCADE,
     "city" varchar(30) NOT NULL,
-    "address" int NOT NULL
+    "address" varchar(100) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "users" (
-    "id" uuid PRIMARY KEY,
-    "addressID" uuid REFERENCES "addressesOfUsers" ("id") NULL,
-    "paymentID" uuid REFERENCES "paymentsOfUsers" ("id") NULL,
+    "id" BIGSERIAL PRIMARY KEY,
+    "addressID" BIGSERIAL REFERENCES "addressesOfUsers" ("id"),
+    "paymentID" BIGSERIAL REFERENCES "paymentsOfUsers" ("id"),
     "name" varchar(50) NULL,
     "lastname" varchar(50) NULL,
     "email" varchar(50) UNIQUE NOT NULL,
@@ -55,17 +55,17 @@ CREATE TABLE IF NOT EXISTS "users" (
 ALTER TABLE
     "paymentsOfUsers"
 ADD
-    IF NOT EXISTS "userID" uuid REFERENCES "users" ("id") ON DELETE CASCADE;
+    IF NOT EXISTS "userID" BIGSERIAL REFERENCES "users" ("id") ON DELETE CASCADE;
 
 ALTER TABLE
     "addressesOfUsers"
 ADD
-    IF NOT EXISTS "userID" uuid REFERENCES "users" ("id") ON DELETE CASCADE;
+    IF NOT EXISTS "userID" BIGSERIAL REFERENCES "users" ("id") ON DELETE CASCADE;
 
 CREATE TABLE IF NOT EXISTS "ratingOfItems" (
-    "id" uuid PRIMARY KEY,
-    "itemID" uuid REFERENCES "items" ("id") ON DELETE CASCADE,
-    "userID" uuid REFERENCES "users" ("id") ON DELETE CASCADE,
+    "id" BIGSERIAL PRIMARY KEY,
+    "itemID" BIGSERIAL REFERENCES "items" ("id") ON DELETE CASCADE,
+    "userID" BIGSERIAL REFERENCES "users" ("id") ON DELETE CASCADE,
     "pros" text NULL,
     "cons" text NULL,
     "comment" text NULL,
@@ -82,15 +82,15 @@ CREATE TABLE IF NOT EXISTS "ratingOfItems" (
 );
 
 CREATE TABLE IF NOT EXISTS "vendors" (
-    "id" uuid PRIMARY KEY,
+    "id" BIGSERIAL PRIMARY KEY,
     "name" varchar(50) NOT NULL,
     "location" varchar(50) NOT NULL
 );
 
 CREATE TABLE "stockOfItems" (
-    "id" uuid PRIMARY KEY,
-    "vendorID" uuid REFERENCES "vendors" ("id") ON DELETE CASCADE,
-    "itemID" uuid REFERENCES "items" ("id") ON DELETE CASCADE,
+    "id" BIGSERIAL PRIMARY KEY,
+    "vendorID" BIGSERIAL REFERENCES "vendors" ("id") ON DELETE CASCADE,
+    "itemID" BIGSERIAL REFERENCES "items" ("id") ON DELETE CASCADE,
     "amount" int NOT NULL,
     CHECK ("amount" >= 0)
 );
@@ -108,17 +108,17 @@ CREATE TYPE "OrderStatus" AS ENUM (
 );
 
 CREATE TABLE IF NOT EXISTS "orders" (
-    "id" uuid PRIMARY KEY,
-    "userID" uuid REFERENCES "users" ("id") ON DELETE CASCADE,
-    "orderStatus" "PaymentStatus" NOT NULL,
-    "paymentStatus" "OrderStatus" NOT NULL,
+    "id" BIGSERIAL PRIMARY KEY,
+    "userID" BIGSERIAL REFERENCES "users" ("id") ON DELETE CASCADE,
+    "orderStatus" "OrderStatus" NOT NULL,
+    "paymentStatus" "PaymentStatus" NOT NULL,
     "address" varchar(100) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "orderItem" (
-    "id" uuid PRIMARY KEY,
-    "itemID" uuid REFERENCES "items" ("id") ON DELETE CASCADE,
-    "orderID" uuid REFERENCES "orders" ("id") ON DELETE CASCADE,
+    "id" BIGSERIAL PRIMARY KEY,
+    "itemID" BIGSERIAL REFERENCES "items" ("id") ON DELETE CASCADE,
+    "orderID" BIGSERIAL REFERENCES "orders" ("id") ON DELETE CASCADE,
     "amount" int NOT NULL,
     "pricePerUnit" money NOT NULL,
     CHECK ("amount" >= 0)
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS "orderItem" (
 CREATE TYPE "AdminPermissions" AS ENUM ('root', 'dev', 'admin');
 
 CREATE TABLE IF NOT EXISTS "admins" (
-    "id" uuid PRIMARY KEY,
-    "userID" uuid REFERENCES "users" ("id") ON DELETE CASCADE,
+    "id" BIGSERIAL PRIMARY KEY,
+    "userID" BIGSERIAL REFERENCES "users" ("id") ON DELETE CASCADE,
     "permissions" "AdminPermissions" NOT NULL
 );
