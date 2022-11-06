@@ -1,4 +1,3 @@
-#sudo docker exec -it postgres bash
 printf "DROP TABLE:\n"
 sudo docker exec -it postgres psql -U spuser -d base -a -f ./docker-entrypoint/drop.sql -S | grep -E "(NOTICE|ERROR)" && printf "\n"
 printf "CREATE TABLE:\n"
