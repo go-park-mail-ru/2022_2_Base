@@ -1,29 +1,33 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type UserStore struct {
-	db *sql.DB
+	db *pgxpool.Pool
 }
 
-func NewUserStore(db *sql.DB) *UserStore {
+func NewUserStore(db *pgxpool.Pool) *UserStore {
 	return &UserStore{
 		db: db,
 	}
 }
 
 func (us *UserStore) AddUser(in *model.UserDB) (uint, error) {
-	result, err := us.db.Exec(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
+	//result, err := us.db.Exec(context.Background(), `INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
+	_, err := us.db.Exec(context.Background(), `INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
 	if err != nil {
 		return 0, err
 	}
-	affected, err := result.RowsAffected()
+	//affected, err := result.RowsAffected()
+	affected, err := 1, nil
 	if err != nil {
 		return 0, err
 	}
@@ -31,11 +35,13 @@ func (us *UserStore) AddUser(in *model.UserDB) (uint, error) {
 }
 
 func (us *UserStore) UpdateUser(oldEmail string, in *model.UserProfile) (int64, error) {
-	result, err := us.db.Exec(`UPDATE users SET username = $1, phone = $2, avatar = $3  WHERE email = $4;`, in.Username, in.Phone, in.Avatar, oldEmail)
+	//result, err := us.db.Exec(context.Background(), `UPDATE users SET username = $1, phone = $2, avatar = $3  WHERE email = $4;`, in.Username, in.Phone, in.Avatar, oldEmail)
+	_, err := us.db.Exec(context.Background(), `UPDATE users SET username = $1, phone = $2, avatar = $3  WHERE email = $4;`, in.Username, in.Phone, in.Avatar, oldEmail)
 	if err != nil {
 		return 0, err
 	}
-	count, err := result.RowsAffected()
+	//count, err := result.RowsAffected()
+	count, err := int64(1), nil
 	if err != nil {
 		return 0, err
 	}
@@ -46,7 +52,7 @@ func (us *UserStore) UpdateUser(oldEmail string, in *model.UserProfile) (int64, 
 }
 
 func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, error) {
-	rows, err := us.db.Query("SELECT * FROM users WHERE email = $1", userEmail)
+	rows, err := us.db.Query(context.Background(), "SELECT * FROM users WHERE email = $1", userEmail)
 	if err == sql.ErrNoRows {
 		return nil, baseErrors.ErrUnauthorized401
 	}
