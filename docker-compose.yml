@@ -11,11 +11,15 @@ services:
     - POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
     - POSTGRES_DB=${TEST_DB_NAME}
     - DATABASE_HOST=${TEST_DB_HOST}
+    - DATABASE_PORT=${TEST_DB_PORT}
     ports:
-      - '4568:5432'
+      - '${TEST_DB_PORT}:${TEST_DB_PORT}'
     volumes: 
-      - './_postgres/init.sql:/docker-entrypoint-initdb.d/init.sql'
-      - dbData:/var/lib/postgresql/data
+      # - './_postgres/init.sql:/docker-entrypoint/init.sql'
+      # - './_postgres/drop.sql:/docker-entrypoint/drop.sql'
+      # - './_postgres/populate.sql:/docker-entrypoint/populate.sql'
+      - './_postgres:/docker-entrypoint'
+      - 'dbData:/var/lib/postgresql/data'
      
   # postgres:
   #   container_name: postgres
@@ -60,7 +64,7 @@ services:
     build:
       context: .
     ports:
-      - 8000:8080
+      - 8000:8000
     restart: on-failure
     volumes:
       - .:/app  

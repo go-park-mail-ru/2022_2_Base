@@ -1,5 +1,6 @@
 # sudo docker-compose up -d
 sudo docker-compose up -d --build
+sudo docker container stop "$(sudo docker container ls | grep -Eo '[a-zA-Z0-9]{12}')"
 # sudo docker exec -it postgres psql -U user
 # sudo docker container rm *
 
