@@ -34,7 +34,7 @@ func NewUserHandler(uuc *usecase.UserUsecase) *UserHandler {
 // @Accept  json
 // @Produce  json
 // @Tags User
-// @Param user body model.UserCreateParams true "UserDB params"
+// @Param user body model.UserLogin true "UserDB params"
 // @Success 201 {object} model.Response "OK"
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
@@ -45,7 +45,7 @@ func (api *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	decoder := json.NewDecoder(r.Body)
-	var req model.UserCreateParams
+	var req model.UserLogin
 	err := decoder.Decode(&req)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -255,7 +255,6 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//userProfile := model.UserProfile{Email: user.Email, Username: user.Username, Phone: *user.Phone, Avatar: *user.Avatar}
 	userProfile := model.UserProfile{Email: user.Email, Username: user.Username}
 	if user.Phone != nil {
 		userProfile.Phone = *user.Phone

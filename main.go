@@ -4,8 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
-	"time"
 
 	_ "serv/docs"
 	"serv/repository"
@@ -35,9 +33,8 @@ func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 
 func main() {
 	myRouter := mux.NewRouter()
-	time.Sleep(time.Second)
-	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
-	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
+	urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
+	//urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	log.Println("conn: ", urlDB)
 	db, err := pgxpool.New(context.Background(), urlDB)
 	if err != nil {

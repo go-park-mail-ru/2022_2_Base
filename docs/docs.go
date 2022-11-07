@@ -184,7 +184,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.UserCreateParams"
+                            "$ref": "#/definitions/model.UserLogin"
                         }
                     }
                 ],
@@ -585,6 +585,17 @@ const docTemplate = `{
                 }
             }
         },
+        "model.UserLogin": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "model.UserProfile": {
             "type": "object",
             "properties": {
@@ -614,7 +625,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "89.208.198.137:8080",
+	Host:             "127.0.0.1:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Reozon API",
