@@ -1,18 +1,20 @@
 package repository
 
 import (
-	"database/sql"
+	"context"
+	"log"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lib/pq"
 )
 
 type ProductStore struct {
-	db *sql.DB
+	db *pgxpool.Pool
 }
 
-func NewProductStore(db *sql.DB) *ProductStore {
+func NewProductStore(db *pgxpool.Pool) *ProductStore {
 	return &ProductStore{
 		db: db,
 	}
@@ -21,11 +23,13 @@ func NewProductStore(db *sql.DB) *ProductStore {
 func (ps *ProductStore) GetProductsFromStore() ([]*model.Product, error) {
 
 	products := []*model.Product{}
-	rows, err := ps.db.Query("SELECT * FROM products")
+
+	rows, err := ps.db.Query(context.Background(), "SELECT * FROM products")
 	if err != nil {
+		log.Println("err get rows: ", err)
 		return nil, baseErrors.ErrServerError500
 	}
-	defer rows.Close()
+	log.Println("got products from db")
 
 	for rows.Next() {
 		dat := model.Product{}
@@ -40,11 +44,7 @@ func (ps *ProductStore) GetProductsFromStore() ([]*model.Product, error) {
 }
 
 func (ps *ProductStore) CreateCart(userID int) error {
-	result, err := ps.db.Exec(`INSERT INTO ordertable (userID, items, orderStatus, paymentStatus, adress) VALUES ($1, $2, $3, $4, $5);`, userID, make([]int, 0), "cart", "not started", "111")
-	if err != nil {
-		return err
-	}
-	_, err = result.RowsAffected()
+	_, err := ps.db.Exec(context.Background(), `INSERT INTO ordertable (userID, items, orderStatus, paymentStatus, adress) VALUES ($1, $2, $3, $4, $5);`, userID, make([]int, 0), "cart", "not started", "111")
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func (ps *ProductStore) CreateCart(userID int) error {
 }
 
 func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
-	rows, err := ps.db.Query(`SELECT ID, userID, items, orderStatus, paymentStatus, adress FROM ordertable WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
+	rows, err := ps.db.Query(context.Background(), `SELECT ID, userID, items, orderStatus, paymentStatus, adress FROM ordertable WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +68,7 @@ func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
 }
 
 func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
-	result, err := ps.db.Exec(`UPDATE ordertable SET items = $1 WHERE userID = $2 AND orderStatus = $3;`, items, userID, "cart")
-	if err != nil {
-		return err
-	}
-	_, err = result.RowsAffected()
+	_, err := ps.db.Exec(context.Background(), `UPDATE ordertable SET items = $1 WHERE userID = $2 AND orderStatus = $3;`, items, userID, "cart")
 	if err != nil {
 		return err
 	}
@@ -80,11 +76,7 @@ func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
 }
 
 func (ps *ProductStore) MakeOrder(userID int) error {
-	result, err := ps.db.Exec(`UPDATE ordertable SET orderStatus = $1, paymentStatus = $2  WHERE userID = $3 AND orderStatus = $4;`, "processed", "paid", userID, "cart")
-	if err != nil {
-		return err
-	}
-	_, err = result.RowsAffected()
+	_, err := ps.db.Exec(context.Background(), `UPDATE ordertable SET orderStatus = $1, paymentStatus = $2  WHERE userID = $3 AND orderStatus = $4;`, "processed", "paid", userID, "cart")
 	if err != nil {
 		return err
 	}

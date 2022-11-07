@@ -177,7 +177,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.UserCreateParams"
+                            "$ref": "#/definitions/model.UserLogin"
                         }
                     }
                 ],
@@ -300,12 +300,6 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Product"
-                        }
-                    },
-                    "404": {
-                        "description": "Products not found",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
                         }
                     },
                     "500": {
@@ -574,6 +568,17 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.UserLogin": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 }
             }

@@ -58,6 +58,13 @@ definitions:
       username:
         type: string
     type: object
+  model.UserLogin:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
   model.UserProfile:
     properties:
       avatar:
@@ -194,7 +201,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/model.UserCreateParams'
+          $ref: '#/definitions/model.UserLogin'
       produces:
       - application/json
       responses:
@@ -280,10 +287,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Product'
-        "404":
-          description: Products not found
-          schema:
-            $ref: '#/definitions/model.Error'
         "500":
           description: Internal Server Error - Request is valid but operation failed
             at server side

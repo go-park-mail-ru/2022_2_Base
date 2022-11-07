@@ -23,13 +23,13 @@ import (
 // @host 127.0.0.1:8080
 // @BasePath  /api/v1
 
-type WebHandler struct {
+type OrderHandler struct {
 	usHandler UserHandler
 	prHandler ProductHandler
 }
 
-func NewWebHandler(us *UserHandler, pr *ProductHandler) *WebHandler {
-	return &WebHandler{
+func NewOrderHandler(us *UserHandler, pr *ProductHandler) *OrderHandler {
+	return &OrderHandler{
 		usHandler: *us,
 		prHandler: *pr,
 	}
@@ -53,7 +53,7 @@ func ReturnErrorJSON(w http.ResponseWriter, err error, errCode int) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /cart [get]
-func (api *WebHandler) GetCart(w http.ResponseWriter, r *http.Request) {
+func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -99,7 +99,7 @@ func (api *WebHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /cart [post]
-func (api *WebHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
+func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
@@ -152,7 +152,7 @@ func (api *WebHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /makeorder [post]
-func (api *WebHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
+func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
