@@ -8,8 +8,6 @@ services:
       - POSTGRES_USER=${TEST_DB_USER}
       - POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
       - POSTGRES_DB=${TEST_DB_NAME}
-      - DATABASE_HOST=${TEST_DB_HOST}
-      - DATABASE_PORT=${TEST_DB_PORT}
     networks:
       - mynet
     ports:
@@ -31,6 +29,8 @@ services:
     ports:
       - 8080:8080
     restart: on-failure
+    links:
+      - postgres:postgres
     volumes:
       - .:/app
     depends_on:

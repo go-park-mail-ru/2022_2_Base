@@ -165,7 +165,7 @@ func (api *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = api.usecase.AddUser(&req)
+	err = api.usecase.AddUser(&req)
 	if err != nil {
 		log.Println("error while adding user to db: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -313,8 +313,8 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ansRowCount, err := api.usecase.ChangeUser(oldUserData.Email, req)
-	if err != nil && ansRowCount == 0 {
+	err = api.usecase.ChangeUser(oldUserData.Email, req)
+	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
@@ -395,8 +395,8 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		newUserData.Phone = ""
 	}
 
-	ansRowCount, err := api.usecase.ChangeUser(userDB.Email, newUserData)
-	if err != nil && ansRowCount == 0 {
+	err = api.usecase.ChangeUser(userDB.Email, newUserData)
+	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}

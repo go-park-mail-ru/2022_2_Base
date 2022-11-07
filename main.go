@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	_ "serv/docs"
 	"serv/repository"
@@ -17,7 +19,7 @@ import (
 
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
@@ -31,27 +33,19 @@ func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-//172.23.0.2:5432 local db
-//172.28.0.2:5431
 func main() {
 	myRouter := mux.NewRouter()
-	urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
-	//urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("TEST_DATABASE_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
+	time.Sleep(time.Second)
+	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
+	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("TEST_DATABASE_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	log.Println("conn: ", urlDB)
-	//db, err := sql.Open("pgx", urlDB)
-	db, err := pgxpool.Connect(context.Background(), urlDB)
+	db, err := pgxpool.New(context.Background(), urlDB)
 	if err != nil {
 		log.Println("could not connect to database")
 	} else {
 		log.Println("database is reachable")
 	}
 	defer db.Close()
-
-	// if err := db.Ping(); err != nil {
-	// 	log.Println("unable to reach database ", err)
-	// } else {
-	// 	log.Println("database is reachable")
-	// }
 
 	userStore := repository.NewUserStore(db)
 	productStore := repository.NewProductStore(db)

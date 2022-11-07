@@ -32,16 +32,16 @@ func (uh *UserUsecase) DeleteSession(value string) {
 	delete(uh.sessions, value)
 }
 
-func (api *UserUsecase) AddUser(params *model.UserCreateParams) (uint, error) {
+func (api *UserUsecase) AddUser(params *model.UserCreateParams) error {
 	username := params.Username
 	password := params.Password
 	email := params.Email
 	newUser := &model.UserDB{ID: 0, Email: email, Username: username, Password: password}
-	id, err := api.store.AddUser(newUser)
+	err := api.store.AddUser(newUser)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return id, nil
+	return nil
 }
 
 func (api *UserUsecase) GetUserByUsername(email string) (model.UserDB, error) {
@@ -56,15 +56,15 @@ func (api *UserUsecase) GetUserByUsername(email string) (model.UserDB, error) {
 	return *user, nil
 }
 
-func (api *UserUsecase) ChangeUser(oldEmail string, params model.UserProfile) (int64, error) {
+func (api *UserUsecase) ChangeUser(oldEmail string, params model.UserProfile) error {
 	username := params.Username
 	email := params.Email
 	phone := params.Phone
 	avatar := params.Avatar
 	newUser := &model.UserProfile{Email: email, Username: username, Phone: phone, Avatar: avatar}
-	count, err := api.store.UpdateUser(oldEmail, newUser)
+	err := api.store.UpdateUser(oldEmail, newUser)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return count, nil
+	return nil
 }
