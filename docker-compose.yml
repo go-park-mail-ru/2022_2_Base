@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.1"
 
 services:
   postgres:
@@ -11,14 +11,15 @@ services:
     networks:
       - mynet
     ports:
-      - '${TEST_DB_PORT}:5432'
+      - '${TEST_DB_PORT}:${TEST_DB_PORT}'
     volumes:
       - './_postgres:/docker-entrypoint'
       - 'dbData:/var/lib/postgresql/data'
-  
+
   app:
     container_name: go
     environment:
+      - DB_PORT=${DB_PORT}
       - TEST_POSTGRES_USER=${TEST_DB_USER}
       - TEST_POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
       - TEST_POSTGRES_DB=${TEST_DB_NAME}
