@@ -26,7 +26,6 @@ func NewProductHandler(puc *usecase.ProductUsecase) *ProductHandler {
 // @Produce  json
 // @Tags Products
 // @Success 200 {object} model.Product
-// @Failure 404 {object} model.Error "Products not found"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /products [get]
 func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
@@ -36,10 +35,6 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 	products, err := api.usecase.GetProducts()
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-		return
-	}
-	if len(products) == 0 {
-		ReturnErrorJSON(w, baseErrors.ErrNotFound404, 404)
 		return
 	}
 

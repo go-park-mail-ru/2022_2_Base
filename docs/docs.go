@@ -309,12 +309,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.Product"
                         }
                     },
-                    "404": {
-                        "description": "Products not found",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    },
                     "500": {
                         "description": "Internal Server Error - Request is valid but operation failed at server side",
                         "schema": {

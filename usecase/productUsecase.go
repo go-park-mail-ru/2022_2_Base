@@ -43,11 +43,7 @@ func (api *ProductUsecase) GetCart(userID int) (*model.Order, error) {
 }
 
 func (api *ProductUsecase) UpdateOrder(userID int, items *[]int) error {
-	err := api.store.UpdateCart(userID, items)
-	if err != nil {
-		return err
-	}
-	return nil
+	return api.store.UpdateCart(userID, items)
 }
 
 func (api *ProductUsecase) MakeOrder(userID int) error {
@@ -56,9 +52,5 @@ func (api *ProductUsecase) MakeOrder(userID int) error {
 	if err != nil {
 		return err
 	}
-	err = api.store.CreateCart(userID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return api.store.CreateCart(userID)
 }
