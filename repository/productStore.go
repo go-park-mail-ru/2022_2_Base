@@ -122,16 +122,7 @@ func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
 	for _, item := range *items {
 		ps.InsertItemIntoCartById(userID, item)
 	}
-
 	return nil
-	// _, err := ps.db.Exec(context.Background(), `UPDATE ordertable SET items = $1 WHERE userID = $2 AND orderStatus = $3;`, items, userID, "cart")
-	// func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
-	// 	_, err := ps.db.Exec(context.Background(), `UPDATE ordertable SET items = $1 WHERE userID = $2 AND orderStatus = $3;`, items, userID, "cart")
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	return nil
-	// }
 }
 
 func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
@@ -145,7 +136,7 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 	}
 	for _, prod := range orderItems {
 		if prod.Item.ID == itemID {
-			_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = $1 WHERE orderID = $2;`, prod.Count+1, cart.ID)
+			_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count+1 WHERE orderID = $1;`, cart.ID)
 			if err != nil {
 				return err
 			}
@@ -171,7 +162,7 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 	for _, prod := range orderItems {
 		if prod.Item.ID == itemID {
 			if prod.Count != 1 {
-				_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = $1 WHERE orderID = $2;`, prod.Count-1, cart.ID)
+				_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count-1 WHERE orderID = $1;`, cart.ID)
 				if err != nil {
 					return err
 				}
