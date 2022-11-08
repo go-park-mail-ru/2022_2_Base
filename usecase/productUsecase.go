@@ -34,10 +34,10 @@ func (api *ProductUsecase) GetCart(userID int) (*model.Order, error) {
 		if err != nil {
 			return nil, err
 		}
-	}
-	cart, err = api.store.GetCart(userID)
-	if err != nil {
-		return nil, err
+		cart, err = api.store.GetCart(userID)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return cart, nil
 }

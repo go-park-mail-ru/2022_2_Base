@@ -6,6 +6,8 @@ import (
 	"net/http"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
+
+	"github.com/microcosm-cc/bluemonday"
 )
 
 // @title Reozon API
@@ -57,7 +59,7 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
-
+	sanitizer := bluemonday.UGCPolicy()
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
@@ -81,6 +83,15 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
+	}
+
+	cart.OrderStatus = sanitizer.Sanitize(cart.OrderStatus)
+	cart.PaymentStatus = sanitizer.Sanitize(cart.PaymentStatus)
+	cart.Adress = sanitizer.Sanitize(cart.Adress)
+	for _, prod := range cart.Items {
+		prod.Name = sanitizer.Sanitize(prod.Name)
+		prod.Description = sanitizer.Sanitize(prod.Description)
+		prod.Imgsrc = sanitizer.Sanitize(prod.Imgsrc)
 	}
 
 	json.NewEncoder(w).Encode(cart)

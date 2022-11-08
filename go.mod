@@ -5,7 +5,9 @@ go 1.18
 require github.com/gorilla/mux v1.8.0
 
 require (
+	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/gorilla/css v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.13.0 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -18,7 +20,7 @@ require (
 	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
-	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/net v0.0.0-20221002022538-bcab6841153b // indirect
 	golang.org/x/text v0.3.8 // indirect
 )
 
@@ -34,6 +36,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/lib/pq v1.10.7
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/microcosm-cc/bluemonday v1.0.21
 	github.com/stretchr/testify v1.8.0
 	github.com/swaggo/http-swagger v1.3.3
 	github.com/swaggo/swag v1.8.6

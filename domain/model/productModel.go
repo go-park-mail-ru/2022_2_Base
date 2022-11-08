@@ -15,10 +15,11 @@ type ProductCart struct {
 }
 
 type Order struct {
-	ID            int      `json:"id"`
-	UserID        uint     `json:"userid"`
-	Items         []string `json:"items"`
-	OrderStatus   string   `json:"orderstatus"`
-	PaymentStatus string   `json:"paymentstatus"`
-	Adress        string   `json:"adress"`
+	ID     int        `json:"id"`
+	UserID uint       `json:"userid"`
+	Items  []*Product `json:"items"`
+	//Items         []string `json:"items"`
+	OrderStatus   string `json:"orderstatus"`
+	PaymentStatus string `json:"paymentstatus"`
+	Adress        string `json:"adress"`
 }

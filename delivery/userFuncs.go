@@ -9,6 +9,8 @@ import (
 	"strconv"
 
 	usecase "serv/usecase"
+
+	"github.com/microcosm-cc/bluemonday"
 )
 
 type UserHandler struct {
@@ -36,6 +38,7 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
+	sanitizer := bluemonday.UGCPolicy()
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		log.Println("no session")
@@ -70,6 +73,15 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	} else {
 		userProfile.Avatar = ""
 	}
+
+	userProfile.Email = sanitizer.Sanitize(userProfile.Email)
+	userProfile.Username = sanitizer.Sanitize(userProfile.Username)
+	userProfile.Phone = sanitizer.Sanitize(userProfile.Phone)
+	userProfile.Avatar = sanitizer.Sanitize(userProfile.Avatar)
+	for _, paym := range userProfile.PaymentMethodsUUIDs {
+		paym = sanitizer.Sanitize(paym)
+	}
+
 	json.NewEncoder(w).Encode(userProfile)
 }
 

@@ -6,6 +6,8 @@ import (
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	usecase "serv/usecase"
+
+	"github.com/microcosm-cc/bluemonday"
 )
 
 type ProductHandler struct {
@@ -32,10 +34,16 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
+	sanitizer := bluemonday.UGCPolicy()
 	products, err := api.usecase.GetProducts()
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
+	}
+	for _, prod := range products {
+		prod.Name = sanitizer.Sanitize(prod.Name)
+		prod.Description = sanitizer.Sanitize(prod.Description)
+		prod.Imgsrc = sanitizer.Sanitize(prod.Imgsrc)
 	}
 
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
