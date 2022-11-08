@@ -11,6 +11,7 @@ var PathMain = BasePath + "/products"
 var PathProfile = BasePath + "/profile"
 var PathAvatar = BasePath + "/avatar"
 var PathCart = BasePath + "/cart"
+var PathAddItemToCart = BasePath + "/insertintocart"
 var PathMakeOrder = BasePath + "/makeorder"
 
 var Headers = map[string]string{

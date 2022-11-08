@@ -12,7 +12,7 @@ definitions:
         type: integer
       items:
         items:
-          type: string
+          $ref: '#/definitions/model.OrderItem'
         type: array
       orderstatus:
         type: string
@@ -20,6 +20,13 @@ definitions:
         type: string
       userid:
         type: integer
+    type: object
+  model.OrderItem:
+    properties:
+      amount:
+        type: integer
+      item:
+        $ref: '#/definitions/model.Product'
     type: object
   model.Product:
     properties:
@@ -38,12 +45,10 @@ definitions:
       rating:
         type: number
     type: object
-  model.ProductCart:
+  model.ProductCartItem:
     properties:
-      items:
-        items:
-          type: integer
-        type: array
+      itemid:
+        type: integer
     type: object
   model.Response:
     properties:
@@ -154,25 +159,26 @@ paths:
       summary: gets user's cart
       tags:
       - Order
+  /insertintocart:
     post:
       consumes:
       - application/json
-      description: updates user's cart
-      operationId: UpdateCart
+      description: Adds item to cart
+      operationId: AddItemToCart
       parameters:
-      - description: ProductCart items
+      - description: ProductCart item
         in: body
         name: items
         required: true
         schema:
-          $ref: '#/definitions/model.ProductCart'
+          $ref: '#/definitions/model.ProductCartItem'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Product'
+            $ref: '#/definitions/model.Response'
         "400":
           description: Bad request - Problem with the request
           schema:
@@ -186,7 +192,7 @@ paths:
             at server side
           schema:
             $ref: '#/definitions/model.Error'
-      summary: updates user's cart
+      summary: Adds item to cart
       tags:
       - Order
   /login:

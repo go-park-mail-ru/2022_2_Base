@@ -89,34 +89,92 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	cart.PaymentStatus = sanitizer.Sanitize(cart.PaymentStatus)
 	cart.Adress = sanitizer.Sanitize(cart.Adress)
 	for _, prod := range cart.Items {
-		prod.Name = sanitizer.Sanitize(prod.Name)
-		prod.Description = sanitizer.Sanitize(prod.Description)
-		prod.Imgsrc = sanitizer.Sanitize(prod.Imgsrc)
+		if prod.Item.Description != nil {
+			*prod.Item.Description = sanitizer.Sanitize(*prod.Item.Description)
+		}
+		if prod.Item.Imgsrc != nil {
+			*prod.Item.Imgsrc = sanitizer.Sanitize(*prod.Item.Imgsrc)
+		}
+		prod.Item.Name = sanitizer.Sanitize(prod.Item.Name)
 	}
 
 	json.NewEncoder(w).Encode(cart)
 }
 
-// UpdateCart godoc
-// @Summary updates user's cart
-// @Description updates user's cart
-// @ID UpdateCart
+// // UpdateCart godoc
+// // @Summary updates user's cart
+// // @Description updates user's cart
+// // @ID UpdateCart
+// // @Accept  json
+// // @Produce  json
+// // @Tags Order
+// // @Param items body model.ProductCart true "ProductCart items"
+// // @Success 200 {object} model.Product
+// // @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// // @Router /cart [post]
+// func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
+// 	if r.Method == http.MethodOptions {
+// 		return
+// 	}
+
+// 	decoder := json.NewDecoder(r.Body)
+// 	var req model.ProductCart
+// 	err := decoder.Decode(&req)
+// 	if err != nil {
+// 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+// 		return
+// 	}
+
+// 	session, err := r.Cookie("session_id")
+// 	if err == http.ErrNoCookie {
+// 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+// 		return
+// 	}
+// 	usName, err := api.usHandler.usecase.GetSession(session.Value)
+// 	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
+// 	if err != nil {
+// 		log.Println("db error: ", err)
+// 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+// 		return
+// 	}
+// 	if UserData.Email == "" {
+// 		log.Println("error user not found")
+// 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+// 		return
+// 	}
+
+// 	err = api.prHandler.usecase.UpdateOrder(UserData.ID, &req.Items)
+// 	if err != nil {
+// 		log.Println("db error: ", err)
+// 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+// 		return
+// 	}
+
+// 	json.NewEncoder(w).Encode(&model.Response{})
+// }
+
+// AddItemToCart godoc
+// @Summary Adds item to cart
+// @Description Adds item to cart
+// @ID AddItemToCart
 // @Accept  json
 // @Produce  json
 // @Tags Order
-// @Param items body model.ProductCart true "ProductCart items"
-// @Success 200 {object} model.Product
+// @Param items body model.ProductCartItem true "ProductCart item"
+// @Success 200 {object} model.Response "OK"
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /cart [post]
-func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
+// @Router /insertintocart [post]
+func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	var req model.ProductCart
+	var req model.ProductCartItem
 	err := decoder.Decode(&req)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -141,7 +199,7 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = api.prHandler.usecase.UpdateOrder(UserData.ID, &req.Items)
+	err = api.prHandler.usecase.AddToOrder(UserData.ID, req.ItemID)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)

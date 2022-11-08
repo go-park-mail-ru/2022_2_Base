@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"log"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	rep "serv/repository"
@@ -28,7 +29,10 @@ func (api *ProductUsecase) GetProducts() ([]*model.Product, error) {
 
 func (api *ProductUsecase) GetCart(userID int) (*model.Order, error) {
 	cart, err := api.store.GetCart(userID)
-
+	if err != nil {
+		log.Println("err ", err)
+		return nil, err
+	}
 	if cart == nil || cart.ID == 0 {
 		err = api.store.CreateCart(userID)
 		if err != nil {
@@ -42,8 +46,12 @@ func (api *ProductUsecase) GetCart(userID int) (*model.Order, error) {
 	return cart, nil
 }
 
-func (api *ProductUsecase) UpdateOrder(userID int, items *[]int) error {
-	return api.store.UpdateCart(userID, items)
+// func (api *ProductUsecase) UpdateOrder(userID int, items *[]int) error {
+// 	return api.store.UpdateCart(userID, items)
+// }
+
+func (api *ProductUsecase) AddToOrder(userID int, itemID int) error {
+	return api.store.InsertItemIntoCartById(userID, itemID)
 }
 
 func (api *ProductUsecase) MakeOrder(userID int) error {

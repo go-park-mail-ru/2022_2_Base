@@ -103,9 +103,11 @@
                         }
                     }
                 }
-            },
+            }
+        },
+        "/insertintocart": {
             "post": {
-                "description": "updates user's cart",
+                "description": "Adds item to cart",
                 "consumes": [
                     "application/json"
                 ],
@@ -115,16 +117,16 @@
                 "tags": [
                     "Order"
                 ],
-                "summary": "updates user's cart",
-                "operationId": "UpdateCart",
+                "summary": "Adds item to cart",
+                "operationId": "AddItemToCart",
                 "parameters": [
                     {
-                        "description": "ProductCart items",
+                        "description": "ProductCart item",
                         "name": "items",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.ProductCart"
+                            "$ref": "#/definitions/model.ProductCartItem"
                         }
                     }
                 ],
@@ -132,7 +134,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Product"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "400": {
@@ -501,7 +503,7 @@
                 "items": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.OrderItem"
                     }
                 },
                 "orderstatus": {
@@ -512,6 +514,17 @@
                 },
                 "userid": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.OrderItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "item": {
+                    "$ref": "#/definitions/model.Product"
                 }
             }
         },
@@ -541,14 +554,11 @@
                 }
             }
         },
-        "model.ProductCart": {
+        "model.ProductCartItem": {
             "type": "object",
             "properties": {
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                "itemid": {
+                    "type": "integer"
                 }
             }
         },

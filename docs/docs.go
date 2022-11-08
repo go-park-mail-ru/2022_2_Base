@@ -110,9 +110,11 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/insertintocart": {
             "post": {
-                "description": "updates user's cart",
+                "description": "Adds item to cart",
                 "consumes": [
                     "application/json"
                 ],
@@ -122,16 +124,16 @@ const docTemplate = `{
                 "tags": [
                     "Order"
                 ],
-                "summary": "updates user's cart",
-                "operationId": "UpdateCart",
+                "summary": "Adds item to cart",
+                "operationId": "AddItemToCart",
                 "parameters": [
                     {
-                        "description": "ProductCart items",
+                        "description": "ProductCart item",
                         "name": "items",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.ProductCart"
+                            "$ref": "#/definitions/model.ProductCartItem"
                         }
                     }
                 ],
@@ -139,7 +141,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Product"
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "400": {
@@ -508,7 +510,7 @@ const docTemplate = `{
                 "items": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.OrderItem"
                     }
                 },
                 "orderstatus": {
@@ -519,6 +521,17 @@ const docTemplate = `{
                 },
                 "userid": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.OrderItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "item": {
+                    "$ref": "#/definitions/model.Product"
                 }
             }
         },
@@ -548,14 +561,11 @@ const docTemplate = `{
                 }
             }
         },
-        "model.ProductCart": {
+        "model.ProductCartItem": {
             "type": "object",
             "properties": {
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                "itemid": {
+                    "type": "integer"
                 }
             }
         },

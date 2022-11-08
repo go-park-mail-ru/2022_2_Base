@@ -41,10 +41,13 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for _, prod := range products {
+		if prod.Description != nil {
+			*prod.Description = sanitizer.Sanitize(*prod.Description)
+		}
+		if prod.Imgsrc != nil {
+			*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
+		}
 		prod.Name = sanitizer.Sanitize(prod.Name)
-		prod.Description = sanitizer.Sanitize(prod.Description)
-		prod.Imgsrc = sanitizer.Sanitize(prod.Imgsrc)
 	}
-
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
 }
