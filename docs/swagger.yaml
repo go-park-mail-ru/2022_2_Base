@@ -23,7 +23,7 @@ definitions:
     type: object
   model.OrderItem:
     properties:
-      amount:
+      count:
         type: integer
       item:
         $ref: '#/definitions/model.Product'
@@ -44,6 +44,13 @@ definitions:
         type: number
       rating:
         type: number
+    type: object
+  model.ProductCart:
+    properties:
+      items:
+        items:
+          type: integer
+        type: array
     type: object
   model.ProductCartItem:
     properties:
@@ -157,6 +164,81 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: gets user's cart
+      tags:
+      - Order
+    post:
+      consumes:
+      - application/json
+      description: updates user's cart
+      operationId: UpdateCart
+      parameters:
+      - description: ProductCart items
+        in: body
+        name: items
+        required: true
+        schema:
+          $ref: '#/definitions/model.ProductCart'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: updates user's cart
+      tags:
+      - Order
+  /deletefromcart:
+    post:
+      consumes:
+      - application/json
+      description: Deletes Item From cart
+      operationId: DeleteItemFromCart
+      parameters:
+      - description: ProductCart item
+        in: body
+        name: items
+        required: true
+        schema:
+          $ref: '#/definitions/model.ProductCartItem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "404":
+          description: Not found - Requested entity is not found in database
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Deletes Item From cart
       tags:
       - Order
   /insertintocart:

@@ -62,7 +62,7 @@ func (ps *ProductStore) GetProductsFromStore() ([]*model.Product, error) {
 
 func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
-	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.name, pr.description, pr.price, pr.discountprice, pr.rating, pr.imgsrc FROM orderitems JOIN ordertable ON orderitems.orderid=ordertable.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
+	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.description, pr.price, pr.discountprice, pr.rating, pr.imgsrc FROM orderitems JOIN ordertable ON orderitems.orderid=ordertable.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	defer rows.Close()
 	if err != nil {
 		return nil, baseErrors.ErrServerError500
@@ -70,7 +70,7 @@ func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem,
 	for rows.Next() {
 		var count int
 		dat := model.Product{}
-		err := rows.Scan(&count, &dat.Name, &dat.Description, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
+		err := rows.Scan(&count, &dat.ID, &dat.Name, &dat.Description, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
 		if err != nil {
 			return nil, err
 		}
@@ -110,6 +110,30 @@ func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
 	return &cart, nil
 }
 
+func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
+	cart, err := ps.GetCart(userID)
+	if err != nil {
+		return err
+	}
+	_, err = ps.db.Exec(context.Background(), `DELETE FROM orderItems WHERE orderID = $1;`, cart.ID)
+	if err != nil {
+		return err
+	}
+	for _, item := range *items {
+		ps.InsertItemIntoCartById(userID, item)
+	}
+
+	return nil
+	// _, err := ps.db.Exec(context.Background(), `UPDATE ordertable SET items = $1 WHERE userID = $2 AND orderStatus = $3;`, items, userID, "cart")
+	// func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
+	// 	_, err := ps.db.Exec(context.Background(), `UPDATE ordertable SET items = $1 WHERE userID = $2 AND orderStatus = $3;`, items, userID, "cart")
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	return nil
+	// }
+}
+
 func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 	cart, err := ps.GetCart(userID)
 	if err != nil {
@@ -133,6 +157,36 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 		return err
 	}
 	return nil
+}
+
+func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
+	cart, err := ps.GetCart(userID)
+	if err != nil {
+		return err
+	}
+	orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
+	if err != nil {
+		return err
+	}
+	for _, prod := range orderItems {
+		if prod.Item.ID == itemID {
+			if prod.Count != 1 {
+				_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = $1 WHERE orderID = $2;`, prod.Count-1, cart.ID)
+				if err != nil {
+					return err
+				}
+				return nil
+			}
+
+			_, err = ps.db.Exec(context.Background(), `DELETE FROM orderItems WHERE itemID = $1 AND orderID = $2;`, itemID, cart.ID)
+			if err != nil {
+				return err
+			}
+			return nil
+
+		}
+	}
+	return baseErrors.ErrNotFound404
 }
 
 func (ps *ProductStore) MakeOrder(userID int) error {

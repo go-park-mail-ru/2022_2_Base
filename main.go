@@ -68,8 +68,9 @@ func main() {
 	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods(http.MethodGet, http.MethodOptions)
 
 	myRouter.HandleFunc(conf.PathCart, orderHandler.GetCart).Methods(http.MethodGet, http.MethodOptions)
-	//myRouter.HandleFunc(conf.PathCart, orderHandler.UpdateCart).Methods(http.MethodPost, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathCart, orderHandler.UpdateCart).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathAddItemToCart, orderHandler.AddItemToCart).Methods(http.MethodPost, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathDeleteItemFromCart, orderHandler.DeleteItemFromCart).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathMakeOrder, orderHandler.MakeOrder).Methods(http.MethodPost, http.MethodOptions)
 
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)

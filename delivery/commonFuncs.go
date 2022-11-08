@@ -101,59 +101,59 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(cart)
 }
 
-// // UpdateCart godoc
-// // @Summary updates user's cart
-// // @Description updates user's cart
-// // @ID UpdateCart
-// // @Accept  json
-// // @Produce  json
-// // @Tags Order
-// // @Param items body model.ProductCart true "ProductCart items"
-// // @Success 200 {object} model.Product
-// // @Failure 400 {object} model.Error "Bad request - Problem with the request"
-// // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
-// // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// // @Router /cart [post]
-// func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
-// 	if r.Method == http.MethodOptions {
-// 		return
-// 	}
+// UpdateCart godoc
+// @Summary updates user's cart
+// @Description updates user's cart
+// @ID UpdateCart
+// @Accept  json
+// @Produce  json
+// @Tags Order
+// @Param items body model.ProductCart true "ProductCart items"
+// @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /cart [post]
+func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
 
-// 	decoder := json.NewDecoder(r.Body)
-// 	var req model.ProductCart
-// 	err := decoder.Decode(&req)
-// 	if err != nil {
-// 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
-// 		return
-// 	}
+	decoder := json.NewDecoder(r.Body)
+	var req model.ProductCart
+	err := decoder.Decode(&req)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
 
-// 	session, err := r.Cookie("session_id")
-// 	if err == http.ErrNoCookie {
-// 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-// 		return
-// 	}
-// 	usName, err := api.usHandler.usecase.GetSession(session.Value)
-// 	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
-// 	if err != nil {
-// 		log.Println("db error: ", err)
-// 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-// 		return
-// 	}
-// 	if UserData.Email == "" {
-// 		log.Println("error user not found")
-// 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-// 		return
-// 	}
+	session, err := r.Cookie("session_id")
+	if err == http.ErrNoCookie {
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+	usName, err := api.usHandler.usecase.GetSession(session.Value)
+	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	if UserData.Email == "" {
+		log.Println("error user not found")
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
 
-// 	err = api.prHandler.usecase.UpdateOrder(UserData.ID, &req.Items)
-// 	if err != nil {
-// 		log.Println("db error: ", err)
-// 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-// 		return
-// 	}
+	err = api.prHandler.usecase.UpdateOrder(UserData.ID, &req.Items)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 
-// 	json.NewEncoder(w).Encode(&model.Response{})
-// }
+	json.NewEncoder(w).Encode(&model.Response{})
+}
 
 // AddItemToCart godoc
 // @Summary Adds item to cart
@@ -200,6 +200,65 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = api.prHandler.usecase.AddToOrder(UserData.ID, req.ItemID)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	json.NewEncoder(w).Encode(&model.Response{})
+}
+
+// DeleteItemFromCart godoc
+// @Summary Deletes Item From cart
+// @Description Deletes Item From cart
+// @ID DeleteItemFromCart
+// @Accept  json
+// @Produce  json
+// @Tags Order
+// @Param items body model.ProductCartItem true "ProductCart item"
+// @Success 200 {object} model.Response "OK"
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 404 {object} model.Error "Not found - Requested entity is not found in database"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /deletefromcart [post]
+func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var req model.ProductCartItem
+	err := decoder.Decode(&req)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	session, err := r.Cookie("session_id")
+	if err == http.ErrNoCookie {
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+	usName, err := api.usHandler.usecase.GetSession(session.Value)
+	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	if UserData.Email == "" {
+		log.Println("error user not found")
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
+	err = api.prHandler.usecase.DeleteFromOrder(UserData.ID, req.ItemID)
+	if err == baseErrors.ErrNotFound404 {
+		ReturnErrorJSON(w, baseErrors.ErrNotFound404, 404)
+		return
+	}
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
