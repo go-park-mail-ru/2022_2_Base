@@ -4,6 +4,23 @@ definitions:
     properties:
       error: {}
     type: object
+  model.Order:
+    properties:
+      adress:
+        type: string
+      id:
+        type: integer
+      items:
+        items:
+          type: string
+        type: array
+      orderstatus:
+        type: string
+      paymentstatus:
+        type: string
+      userid:
+        type: integer
+    type: object
   model.Product:
     properties:
       description:
@@ -21,6 +38,13 @@ definitions:
       rating:
         type: number
     type: object
+  model.ProductCart:
+    properties:
+      items:
+        items:
+          type: integer
+        type: array
+    type: object
   model.Response:
     properties:
       body: {}
@@ -34,7 +58,29 @@ definitions:
       username:
         type: string
     type: object
-host: 89.208.198.137:8080
+  model.UserLogin:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  model.UserProfile:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      paymentmethods:
+        items:
+          type: string
+        type: array
+      phone:
+        type: string
+      username:
+        type: string
+    type: object
+host: 127.0.0.1:8080
 info:
   contact:
     email: support@swagger.io
@@ -48,6 +94,101 @@ info:
   title: Reozon API
   version: "1.0"
 paths:
+  /avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      description: sets user's avatar
+      operationId: setAvatar
+      parameters:
+      - description: user's avatar
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Set user's avatar
+      tags:
+      - User
+  /cart:
+    get:
+      consumes:
+      - application/json
+      description: gets user's cart
+      operationId: GetCart
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Order'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: gets user's cart
+      tags:
+      - Order
+    post:
+      consumes:
+      - application/json
+      description: updates user's cart
+      operationId: UpdateCart
+      parameters:
+      - description: ProductCart items
+        in: body
+        name: items
+        required: true
+        schema:
+          $ref: '#/definitions/model.ProductCart'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: updates user's cart
+      tags:
+      - Order
   /login:
     post:
       consumes:
@@ -60,7 +201,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/model.UserCreateParams'
+          $ref: '#/definitions/model.UserLogin'
       produces:
       - application/json
       responses:
@@ -82,6 +223,8 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Logs in and returns the authentication  cookie
+      tags:
+      - User
   /logout:
     delete:
       consumes:
@@ -100,6 +243,37 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Logs out user
+      tags:
+      - User
+  /makeorder:
+    post:
+      consumes:
+      - application/json
+      description: makes user's order
+      operationId: MakeOrder
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: makes user's order
+      tags:
+      - Order
   /products:
     get:
       consumes:
@@ -113,8 +287,29 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Product'
-        "404":
-          description: Products not found
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets products for main page
+      tags:
+      - Products
+  /profile:
+    get:
+      consumes:
+      - application/json
+      description: gets user by username in cookies
+      operationId: getUser
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UserProfile'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
           schema:
             $ref: '#/definitions/model.Error'
         "500":
@@ -122,7 +317,44 @@ paths:
             at server side
           schema:
             $ref: '#/definitions/model.Error'
-      summary: Gets products for main page
+      summary: Get current user
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      description: changes user parameters
+      operationId: changeUserParameters
+      parameters:
+      - description: UserProfile params
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserProfile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: changes user parameters
+      tags:
+      - User
   /session:
     get:
       consumes:
@@ -141,6 +373,8 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Checks if user has active session
+      tags:
+      - User
   /signup:
     post:
       consumes:
@@ -175,4 +409,6 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Signs up and returns the authentication  cookie
+      tags:
+      - User
 swagger: "2.0"
