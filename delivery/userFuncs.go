@@ -2,10 +2,8 @@ package delivery
 
 import (
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
-	"os"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	"strconv"
@@ -169,7 +167,6 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	userDB := model.UserDB{ID: user.ID, Email: user.Email, Username: user.Username, Password: user.Password}
 
-	//r.ParseMultipartForm(32 << 20)
 	file, _, err := r.FormFile("file")
 	if err != nil {
 		log.Println("error parse file")
@@ -177,23 +174,13 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
-	fileName := "./img/avatars/avatar" + strconv.FormatUint(uint64(userDB.ID), 10) + ".jpg"
-	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0666)
+	err = api.usecase.SetAvatar(userDB.ID, file)
 	if err != nil {
-		log.Println("error create/open file")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	defer f.Close()
-
-	_, err = io.Copy(f, file)
-	if err != nil {
-		log.Println("error copy to new file")
-		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-		return
-	}
-
-	newUserData := model.UserProfile{Email: userDB.Email, Username: userDB.Username, Avatar: fileName[1:]}
+	fileName := "/img/avatars/avatar" + strconv.FormatUint(uint64(userDB.ID), 10) + ".jpg"
+	newUserData := model.UserProfile{Email: userDB.Email, Username: userDB.Username, Avatar: fileName}
 	if userDB.Phone != nil {
 		newUserData.Phone = *userDB.Phone
 	} else {

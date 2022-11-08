@@ -21,7 +21,6 @@ func NewUserStore(db *pgxpool.Pool) *UserStore {
 }
 
 func (us *UserStore) AddUser(in *model.UserDB) error {
-	//result, err := us.db.Exec(context.Background(), `INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
 	_, err := us.db.Exec(context.Background(), `INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
 	if err != nil {
 		return err
@@ -30,7 +29,6 @@ func (us *UserStore) AddUser(in *model.UserDB) error {
 }
 
 func (us *UserStore) UpdateUser(oldEmail string, in *model.UserProfile) error {
-	//result, err := us.db.Exec(context.Background(), `UPDATE users SET username = $1, phone = $2, avatar = $3  WHERE email = $4;`, in.Username, in.Phone, in.Avatar, oldEmail)
 	_, err := us.db.Exec(context.Background(), `UPDATE users SET username = $1, phone = $2, avatar = $3  WHERE email = $4;`, in.Username, in.Phone, in.Avatar, oldEmail)
 	if err != nil {
 		return err

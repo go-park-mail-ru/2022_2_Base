@@ -1,9 +1,14 @@
 package usecase
 
 import (
+	"io"
+	"log"
+	"mime/multipart"
+	"os"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	rep "serv/repository"
+	"strconv"
 )
 
 type UserUsecase struct {
@@ -37,11 +42,7 @@ func (api *UserUsecase) AddUser(params *model.UserCreateParams) error {
 	password := params.Password
 	email := params.Email
 	newUser := &model.UserDB{ID: 0, Email: email, Username: username, Password: password}
-	err := api.store.AddUser(newUser)
-	if err != nil {
-		return err
-	}
-	return nil
+	return api.store.AddUser(newUser)
 }
 
 func (api *UserUsecase) GetUserByUsername(email string) (model.UserDB, error) {
@@ -62,8 +63,21 @@ func (api *UserUsecase) ChangeUser(oldEmail string, params model.UserProfile) er
 	phone := params.Phone
 	avatar := params.Avatar
 	newUser := &model.UserProfile{Email: email, Username: username, Phone: phone, Avatar: avatar}
-	err := api.store.UpdateUser(oldEmail, newUser)
+	return api.store.UpdateUser(oldEmail, newUser)
+}
+
+func (api *UserUsecase) SetAvatar(usedID int, file multipart.File) error {
+	fileName := "./img/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
+	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
+		log.Println("error create/open file")
+		return err
+	}
+	defer f.Close()
+
+	_, err = io.Copy(f, file)
+	if err != nil {
+		log.Println("error copy to new file")
 		return err
 	}
 	return nil
