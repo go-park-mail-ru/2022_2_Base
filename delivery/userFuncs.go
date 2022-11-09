@@ -137,7 +137,7 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
-	_, err := r.Cookie("session_id")
+	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
@@ -161,7 +161,14 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	oldUserData, err := api.usecase.GetUserByUsername(req.Email)
+	usName, err := api.usecase.GetSession(session.Value)
+	if err != nil {
+		log.Println("no session2")
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
+	oldUserData, err := api.usecase.GetUserByUsername(usName)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
