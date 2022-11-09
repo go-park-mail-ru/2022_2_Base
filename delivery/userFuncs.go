@@ -104,7 +104,7 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	userProfile.Avatar = sanitizer.Sanitize(userProfile.Avatar)
 	for _, addr := range adresses {
 		addr.City = sanitizer.Sanitize(addr.City)
-		addr.House = sanitizer.Sanitize(addr.City)
+		addr.House = sanitizer.Sanitize(addr.House)
 		addr.Street = sanitizer.Sanitize(addr.Street)
 	}
 

@@ -21,6 +21,7 @@ type UserLogin struct {
 }
 
 type Adress struct {
+	ID       int    `json:"id"`
 	City     string `json:"city"`
 	Street   string `json:"street"`
 	House    string `json:"house"`
@@ -28,6 +29,7 @@ type Adress struct {
 }
 
 type PaymentMethod struct {
+	ID         int    `json:"id"`
 	Type       string `json:"type"`
 	Number     string `json:"number"`
 	ExpiryDate string `json:"expirydate"`

@@ -66,12 +66,24 @@ func (api *UserUsecase) GetPaymentMethodByUserID(userID int) ([]*model.PaymentMe
 }
 
 func (api *UserUsecase) ChangeUser(oldEmail string, params model.UserProfile) error {
-	username := params.Username
-	email := params.Email
-	phone := params.Phone
-	avatar := params.Avatar
-	newUser := &model.UserProfile{Email: email, Username: username, Phone: phone, Avatar: avatar}
-	return api.store.UpdateUser(oldEmail, newUser)
+	newUser := &model.UserProfile{Email: params.Email, Username: params.Username, Phone: params.Phone, Adress: params.Adress, PaymentMethods: params.PaymentMethods}
+	err := api.store.UpdateUser(oldEmail, newUser)
+	if err != nil {
+		return err
+	}
+	for _, addr := range params.Adress {
+		err = api.store.UpdateUsersAdress(addr.ID, addr)
+		if err != nil {
+			return err
+		}
+	}
+	for _, paym := range params.PaymentMethods {
+		err = api.store.UpdateUsersPayment(paym.ID, paym)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (api *UserUsecase) SetAvatar(usedID int, file multipart.File) error {

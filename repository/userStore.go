@@ -29,11 +29,26 @@ func (us *UserStore) AddUser(in *model.UserDB) error {
 }
 
 func (us *UserStore) UpdateUser(oldEmail string, in *model.UserProfile) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE users SET username = $1, phone = $2, avatar = $3  WHERE email = $4;`, in.Username, in.Phone, in.Avatar, oldEmail)
+	_, err := us.db.Exec(context.Background(), `UPDATE users SET username = $1, phone = $2 WHERE email = $3;`, in.Username, in.Phone, oldEmail)
 	if err != nil {
 		return err
 	}
+	return nil
+}
 
+func (us *UserStore) UpdateUsersAdress(adressID int, in *model.Adress) error {
+	_, err := us.db.Exec(context.Background(), `UPDATE adress SET city = $1, street = $2, house = $3, priority = $4 WHERE id = $5;`, in.City, in.Street, in.House, in.Priority, adressID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (us *UserStore) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) error {
+	_, err := us.db.Exec(context.Background(), `UPDATE payment SET type = $1, number = $2, expirydate = $3, priority = $4 WHERE id = $5;`, in.Type, in.Number, in.ExpiryDate, in.Priority, paymentID)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -58,14 +73,14 @@ func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, e
 
 func (us *UserStore) GetAdressesByUserIDFromDB(userID int) ([]*model.Adress, error) {
 	adresses := []*model.Adress{}
-	rows, err := us.db.Query(context.Background(), `SELECT city, street, house, priority FROM adress JOIN users ON adress.userid = users.id WHERE users.id  = $1`, userID)
+	rows, err := us.db.Query(context.Background(), `SELECT adress.id, city, street, house, priority FROM adress JOIN users ON adress.userid = users.id WHERE users.id  = $1`, userID)
 	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		dat := model.Adress{}
-		err := rows.Scan(&dat.City, &dat.Street, &dat.House, &dat.Priority)
+		err := rows.Scan(&dat.ID, &dat.City, &dat.Street, &dat.House, &dat.Priority)
 		if err != nil {
 			return nil, err
 		}
@@ -77,14 +92,14 @@ func (us *UserStore) GetAdressesByUserIDFromDB(userID int) ([]*model.Adress, err
 
 func (us *UserStore) GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error) {
 	payments := []*model.PaymentMethod{}
-	rows, err := us.db.Query(context.Background(), `SELECT type, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1`, userID)
+	rows, err := us.db.Query(context.Background(), `SELECT payment.id, type, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1`, userID)
 	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		dat := model.PaymentMethod{}
-		err := rows.Scan(&dat.Type, &dat.Number, &dat.ExpiryDate, &dat.Priority)
+		err := rows.Scan(&dat.ID, &dat.Type, &dat.Number, &dat.ExpiryDate, &dat.Priority)
 		if err != nil {
 			return nil, err
 		}
