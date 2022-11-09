@@ -28,3 +28,8 @@ type UserProfile struct {
 	Avatar              string   `json:"avatar,omitempty"`
 	PaymentMethodsUUIDs []string `json:"paymentmethods,omitempty"`
 }
+
+type Session struct {
+	ID       int    `json:"id"`
+	UserUUID string `json:"useruuid"`
+}

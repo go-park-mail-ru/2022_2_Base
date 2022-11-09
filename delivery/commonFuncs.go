@@ -65,7 +65,24 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
+
+	// hashTok := HashToken{Secret: []byte("Base")}
+	// token := r.Header.Get("csrf")
+	// curSession := model.Session{ID: 0, UserUUID: session.Value}
+	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
+	// if err != nil || !flag {
+	// 	log.Println("no csrf token")
+	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+	// 	return
+	// }
+
 	usName, err := api.usHandler.usecase.GetSession(session.Value)
+	if err != nil {
+		log.Println("no session2")
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
 	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
 	if err != nil {
 		log.Println("db error: ", err)
@@ -132,7 +149,24 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
+
+	// hashTok := HashToken{Secret: []byte("Base")}
+	// token := r.Header.Get("csrf")
+	// curSession := model.Session{ID: 0, UserUUID: session.Value}
+	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
+	// if err != nil || !flag {
+	// 	log.Println("no csrf token")
+	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+	// 	return
+	// }
+
 	usName, err := api.usHandler.usecase.GetSession(session.Value)
+	if err != nil {
+		log.Println("no session2")
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
 	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
 	if err != nil {
 		log.Println("db error: ", err)
@@ -186,7 +220,24 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
+
+	// hashTok := HashToken{Secret: []byte("Base")}
+	// token := r.Header.Get("csrf")
+	// curSession := model.Session{ID: 0, UserUUID: session.Value}
+	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
+	// if err != nil || !flag {
+	// 	log.Println("no csrf token")
+	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+	// 	return
+	// }
+
 	usName, err := api.usHandler.usecase.GetSession(session.Value)
+	if err != nil {
+		log.Println("no session2")
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
 	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
 	if err != nil {
 		log.Println("db error: ", err)
@@ -241,7 +292,24 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
+
+	// hashTok := HashToken{Secret: []byte("Base")}
+	// token := r.Header.Get("csrf")
+	// curSession := model.Session{ID: 0, UserUUID: session.Value}
+	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
+	// if err != nil || !flag {
+	// 	log.Println("no csrf token")
+	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+	// 	return
+	// }
+
 	usName, err := api.usHandler.usecase.GetSession(session.Value)
+	if err != nil {
+		log.Println("no session2")
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
 	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
 	if err != nil {
 		log.Println("db error: ", err)
@@ -291,7 +359,23 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// hashTok := HashToken{Secret: []byte("Base")}
+	// token := r.Header.Get("csrf")
+	// curSession := model.Session{ID: 0, UserUUID: session.Value}
+	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
+	// if err != nil || !flag {
+	// 	log.Println("no csrf token")
+	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+	// 	return
+	// }
+
 	usName, err := api.usHandler.usecase.GetSession(session.Value)
+	if err != nil {
+		log.Println("no session2")
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
 	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
 	if err != nil {
 		log.Println("db error: ", err)

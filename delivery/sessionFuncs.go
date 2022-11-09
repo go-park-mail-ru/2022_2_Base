@@ -41,6 +41,7 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
+
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserLogin
 	err := decoder.Decode(&req)
@@ -71,6 +72,15 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Now().Add(10 * time.Hour),
 		HttpOnly: true,
 	}
+
+	curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
+	hashTok := HashToken{Secret: []byte("Base")}
+	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(10*time.Hour).Unix())
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	w.Header().Set("csrf", token)
 
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
@@ -104,6 +114,14 @@ func (api *SessionHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.usecase.DeleteSession(res)
+
+	curSession := model.Session{ID: 0, UserUUID: session.Value}
+	hashTok := HashToken{Secret: []byte("Base")}
+	_, err = hashTok.CreateCSRFToken(&curSession, time.Now().Unix())
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
@@ -180,6 +198,15 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	}
 
+	curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
+	hashTok := HashToken{Secret: []byte("Base")}
+	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(10*time.Hour).Unix())
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	w.Header().Set("csrf", token)
+
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
 	json.NewEncoder(w).Encode(&model.Response{})
@@ -210,6 +237,16 @@ func (api *SessionHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
+
+	curSession := model.Session{ID: 0, UserUUID: session.Value}
+	hashTok := HashToken{Secret: []byte("Base")}
+	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(24*time.Hour).Unix())
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	w.Header().Set("csrf", token)
+
 	http.SetCookie(w, r.Cookies()[0])
 	json.NewEncoder(w).Encode(&model.Response{})
 }

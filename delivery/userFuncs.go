@@ -52,6 +52,16 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// hashTok := HashToken{Secret: []byte("Base")}
+	// token := r.Header.Get("csrf")
+	// curSession := model.Session{ID: 0, UserUUID: session.Value}
+	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
+	// if err != nil || !flag {
+	// 	log.Println("no csrf token")
+	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+	// 	return
+	// }
+
 	user, err := api.usecase.GetUserByUsername(usName)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -107,6 +117,16 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
+
+	// hashTok := HashToken{Secret: []byte("Base")}
+	// token := r.Header.Get("csrf")
+	// curSession := model.Session{ID: 0, UserUUID: session.Value}
+	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
+	// if err != nil || !flag {
+	// 	log.Println("no csrf token")
+	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+	// 	return
+	// }
 
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserProfile
@@ -164,6 +184,16 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
+
+	// hashTok := HashToken{Secret: []byte("Base")}
+	// token := r.Header.Get("csrf")
+	// curSession := model.Session{ID: 0, UserUUID: session.Value}
+	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
+	// if err != nil || !flag {
+	// 	log.Println("no csrf token")
+	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+	// 	return
+	// }
 
 	user, err := api.usecase.GetUserByUsername(usName)
 	if err != nil {
