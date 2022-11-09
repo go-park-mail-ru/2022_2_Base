@@ -17,12 +17,18 @@ func NewProductUsecase(ps *rep.ProductStore) *ProductUsecase {
 }
 
 func (api *ProductUsecase) GetProducts() ([]*model.Product, error) {
-
 	products, err := api.store.GetProductsFromStore()
 	if err != nil {
 		return nil, baseErrors.ErrServerError500
 	}
+	return products, nil
+}
 
+func (api *ProductUsecase) GetProductsWithCategory(cat string) ([]*model.Product, error) {
+	products, err := api.store.GetProductsWithCategoryFromStore(cat)
+	if err != nil {
+		return nil, baseErrors.ErrServerError500
+	}
 	return products, nil
 }
 

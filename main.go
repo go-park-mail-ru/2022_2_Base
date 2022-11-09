@@ -66,6 +66,7 @@ func main() {
 	myRouter.HandleFunc(conf.PathAvatar, userHandler.SetAvatar).Methods(http.MethodPost, http.MethodOptions)
 
 	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods(http.MethodGet, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathCategory, productHandler.GetProductsByCategory).Methods(http.MethodGet, http.MethodOptions)
 
 	myRouter.HandleFunc(conf.PathCart, orderHandler.GetCart).Methods(http.MethodGet, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathCart, orderHandler.UpdateCart).Methods(http.MethodPost, http.MethodOptions)

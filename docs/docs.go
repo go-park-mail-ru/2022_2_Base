@@ -430,6 +430,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/products/{category}": {
+            "get": {
+                "description": "Gets products by category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets products by category",
+                "operationId": "GetProductsByCategory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The category of products",
+                        "name": "category",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/profile": {
             "get": {
                 "description": "gets user by username in cookies",
@@ -611,14 +650,14 @@ const docTemplate = `{
                 "house": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "integer"
+                },
                 "primary": {
                     "type": "boolean"
                 },
                 "street": {
                     "type": "string"
-                },
-                "userid": {
-                    "type": "integer"
                 }
             }
         },
@@ -671,6 +710,9 @@ const docTemplate = `{
                 "expirydate": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "integer"
+                },
                 "number": {
                     "type": "string"
                 },
@@ -679,16 +721,13 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
-                },
-                "userid": {
-                    "type": "integer"
                 }
             }
         },
         "model.Product": {
             "type": "object",
             "properties": {
-                "description": {
+                "category": {
                     "type": "string"
                 },
                 "id": {

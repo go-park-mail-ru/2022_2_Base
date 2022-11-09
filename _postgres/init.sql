@@ -1,9 +1,9 @@
 
 CREATE TABLE products (
     id  SERIAL PRIMARY KEY,
-	name VARCHAR (30),
-    description VARCHAR (50),
-    price FLOAT,
+	name VARCHAR (30) NOT NULL,
+    category VARCHAR (50),
+    price FLOAT NOT NULL,
     discountPrice FLOAT,
     rating Float,
 	imgsrc VARCHAR (50)

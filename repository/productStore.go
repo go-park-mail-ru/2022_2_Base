@@ -21,7 +21,7 @@ func NewProductStore(db *pgxpool.Pool) *ProductStore {
 
 func (ps *ProductStore) GetProductsFromStore() ([]*model.Product, error) {
 	products := []*model.Product{}
-	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products LIMIT 5;`)
+	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products LIMIT 6;`)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -30,7 +30,27 @@ func (ps *ProductStore) GetProductsFromStore() ([]*model.Product, error) {
 	log.Println("got products from db")
 	for rows.Next() {
 		dat := model.Product{}
-		err := rows.Scan(&dat.ID, &dat.Name, &dat.Description, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
+		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, &dat)
+	}
+	return products, nil
+}
+
+func (ps *ProductStore) GetProductsWithCategoryFromStore(category string) ([]*model.Product, error) {
+	products := []*model.Product{}
+	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 LIMIT 6;`, category)
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return nil, baseErrors.ErrServerError500
+	}
+	log.Println("got products from db")
+	for rows.Next() {
+		dat := model.Product{}
+		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
 		if err != nil {
 			return nil, err
 		}
@@ -70,7 +90,7 @@ func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem,
 	for rows.Next() {
 		var count int
 		dat := model.Product{}
-		err := rows.Scan(&count, &dat.ID, &dat.Name, &dat.Description, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
+		err := rows.Scan(&count, &dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
 		if err != nil {
 			return nil, err
 		}

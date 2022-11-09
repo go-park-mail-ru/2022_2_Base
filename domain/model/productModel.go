@@ -3,7 +3,7 @@ package model
 type Product struct {
 	ID            int      `json:"id"`
 	Name          string   `json:"name"`
-	Description   *string  `json:"description,omitempty"`
+	Category      string   `json:"category"`
 	Price         float64  `json:"price"`
 	DiscountPrice *float64 `json:"lowprice,omitempty"`
 	Rating        *float64 `json:"rating,omitempty"`

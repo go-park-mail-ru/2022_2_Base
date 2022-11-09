@@ -6,12 +6,12 @@ definitions:
         type: string
       house:
         type: string
+      id:
+        type: integer
       primary:
         type: boolean
       street:
         type: string
-      userid:
-        type: integer
     type: object
   model.Error:
     properties:
@@ -45,18 +45,18 @@ definitions:
     properties:
       expirydate:
         type: string
+      id:
+        type: integer
       number:
         type: string
       priority:
         type: boolean
       type:
         type: string
-      userid:
-        type: integer
     type: object
   model.Product:
     properties:
-      description:
+      category:
         type: string
       id:
         type: integer
@@ -411,6 +411,33 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Gets products for main page
+      tags:
+      - Products
+  /products/{category}:
+    get:
+      consumes:
+      - application/json
+      description: Gets products by category
+      operationId: GetProductsByCategory
+      parameters:
+      - description: The category of products
+        in: path
+        name: category
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets products by category
       tags:
       - Products
   /profile:

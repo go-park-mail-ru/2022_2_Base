@@ -106,13 +106,11 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	cart.PaymentStatus = sanitizer.Sanitize(cart.PaymentStatus)
 	cart.Adress = sanitizer.Sanitize(cart.Adress)
 	for _, prod := range cart.Items {
-		if prod.Item.Description != nil {
-			*prod.Item.Description = sanitizer.Sanitize(*prod.Item.Description)
-		}
 		if prod.Item.Imgsrc != nil {
 			*prod.Item.Imgsrc = sanitizer.Sanitize(*prod.Item.Imgsrc)
 		}
 		prod.Item.Name = sanitizer.Sanitize(prod.Item.Name)
+		prod.Item.Category = sanitizer.Sanitize(prod.Item.Category)
 	}
 
 	json.NewEncoder(w).Encode(cart)
