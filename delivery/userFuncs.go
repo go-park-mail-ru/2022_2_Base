@@ -64,11 +64,25 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	user, err := api.usecase.GetUserByUsername(usName)
 	if err != nil {
+		log.Println("err get user ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
 	if user.Email == "" {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
+	adresses, err := api.usecase.GetAdressesByUserID(user.ID)
+	if err != nil {
+		log.Println("err get adresses ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	payments, err := api.usecase.GetPaymentMethodByUserID(user.ID)
+	if err != nil {
+		log.Println("err get payments ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
 
@@ -88,10 +102,21 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	userProfile.Username = sanitizer.Sanitize(userProfile.Username)
 	userProfile.Phone = sanitizer.Sanitize(userProfile.Phone)
 	userProfile.Avatar = sanitizer.Sanitize(userProfile.Avatar)
-	for _, paym := range userProfile.PaymentMethodsUUIDs {
-		paym = sanitizer.Sanitize(paym)
+	for _, addr := range adresses {
+		addr.City = sanitizer.Sanitize(addr.City)
+		addr.House = sanitizer.Sanitize(addr.City)
+		addr.Street = sanitizer.Sanitize(addr.Street)
 	}
 
+	for _, paym := range payments {
+		paym.Type = sanitizer.Sanitize(paym.Type)
+		paym.Number = sanitizer.Sanitize(paym.Number)
+		paym.ExpiryDate = sanitizer.Sanitize(paym.ExpiryDate)
+
+	}
+
+	userProfile.Adress = adresses
+	userProfile.PaymentMethods = payments
 	json.NewEncoder(w).Encode(userProfile)
 }
 

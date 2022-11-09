@@ -1,5 +1,18 @@
 basePath: /api/v1
 definitions:
+  model.Adress:
+    properties:
+      city:
+        type: string
+      house:
+        type: string
+      primary:
+        type: boolean
+      street:
+        type: string
+      userid:
+        type: integer
+    type: object
   model.Error:
     properties:
       error: {}
@@ -27,6 +40,19 @@ definitions:
         type: integer
       item:
         $ref: '#/definitions/model.Product'
+    type: object
+  model.PaymentMethod:
+    properties:
+      expirydate:
+        type: string
+      number:
+        type: string
+      priority:
+        type: boolean
+      type:
+        type: string
+      userid:
+        type: integer
     type: object
   model.Product:
     properties:
@@ -79,13 +105,17 @@ definitions:
     type: object
   model.UserProfile:
     properties:
+      adress:
+        items:
+          $ref: '#/definitions/model.Adress'
+        type: array
       avatar:
         type: string
       email:
         type: string
       paymentmethods:
         items:
-          type: string
+          $ref: '#/definitions/model.PaymentMethod'
         type: array
       phone:
         type: string

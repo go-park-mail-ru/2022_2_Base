@@ -57,6 +57,14 @@ func (api *UserUsecase) GetUserByUsername(email string) (model.UserDB, error) {
 	return *user, nil
 }
 
+func (api *UserUsecase) GetAdressesByUserID(userID int) ([]*model.Adress, error) {
+	return api.store.GetAdressesByUserIDFromDB(userID)
+}
+
+func (api *UserUsecase) GetPaymentMethodByUserID(userID int) ([]*model.PaymentMethod, error) {
+	return api.store.GetPaymentMethodByUserIDFromDB(userID)
+}
+
 func (api *UserUsecase) ChangeUser(oldEmail string, params model.UserProfile) error {
 	username := params.Username
 	email := params.Email

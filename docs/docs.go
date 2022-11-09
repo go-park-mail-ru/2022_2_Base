@@ -602,6 +602,26 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "model.Adress": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "house": {
+                    "type": "string"
+                },
+                "primary": {
+                    "type": "boolean"
+                },
+                "street": {
+                    "type": "string"
+                },
+                "userid": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.Error": {
             "type": "object",
             "properties": {
@@ -642,6 +662,26 @@ const docTemplate = `{
                 },
                 "item": {
                     "$ref": "#/definitions/model.Product"
+                }
+            }
+        },
+        "model.PaymentMethod": {
+            "type": "object",
+            "properties": {
+                "expirydate": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "userid": {
+                    "type": "integer"
                 }
             }
         },
@@ -724,6 +764,12 @@ const docTemplate = `{
         "model.UserProfile": {
             "type": "object",
             "properties": {
+                "adress": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Adress"
+                    }
+                },
                 "avatar": {
                     "type": "string"
                 },
@@ -733,7 +779,7 @@ const docTemplate = `{
                 "paymentmethods": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.PaymentMethod"
                     }
                 },
                 "phone": {
