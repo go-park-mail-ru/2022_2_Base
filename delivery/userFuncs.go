@@ -255,7 +255,7 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	fileName := "/img/avatars/avatar" + strconv.FormatUint(uint64(oldUserData.ID), 10) + ".jpg"
 	newUserData := model.UserProfile{Avatar: fileName}
-	newUserData.Avatar = fileName
+	//newUserData.Avatar = fileName
 	// if userDB.Phone != nil {
 	// 	newUserData.Phone = *userDB.Phone
 	// } else {

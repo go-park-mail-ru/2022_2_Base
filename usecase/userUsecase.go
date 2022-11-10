@@ -74,7 +74,13 @@ func (api *UserUsecase) ChangeUser(oldUserData *model.UserDB, params *model.User
 	if err != nil {
 		return err
 	}
-	newUser := &model.UserProfile{Email: oldUserData.Email, Username: oldUserData.Username, Phone: *oldUserData.Phone, Adress: adresses, PaymentMethods: payments}
+	newUser := &model.UserProfile{Email: oldUserData.Email, Username: oldUserData.Username, Adress: adresses, PaymentMethods: payments}
+	if oldUserData.Avatar != nil {
+		newUser.Avatar = *oldUserData.Avatar
+	}
+	if oldUserData.Phone != nil {
+		newUser.Phone = *oldUserData.Phone
+	}
 	if params.Email != "" {
 		newUser.Email = params.Email
 	}
@@ -87,11 +93,11 @@ func (api *UserUsecase) ChangeUser(oldUserData *model.UserDB, params *model.User
 	if params.Avatar != "" {
 		newUser.Avatar = params.Avatar
 	}
-	if params.Adress != nil {
-		newUser.Phone = params.Phone
+	if len(params.Adress) > 0 {
+		newUser.Adress = params.Adress
 	}
-	if params.PaymentMethods != nil {
-		newUser.Phone = params.Phone
+	if len(params.PaymentMethods) > 0 {
+		newUser.PaymentMethods = params.PaymentMethods
 	}
 
 	err = api.store.UpdateUser(oldUserData.ID, newUser)
