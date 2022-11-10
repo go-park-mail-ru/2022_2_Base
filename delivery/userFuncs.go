@@ -180,7 +180,7 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = api.usecase.ChangeUser(oldUserData.Email, req)
+	err = api.usecase.ChangeUser(&oldUserData, &req)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -227,19 +227,19 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	user, err := api.usecase.GetUserByUsername(usName)
+	oldUserData, err := api.usecase.GetUserByUsername(usName)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if user.Email == "" {
+	if oldUserData.Email == "" {
 		log.Println("error user not found")
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
-	userDB := model.UserDB{ID: user.ID, Email: user.Email, Username: user.Username, Password: user.Password}
+	//userDB := model.UserDB{ID: user.ID, Email: user.Email, Username: user.Username, Password: user.Password}
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -248,20 +248,21 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
-	err = api.usecase.SetAvatar(userDB.ID, file)
+	err = api.usecase.SetAvatar(oldUserData.ID, file)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	fileName := "/img/avatars/avatar" + strconv.FormatUint(uint64(userDB.ID), 10) + ".jpg"
-	newUserData := model.UserProfile{Email: userDB.Email, Username: userDB.Username, Avatar: fileName}
-	if userDB.Phone != nil {
-		newUserData.Phone = *userDB.Phone
-	} else {
-		newUserData.Phone = ""
-	}
+	fileName := "/img/avatars/avatar" + strconv.FormatUint(uint64(oldUserData.ID), 10) + ".jpg"
+	newUserData := model.UserProfile{Avatar: fileName}
+	newUserData.Avatar = fileName
+	// if userDB.Phone != nil {
+	// 	newUserData.Phone = *userDB.Phone
+	// } else {
+	// 	newUserData.Phone = ""
+	// }
 
-	err = api.usecase.ChangeUser(userDB.Email, newUserData)
+	err = api.usecase.ChangeUser(&oldUserData, &newUserData)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return

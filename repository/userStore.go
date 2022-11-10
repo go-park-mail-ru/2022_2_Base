@@ -28,8 +28,8 @@ func (us *UserStore) AddUser(in *model.UserDB) error {
 	return nil
 }
 
-func (us *UserStore) UpdateUser(oldEmail string, in *model.UserProfile) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE users SET username = $1, phone = $2 WHERE email = $3;`, in.Username, in.Phone, oldEmail)
+func (us *UserStore) UpdateUser(userID int, in *model.UserProfile) error {
+	_, err := us.db.Exec(context.Background(), `UPDATE users SET email = $1, username = $2, phone = $3, avatar = $4 WHERE id = $5;`, in.Email, in.Username, in.Phone, in.Avatar, userID)
 	if err != nil {
 		return err
 	}

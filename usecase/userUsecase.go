@@ -65,9 +65,36 @@ func (api *UserUsecase) GetPaymentMethodByUserID(userID int) ([]*model.PaymentMe
 	return api.store.GetPaymentMethodByUserIDFromDB(userID)
 }
 
-func (api *UserUsecase) ChangeUser(oldEmail string, params model.UserProfile) error {
-	newUser := &model.UserProfile{Email: params.Email, Username: params.Username, Phone: params.Phone, Adress: params.Adress, PaymentMethods: params.PaymentMethods}
-	err := api.store.UpdateUser(oldEmail, newUser)
+func (api *UserUsecase) ChangeUser(oldUserData *model.UserDB, params *model.UserProfile) error {
+	adresses, err := api.GetAdressesByUserID(oldUserData.ID)
+	if err != nil {
+		return err
+	}
+	payments, err := api.GetPaymentMethodByUserID(oldUserData.ID)
+	if err != nil {
+		return err
+	}
+	newUser := &model.UserProfile{Email: oldUserData.Email, Username: oldUserData.Username, Phone: *oldUserData.Phone, Adress: adresses, PaymentMethods: payments}
+	if params.Email != "" {
+		newUser.Email = params.Email
+	}
+	if params.Username != "" {
+		newUser.Username = params.Username
+	}
+	if params.Phone != "" {
+		newUser.Phone = params.Phone
+	}
+	if params.Avatar != "" {
+		newUser.Avatar = params.Avatar
+	}
+	if params.Adress != nil {
+		newUser.Phone = params.Phone
+	}
+	if params.PaymentMethods != nil {
+		newUser.Phone = params.Phone
+	}
+
+	err = api.store.UpdateUser(oldUserData.ID, newUser)
 	if err != nil {
 		return err
 	}
