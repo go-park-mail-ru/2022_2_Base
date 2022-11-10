@@ -82,7 +82,7 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string) ([]*mo
 
 func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
-	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.description, pr.price, pr.discountprice, pr.rating, pr.imgsrc FROM orderitems JOIN ordertable ON orderitems.orderid=ordertable.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
+	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, pr.price, pr.discountprice, pr.rating, pr.imgsrc FROM orderitems JOIN ordertable ON orderitems.orderid=ordertable.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	defer rows.Close()
 	if err != nil {
 		return nil, baseErrors.ErrServerError500

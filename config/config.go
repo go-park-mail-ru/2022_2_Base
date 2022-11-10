@@ -17,7 +17,7 @@ var PathDeleteItemFromCart = BasePath + "/deletefromcart"
 var PathMakeOrder = BasePath + "/makeorder"
 
 var Headers = map[string]string{
-	"Access-Control-Allow-Origin":      "http://89.208.198.137:8081",
+	//"Access-Control-Allow-Origin":      "http://127.0.0.1:8081",
 	"Access-Control-Allow-Credentials": "true",
 	"Access-Control-Allow-Headers":     "Origin, Content-Type, accept",
 	"Access-Control-Allow-Methods":     "GET, POST, DELETE, OPTIONS",
