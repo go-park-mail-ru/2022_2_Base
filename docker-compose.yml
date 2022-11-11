@@ -33,7 +33,7 @@ services:
     links:
       - postgres:postgres
     volumes:
-      - .:/app
+      - ./:/app
       - /home/ubuntu/img/avatars:/img/avatars
     depends_on:
       - "postgres"
@@ -42,6 +42,7 @@ services:
 
 volumes:
   .:
+    external: true
   dbData:
 
 
