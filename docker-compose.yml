@@ -41,6 +41,7 @@ services:
       - mynet
 
 volumes:
+  .:
   dbData:
 
 
