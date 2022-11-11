@@ -18,4 +18,7 @@ make inspect:postgres:
 
 make docker:postgres-bash:
 	sudo docker exec -it postgres bash
+
+make docker:prune-all:
+	sudo docker system prune -a
 	
