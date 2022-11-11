@@ -34,6 +34,7 @@ services:
       - postgres:postgres
     volumes:
       - ./:/app
+      - /home/ubuntu/front-next/dist/img:/avatars
     depends_on:
       - "postgres"
     networks:
