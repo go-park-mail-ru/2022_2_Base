@@ -16,16 +16,16 @@ func NewProductUsecase(ps *rep.ProductStore) *ProductUsecase {
 	}
 }
 
-func (api *ProductUsecase) GetProducts() ([]*model.Product, error) {
-	products, err := api.store.GetProductsFromStore()
+func (api *ProductUsecase) GetProducts(lastitemid int, count int) ([]*model.Product, error) {
+	products, err := api.store.GetProductsFromStore(lastitemid, count)
 	if err != nil {
 		return nil, baseErrors.ErrServerError500
 	}
 	return products, nil
 }
 
-func (api *ProductUsecase) GetProductsWithCategory(cat string) ([]*model.Product, error) {
-	products, err := api.store.GetProductsWithCategoryFromStore(cat)
+func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, count int) ([]*model.Product, error) {
+	products, err := api.store.GetProductsWithCategoryFromStore(cat, lastitemid, count)
 	if err != nil {
 		return nil, baseErrors.ErrServerError500
 	}

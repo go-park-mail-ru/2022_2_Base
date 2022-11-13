@@ -33,45 +33,18 @@ func NewUserHandler(uuc *usecase.UserUsecase) *UserHandler {
 // @Success 200 {object} model.UserProfile
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /profile [get]
+// @Router /user/profile [get]
 func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		log.Println("no session")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-	usName, err := api.usecase.GetSession(session.Value)
-	if err != nil {
-		log.Println("no session2")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	// hashTok := HashToken{Secret: []byte("Base")}
-	// token := r.Header.Get("csrf")
-	// curSession := model.Session{ID: 0, UserUUID: session.Value}
-	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
-	// if err != nil || !flag {
-	// 	log.Println("no csrf token")
-	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-	// 	return
-	// }
-
-	user, err := api.usecase.GetUserByUsername(usName)
-	if err != nil {
-		log.Println("err get user ", err)
+	if user := r.Context().Value("userdata").(*model.UserDB); user == nil {
+		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if user.Email == "" {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
+	user := r.Context().Value("userdata").(*model.UserDB)
 
 	adresses, err := api.usecase.GetAdressesByUserID(user.ID)
 	if err != nil {
@@ -132,55 +105,27 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /profile [post]
+// @Router /user/profile [post]
 func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	// hashTok := HashToken{Secret: []byte("Base")}
-	// token := r.Header.Get("csrf")
-	// curSession := model.Session{ID: 0, UserUUID: session.Value}
-	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
-	// if err != nil || !flag {
-	// 	log.Println("no csrf token")
-	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-	// 	return
-	// }
 
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserProfile
-	err = decoder.Decode(&req)
+	err := decoder.Decode(&req)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-
-	usName, err := api.usecase.GetSession(session.Value)
-	if err != nil {
-		log.Println("no session2")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	oldUserData, err := api.usecase.GetUserByUsername(usName)
-	if err != nil {
-		log.Println("db error: ", err)
+	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if oldUserData.Email == "" {
-		log.Println("error user not found")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
+	oldUserData := r.Context().Value("userdata").(*model.UserDB)
 
-	err = api.usecase.ChangeUser(&oldUserData, &req)
+	err = api.usecase.ChangeUser(oldUserData, &req)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -200,46 +145,18 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} model.Response "OK"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /avatar [post]
+// @Router /user/avatar [post]
 func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
-	}
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-	usName, err := api.usecase.GetSession(session.Value)
-	if err != nil {
-		log.Println("no session")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
 
-	// hashTok := HashToken{Secret: []byte("Base")}
-	// token := r.Header.Get("csrf")
-	// curSession := model.Session{ID: 0, UserUUID: session.Value}
-	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
-	// if err != nil || !flag {
-	// 	log.Println("no csrf token")
-	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-	// 	return
-	// }
-
-	oldUserData, err := api.usecase.GetUserByUsername(usName)
-	if err != nil {
-		log.Println("db error: ", err)
+	}
+	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if oldUserData.Email == "" {
-		log.Println("error user not found")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	//userDB := model.UserDB{ID: user.ID, Email: user.Email, Username: user.Username, Password: user.Password}
+	oldUserData := r.Context().Value("userdata").(*model.UserDB)
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -262,7 +179,7 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	// 	newUserData.Phone = ""
 	// }
 
-	err = api.usecase.ChangeUser(&oldUserData, &newUserData)
+	err = api.usecase.ChangeUser(oldUserData, &newUserData)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return

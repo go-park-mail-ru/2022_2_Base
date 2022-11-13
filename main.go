@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 
 	_ "serv/docs"
 	"serv/repository"
@@ -15,6 +14,8 @@ import (
 	usecase "serv/usecase"
 
 	conf "serv/config"
+	baseErrors "serv/domain/errors"
+	"serv/domain/model"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 
@@ -39,10 +40,58 @@ func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+type authenticationMiddleware struct {
+	userUsecase usecase.UserUsecase
+}
+
+func WithUser(ctx context.Context, user *model.UserDB) context.Context {
+	return context.WithValue(ctx, "userdata", user)
+}
+
+func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, err := r.Cookie("session_id")
+		if err == http.ErrNoCookie {
+			log.Println("no session")
+			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+			return
+		}
+		usName, err := amw.userUsecase.GetSession(session.Value)
+		if err != nil {
+			log.Println("no session2")
+			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+			return
+		}
+
+		// hashTok := HashToken{Secret: []byte("Base")}
+		// token := r.Header.Get("csrf")
+		// curSession := model.Session{ID: 0, UserUUID: session.Value}
+		// flag, err := hashTok.CheckCSRFToken(&curSession, token)
+		// if err != nil || !flag {
+		// 	log.Println("no csrf token")
+		// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		// 	return
+		// }
+
+		user, err := amw.userUsecase.GetUserByUsername(usName)
+		if err != nil {
+			log.Println("err get user ", err)
+			deliv.ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+			return
+		}
+		if user.Email == "" {
+			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+			return
+		}
+
+		next.ServeHTTP(w, r.WithContext(WithUser(r.Context(), &user)))
+	})
+}
+
 func main() {
 	myRouter := mux.NewRouter()
-	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
-	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
+	urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
+	//urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	log.Println("conn: ", urlDB)
 	db, err := pgxpool.New(context.Background(), urlDB)
 	if err != nil {
@@ -64,25 +113,33 @@ func main() {
 
 	orderHandler := deliv.NewOrderHandler(userHandler, productHandler)
 
+	userRouter := myRouter.PathPrefix("/api/v1/user").Subrouter()
+	cartRouter := myRouter.PathPrefix("/api/v1/cart").Subrouter()
+
 	myRouter.HandleFunc(conf.PathLogin, sessionHandler.Login).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathLogOut, sessionHandler.Logout).Methods(http.MethodDelete, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathSignUp, sessionHandler.SignUp).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathSessions, sessionHandler.GetSession).Methods(http.MethodGet, http.MethodOptions)
 
-	myRouter.HandleFunc(conf.PathProfile, userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathProfile, userHandler.ChangeProfile).Methods(http.MethodPost, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathAvatar, userHandler.SetAvatar).Methods(http.MethodPost, http.MethodOptions)
-
 	myRouter.HandleFunc(conf.PathMain, productHandler.GetHomePage).Methods(http.MethodGet, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathCategory, productHandler.GetProductsByCategory).Methods(http.MethodGet, http.MethodOptions)
 
-	myRouter.HandleFunc(conf.PathCart, orderHandler.GetCart).Methods(http.MethodGet, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathCart, orderHandler.UpdateCart).Methods(http.MethodPost, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathAddItemToCart, orderHandler.AddItemToCart).Methods(http.MethodPost, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathDeleteItemFromCart, orderHandler.DeleteItemFromCart).Methods(http.MethodPost, http.MethodOptions)
-	myRouter.HandleFunc(conf.PathMakeOrder, orderHandler.MakeOrder).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc(conf.PathProfile, userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
+	userRouter.HandleFunc(conf.PathProfile, userHandler.ChangeProfile).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc(conf.PathAvatar, userHandler.SetAvatar).Methods(http.MethodPost, http.MethodOptions)
+
+	cartRouter.HandleFunc("", orderHandler.GetCart).Methods(http.MethodGet, http.MethodOptions)
+	cartRouter.HandleFunc("", orderHandler.UpdateCart).Methods(http.MethodPost, http.MethodOptions)
+	cartRouter.HandleFunc(conf.PathAddItemToCart, orderHandler.AddItemToCart).Methods(http.MethodPost, http.MethodOptions)
+	cartRouter.HandleFunc(conf.PathDeleteItemFromCart, orderHandler.DeleteItemFromCart).Methods(http.MethodPost, http.MethodOptions)
+	cartRouter.HandleFunc(conf.PathMakeOrder, orderHandler.MakeOrder).Methods(http.MethodPost, http.MethodOptions)
 
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	myRouter.Use(loggingAndCORSHeadersMiddleware)
+
+	amw := authenticationMiddleware{*userUsecase}
+	userRouter.Use(amw.checkAuthMiddleware)
+	cartRouter.Use(amw.checkAuthMiddleware)
+
 	http.ListenAndServe(conf.Port, myRouter)
 }

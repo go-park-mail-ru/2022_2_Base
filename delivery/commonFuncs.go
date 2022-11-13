@@ -22,7 +22,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 89.208.198.137:8080
+// @host 127.0.0.1:8080
 // @BasePath  /api/v1
 
 type OrderHandler struct {
@@ -60,40 +60,12 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	// hashTok := HashToken{Secret: []byte("Base")}
-	// token := r.Header.Get("csrf")
-	// curSession := model.Session{ID: 0, UserUUID: session.Value}
-	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
-	// if err != nil || !flag {
-	// 	log.Println("no csrf token")
-	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-	// 	return
-	// }
-
-	usName, err := api.usHandler.usecase.GetSession(session.Value)
-	if err != nil {
-		log.Println("no session2")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
-	if err != nil {
-		log.Println("db error: ", err)
+	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if UserData.Email == "" {
-		log.Println("error user not found")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
+	UserData := r.Context().Value("userdata").(*model.UserDB)
 
 	cart, err := api.prHandler.usecase.GetCart(UserData.ID)
 	if err != nil {
@@ -142,40 +114,12 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	// hashTok := HashToken{Secret: []byte("Base")}
-	// token := r.Header.Get("csrf")
-	// curSession := model.Session{ID: 0, UserUUID: session.Value}
-	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
-	// if err != nil || !flag {
-	// 	log.Println("no csrf token")
-	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-	// 	return
-	// }
-
-	usName, err := api.usHandler.usecase.GetSession(session.Value)
-	if err != nil {
-		log.Println("no session2")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
-	if err != nil {
-		log.Println("db error: ", err)
+	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if UserData.Email == "" {
-		log.Println("error user not found")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
+	UserData := r.Context().Value("userdata").(*model.UserDB)
 
 	err = api.prHandler.usecase.UpdateOrder(UserData.ID, &req.Items)
 	if err != nil {
@@ -199,7 +143,7 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /insertintocart [post]
+// @Router /cart/insertintocart [post]
 func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
@@ -213,40 +157,12 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	// hashTok := HashToken{Secret: []byte("Base")}
-	// token := r.Header.Get("csrf")
-	// curSession := model.Session{ID: 0, UserUUID: session.Value}
-	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
-	// if err != nil || !flag {
-	// 	log.Println("no csrf token")
-	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-	// 	return
-	// }
-
-	usName, err := api.usHandler.usecase.GetSession(session.Value)
-	if err != nil {
-		log.Println("no session2")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
-	if err != nil {
-		log.Println("db error: ", err)
+	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if UserData.Email == "" {
-		log.Println("error user not found")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
+	UserData := r.Context().Value("userdata").(*model.UserDB)
 
 	err = api.prHandler.usecase.AddToOrder(UserData.ID, req.ItemID)
 	if err != nil {
@@ -271,7 +187,7 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 404 {object} model.Error "Not found - Requested entity is not found in database"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /deletefromcart [post]
+// @Router /cart/deletefromcart [post]
 func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
@@ -285,40 +201,12 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	// hashTok := HashToken{Secret: []byte("Base")}
-	// token := r.Header.Get("csrf")
-	// curSession := model.Session{ID: 0, UserUUID: session.Value}
-	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
-	// if err != nil || !flag {
-	// 	log.Println("no csrf token")
-	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-	// 	return
-	// }
-
-	usName, err := api.usHandler.usecase.GetSession(session.Value)
-	if err != nil {
-		log.Println("no session2")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
-	if err != nil {
-		log.Println("db error: ", err)
+	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if UserData.Email == "" {
-		log.Println("error user not found")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
+	UserData := r.Context().Value("userdata").(*model.UserDB)
 
 	err = api.prHandler.usecase.DeleteFromOrder(UserData.ID, req.ItemID)
 	if err == baseErrors.ErrNotFound404 {
@@ -345,48 +233,20 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /makeorder [post]
+// @Router /cart/makeorder [post]
 func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
 
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	// hashTok := HashToken{Secret: []byte("Base")}
-	// token := r.Header.Get("csrf")
-	// curSession := model.Session{ID: 0, UserUUID: session.Value}
-	// flag, err := hashTok.CheckCSRFToken(&curSession, token)
-	// if err != nil || !flag {
-	// 	log.Println("no csrf token")
-	// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-	// 	return
-	// }
-
-	usName, err := api.usHandler.usecase.GetSession(session.Value)
-	if err != nil {
-		log.Println("no session2")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	UserData, err := api.usHandler.usecase.GetUserByUsername(usName)
-	if err != nil {
-		log.Println("db error: ", err)
+	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if UserData.Email == "" {
-		log.Println("error user not found")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
+	UserData := r.Context().Value("userdata").(*model.UserDB)
 
-	err = api.prHandler.usecase.MakeOrder(UserData.ID)
+	err := api.prHandler.usecase.MakeOrder(UserData.ID)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)

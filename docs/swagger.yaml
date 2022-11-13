@@ -136,37 +136,6 @@ info:
   title: Reozon API
   version: "1.0"
 paths:
-  /avatar:
-    post:
-      consumes:
-      - multipart/form-data
-      description: sets user's avatar
-      operationId: setAvatar
-      parameters:
-      - description: user's avatar
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Response'
-        "401":
-          description: Unauthorized - Access token is missing or invalid
-          schema:
-            $ref: '#/definitions/model.Error'
-        "500":
-          description: Internal Server Error - Request is valid but operation failed
-            at server side
-          schema:
-            $ref: '#/definitions/model.Error'
-      summary: Set user's avatar
-      tags:
-      - User
   /cart:
     get:
       consumes:
@@ -231,7 +200,7 @@ paths:
       summary: updates user's cart
       tags:
       - Order
-  /deletefromcart:
+  /cart/deletefromcart:
     post:
       consumes:
       - application/json
@@ -271,7 +240,7 @@ paths:
       summary: Deletes Item From cart
       tags:
       - Order
-  /insertintocart:
+  /cart/insertintocart:
     post:
       consumes:
       - application/json
@@ -305,6 +274,35 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Adds item to cart
+      tags:
+      - Order
+  /cart/makeorder:
+    post:
+      consumes:
+      - application/json
+      description: makes user's order
+      operationId: MakeOrder
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: makes user's order
       tags:
       - Order
   /login:
@@ -363,41 +361,23 @@ paths:
       summary: Logs out user
       tags:
       - User
-  /makeorder:
-    post:
-      consumes:
-      - application/json
-      description: makes user's order
-      operationId: MakeOrder
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Response'
-        "400":
-          description: Bad request - Problem with the request
-          schema:
-            $ref: '#/definitions/model.Error'
-        "401":
-          description: Unauthorized - Access token is missing or invalid
-          schema:
-            $ref: '#/definitions/model.Error'
-        "500":
-          description: Internal Server Error - Request is valid but operation failed
-            at server side
-          schema:
-            $ref: '#/definitions/model.Error'
-      summary: makes user's order
-      tags:
-      - Order
   /products:
     get:
       consumes:
       - application/json
       description: Gets products for main page
       operationId: getMain
+      parameters:
+      - description: lastitemid
+        in: query
+        name: lastitemid
+        required: true
+        type: string
+      - description: count
+        in: query
+        name: count
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -425,6 +405,16 @@ paths:
         name: category
         required: true
         type: string
+      - description: lastitemid
+        in: query
+        name: lastitemid
+        required: true
+        type: string
+      - description: count
+        in: query
+        name: count
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -440,7 +430,94 @@ paths:
       summary: Gets products by category
       tags:
       - Products
-  /profile:
+  /session:
+    get:
+      consumes:
+      - application/json
+      description: Checks if user has active session
+      operationId: session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Checks if user has active session
+      tags:
+      - User
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Sign up user
+      operationId: signup
+      parameters:
+      - description: UserDB params
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserCreateParams'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "409":
+          description: Conflict - UserDB already exists
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Signs up and returns the authentication  cookie
+      tags:
+      - User
+  /user/avatar:
+    post:
+      consumes:
+      - multipart/form-data
+      description: sets user's avatar
+      operationId: setAvatar
+      parameters:
+      - description: user's avatar
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Set user's avatar
+      tags:
+      - User
+  /user/profile:
     get:
       consumes:
       - application/json
@@ -498,62 +575,6 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: changes user parameters
-      tags:
-      - User
-  /session:
-    get:
-      consumes:
-      - application/json
-      description: Checks if user has active session
-      operationId: session
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Response'
-        "401":
-          description: Unauthorized - Access token is missing or invalid
-          schema:
-            $ref: '#/definitions/model.Error'
-      summary: Checks if user has active session
-      tags:
-      - User
-  /signup:
-    post:
-      consumes:
-      - application/json
-      description: Sign up user
-      operationId: signup
-      parameters:
-      - description: UserDB params
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/model.UserCreateParams'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Response'
-        "400":
-          description: Bad request - Problem with the request
-          schema:
-            $ref: '#/definitions/model.Error'
-        "409":
-          description: Conflict - UserDB already exists
-          schema:
-            $ref: '#/definitions/model.Error'
-        "500":
-          description: Internal Server Error - Request is valid but operation failed
-            at server side
-          schema:
-            $ref: '#/definitions/model.Error'
-      summary: Signs up and returns the authentication  cookie
       tags:
       - User
 swagger: "2.0"

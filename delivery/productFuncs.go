@@ -6,6 +6,7 @@ import (
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	usecase "serv/usecase"
+	"strconv"
 	"strings"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -28,6 +29,8 @@ func NewProductHandler(puc *usecase.ProductUsecase) *ProductHandler {
 // @Accept  json
 // @Produce  json
 // @Tags Products
+// @Param   lastitemid    query     string  true  "lastitemid"
+// @Param   count         query     string  true  "count"
 // @Success 200 {object} model.Product
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /products [get]
@@ -36,7 +39,19 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	products, err := api.usecase.GetProducts()
+	lastitemidS := r.URL.Query().Get("lastitemid")
+	countS := r.URL.Query().Get("count")
+	lastitemid, err := strconv.Atoi(lastitemidS)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+	count, err := strconv.Atoi(countS)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+	products, err := api.usecase.GetProducts(lastitemid, count)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -59,6 +74,8 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 // @Produce  json
 // @Tags Products
 // @Param category path string true "The category of products"
+// @Param   lastitemid    query     string  true  "lastitemid"
+// @Param   count         query     string  true  "count"
 // @Success 200 {object} model.Product
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /products/{category} [get]
@@ -69,7 +86,20 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 	s := strings.Split(r.URL.Path, "/")
 	category := s[len(s)-1]
 	sanitizer := bluemonday.UGCPolicy()
-	products, err := api.usecase.GetProductsWithCategory(category)
+	lastitemidS := r.URL.Query().Get("lastitemid")
+	countS := r.URL.Query().Get("count")
+	lastitemid, err := strconv.Atoi(lastitemidS)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+	count, err := strconv.Atoi(countS)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	products, err := api.usecase.GetProductsWithCategory(category, lastitemid, count)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return

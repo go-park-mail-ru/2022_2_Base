@@ -19,9 +19,9 @@ func NewProductStore(db *pgxpool.Pool) *ProductStore {
 	}
 }
 
-func (ps *ProductStore) GetProductsFromStore() ([]*model.Product, error) {
+func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int) ([]*model.Product, error) {
 	products := []*model.Product{}
-	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products LIMIT 6;`)
+	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -39,9 +39,9 @@ func (ps *ProductStore) GetProductsFromStore() ([]*model.Product, error) {
 	return products, nil
 }
 
-func (ps *ProductStore) GetProductsWithCategoryFromStore(category string) ([]*model.Product, error) {
+func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastitemid int, count int) ([]*model.Product, error) {
 	products := []*model.Product{}
-	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 LIMIT 6;`, category)
+	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND id > $2 LIMIT $3;`, category, lastitemid, count)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
