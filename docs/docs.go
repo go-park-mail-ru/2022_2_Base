@@ -244,6 +244,17 @@ const docTemplate = `{
                 ],
                 "summary": "makes user's order",
                 "operationId": "MakeOrder",
+                "parameters": [
+                    {
+                        "description": "MakeOrder params",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.MakeOrder"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -697,10 +708,42 @@ const docTemplate = `{
                 "error": {}
             }
         },
+        "model.MakeOrder": {
+            "type": "object",
+            "properties": {
+                "adress": {
+                    "type": "string"
+                },
+                "card": {
+                    "type": "string"
+                },
+                "deliveryDate": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "userid": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.Order": {
             "type": "object",
             "properties": {
                 "adress": {
+                    "type": "string"
+                },
+                "card": {
+                    "type": "string"
+                },
+                "creationDate": {
+                    "type": "string"
+                },
+                "deliveryDate": {
                     "type": "string"
                 },
                 "id": {
@@ -865,7 +908,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "127.0.0.1:8080",
+	Host:             "89.208.198.137:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Reozon API",

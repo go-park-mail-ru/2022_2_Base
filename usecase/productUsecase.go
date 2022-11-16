@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	rep "serv/repository"
 )
@@ -19,7 +18,7 @@ func NewProductUsecase(ps *rep.ProductStore) *ProductUsecase {
 func (api *ProductUsecase) GetProducts(lastitemid int, count int) ([]*model.Product, error) {
 	products, err := api.store.GetProductsFromStore(lastitemid, count)
 	if err != nil {
-		return nil, baseErrors.ErrServerError500
+		return nil, err
 	}
 	return products, nil
 }
@@ -27,7 +26,7 @@ func (api *ProductUsecase) GetProducts(lastitemid int, count int) ([]*model.Prod
 func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, count int) ([]*model.Product, error) {
 	products, err := api.store.GetProductsWithCategoryFromStore(cat, lastitemid, count)
 	if err != nil {
-		return nil, baseErrors.ErrServerError500
+		return nil, err
 	}
 	return products, nil
 }
@@ -62,11 +61,36 @@ func (api *ProductUsecase) DeleteFromOrder(userID int, itemID int) error {
 	return api.store.DeleteItemFromCartById(userID, itemID)
 }
 
-func (api *ProductUsecase) MakeOrder(userID int) error {
-
-	err := api.store.MakeOrder(userID)
+func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) error {
+	cart, err := api.store.GetCart(in.UserID)
 	if err != nil {
 		return err
 	}
-	return api.store.CreateCart(userID)
+	remainedItemsIDs := []int{}
+	for _, orderItem := range cart.Items {
+		flag := true
+		for _, id := range in.Items {
+			if orderItem.Item.ID == id {
+				flag = false
+			}
+		}
+		if flag {
+			for i := 0; i < orderItem.Count; i++ {
+				remainedItemsIDs = append(remainedItemsIDs, orderItem.Item.ID)
+			}
+
+		}
+	}
+
+	err = api.store.MakeOrder(in)
+	if err != nil {
+		return err
+	}
+
+	err = api.store.CreateCart(in.UserID)
+	if err != nil {
+		return err
+	}
+
+	return api.store.UpdateCart(in.UserID, &remainedItemsIDs)
 }

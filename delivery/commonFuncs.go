@@ -22,7 +22,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 127.0.0.1:8080
+// @host 89.208.198.137:8080
 // @BasePath  /api/v1
 
 type OrderHandler struct {
@@ -76,7 +76,7 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 
 	cart.OrderStatus = sanitizer.Sanitize(cart.OrderStatus)
 	cart.PaymentStatus = sanitizer.Sanitize(cart.PaymentStatus)
-	cart.Adress = sanitizer.Sanitize(cart.Adress)
+	//*cart.Adress = sanitizer.Sanitize(*cart.Adress)
 	for _, prod := range cart.Items {
 		if prod.Item.Imgsrc != nil {
 			*prod.Item.Imgsrc = sanitizer.Sanitize(*prod.Item.Imgsrc)
@@ -229,6 +229,7 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 // @Accept  json
 // @Produce  json
 // @Tags Order
+// @Param order body model.MakeOrder true "MakeOrder params"
 // @Success 200 {object} model.Response "OK"
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
@@ -239,14 +240,22 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
-		log.Println("err get user from context ")
-		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+	decoder := json.NewDecoder(r.Body)
+	var req model.MakeOrder
+	err := decoder.Decode(&req)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserDB)
 
-	err := api.prHandler.usecase.MakeOrder(UserData.ID)
+	// if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+	// 	log.Println("err get user from context ")
+	// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+	// 	return
+	// }
+	// UserData := r.Context().Value("userdata").(*model.UserDB)
+
+	err = api.prHandler.usecase.MakeOrder(&req)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)

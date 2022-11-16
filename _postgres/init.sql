@@ -19,12 +19,16 @@ CREATE TABLE users (
 );
 
 
-CREATE TABLE orderTable (
-    id  SERIAL PRIMARY KEY,
-	userID INT NOT NULL,
-    orderStatus VARCHAR (20) NOT NULL,
-	paymentStatus VARCHAR (30) NOT NULL, 
-    adress VARCHAR (50) NOT NULL
+CREATE TABLE orders
+(
+    id            SERIAL PRIMARY KEY,
+    userID        INT REFERENCES users (id) ON DELETE CASCADE,
+    orderStatus   VARCHAR(20) NOT NULL,
+    paymentStatus VARCHAR(30) NOT NULL,
+    address       VARCHAR(50),
+    paymentcardnumber      VARCHAR(16),
+    creationDate  timestamp,
+    deliveryDate  timestamp
 );
 
 CREATE TABLE orderItems (

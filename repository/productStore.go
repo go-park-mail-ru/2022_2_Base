@@ -5,6 +5,7 @@ import (
 	"log"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -82,10 +83,10 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 
 func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
-	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, pr.price, pr.discountprice, pr.rating, pr.imgsrc FROM orderitems JOIN ordertable ON orderitems.orderid=ordertable.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
+	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, pr.price, pr.discountprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	defer rows.Close()
 	if err != nil {
-		return nil, baseErrors.ErrServerError500
+		return nil, err
 	}
 	for rows.Next() {
 		var count int
@@ -101,7 +102,7 @@ func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem,
 }
 
 func (ps *ProductStore) CreateCart(userID int) error {
-	_, err := ps.db.Exec(context.Background(), `INSERT INTO ordertable (userID, orderStatus, paymentStatus, adress) VALUES ($1, $2, $3, $4);`, userID, "cart", "not started", "111")
+	_, err := ps.db.Exec(context.Background(), `INSERT INTO orders (userID, orderStatus, paymentStatus) VALUES ($1, $2, $3);`, userID, "cart", "not started")
 	if err != nil {
 		return err
 	}
@@ -109,20 +110,20 @@ func (ps *ProductStore) CreateCart(userID int) error {
 }
 
 func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
-	rows, err := ps.db.Query(context.Background(), `SELECT ID, userID, orderStatus, paymentStatus, adress FROM ordertable WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
+	rows, err := ps.db.Query(context.Background(), `SELECT ID, userID, orderStatus, paymentStatus, address, paymentcardnumber, creationDate, deliveryDate  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	cart := model.Order{}
 	for rows.Next() {
-		err := rows.Scan(&cart.ID, &cart.UserID, &cart.OrderStatus, &cart.PaymentStatus, &cart.Adress)
+		err := rows.Scan(&cart.ID, &cart.UserID, &cart.OrderStatus, &cart.PaymentStatus, &cart.Adress, &cart.Paymentcardnumber, &cart.CreationDate, &cart.DeliveryDate)
 		if err != nil {
 			return nil, err
 		}
 	}
-	orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
 
+	orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -200,8 +201,8 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 	return baseErrors.ErrNotFound404
 }
 
-func (ps *ProductStore) MakeOrder(userID int) error {
-	_, err := ps.db.Exec(context.Background(), `UPDATE ordertable SET orderStatus = $1, paymentStatus = $2  WHERE userID = $3 AND orderStatus = $4;`, "processed", "paid", userID, "cart")
+func (ps *ProductStore) MakeOrder(in *model.MakeOrder) error {
+	_, err := ps.db.Exec(context.Background(), `UPDATE orders SET orderStatus = $1, paymentStatus = $2, address = $3, paymentcardnumber = $4, creationDate = $5, deliveryDate = $6  WHERE userID = $7 AND orderStatus = $8;`, "created", "not started", in.Adress, in.Paymentcardnumber, time.Now().Format("2006.01.02 15:04:05"), in.DeliveryDate, in.UserID, "cart")
 	if err != nil {
 		return err
 	}

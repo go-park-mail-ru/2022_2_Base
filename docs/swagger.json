@@ -15,7 +15,7 @@
         },
         "version": "1.0"
     },
-    "host": "127.0.0.1:8080",
+    "host": "89.208.198.137:8080",
     "basePath": "/api/v1",
     "paths": {
         "/cart": {
@@ -237,6 +237,17 @@
                 ],
                 "summary": "makes user's order",
                 "operationId": "MakeOrder",
+                "parameters": [
+                    {
+                        "description": "MakeOrder params",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.MakeOrder"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -690,10 +701,42 @@
                 "error": {}
             }
         },
+        "model.MakeOrder": {
+            "type": "object",
+            "properties": {
+                "adress": {
+                    "type": "string"
+                },
+                "card": {
+                    "type": "string"
+                },
+                "deliveryDate": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "userid": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.Order": {
             "type": "object",
             "properties": {
                 "adress": {
+                    "type": "string"
+                },
+                "card": {
+                    "type": "string"
+                },
+                "creationDate": {
+                    "type": "string"
+                },
+                "deliveryDate": {
                     "type": "string"
                 },
                 "id": {

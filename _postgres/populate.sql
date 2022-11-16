@@ -7,6 +7,13 @@ INSERT INTO products (name, category, price, discountPrice, rating, imgsrc) VALU
 ('Apple iPhone 9', 'phones', 62999, 54999, 5, 'https://img.mvideo.ru/Big/30063237bb.jpg'),
 ('Apple iPhone 8', 'phones', 62999, 54999, 5, 'https://img.mvideo.ru/Big/30063237bb.jpg'),
 ('Apple iPhone 7', 'phones', 62999, 54999, 5, 'https://img.mvideo.ru/Big/30063237bb.jpg'),
+('Apple iPhone 6', 'phones', 62999, 54999, 5, 'https://img.mvideo.ru/Big/30063237bb.jpg'),
+('Apple iPhone 5', 'phones', 62999, 54999, 5, 'https://img.mvideo.ru/Big/30063237bb.jpg'),
+('Apple iPhone 4', 'phones', 62999, 54999, 5, 'https://img.mvideo.ru/Big/30063237bb.jpg'),
+('Apple iPhone 3', 'phones', 62999, 54999, 5, 'https://img.mvideo.ru/Big/30063237bb.jpg'),
+('Apple iPhone 2', 'phones', 62999, 54999, 5, 'https://img.mvideo.ru/Big/30063237bb.jpg'),
+('Apple iPhone 21', 'phones', 62999, 54999, 5, 'https://img.mvideo.ru/Big/30063237bb.jpg'),
+('Apple iPhone 0', 'phones', 62999, 54999, 5, 'https://img.mvideo.ru/Big/30063237bb.jpg'),
 ('Монитор Xiaomi Mi 24', 'monitors', 14999, 13999, 4, 'https://img.mvideo.ru/Big/30058309bb.jpg');
 
 INSERT INTO users (email, username, password) VALUES

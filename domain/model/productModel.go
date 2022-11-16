@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 type Product struct {
 	ID            int      `json:"id"`
 	Name          string   `json:"name"`
@@ -24,10 +26,21 @@ type OrderItem struct {
 }
 
 type Order struct {
-	ID            int          `json:"id"`
-	UserID        uint         `json:"userid"`
-	Items         []*OrderItem `json:"items"`
-	OrderStatus   string       `json:"orderstatus"`
-	PaymentStatus string       `json:"paymentstatus"`
-	Adress        string       `json:"adress"`
+	ID                int          `json:"id"`
+	UserID            int          `json:"userid"`
+	Items             []*OrderItem `json:"items"`
+	OrderStatus       string       `json:"orderstatus"`
+	PaymentStatus     string       `json:"paymentstatus"`
+	Adress            *string      `json:"adress"`
+	Paymentcardnumber *string      `json:"card"`
+	CreationDate      *time.Time   `json:"creationDate"`
+	DeliveryDate      *time.Time   `json:"deliveryDate"`
+}
+
+type MakeOrder struct {
+	UserID            int       `json:"userid"`
+	Items             []int     `json:"items"`
+	Adress            string    `json:"adress"`
+	Paymentcardnumber string    `json:"card,omitempty"`
+	DeliveryDate      time.Time `json:"deliveryDate"`
 }
