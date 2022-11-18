@@ -37,6 +37,21 @@ type Order struct {
 	DeliveryDate      *time.Time   `json:"deliveryDate"`
 }
 
+type CartProduct struct {
+	ID            int      `json:"id"`
+	Name          string   `json:"name"`
+	Count         int      `json:"count"`
+	Price         float64  `json:"price"`
+	DiscountPrice *float64 `json:"lowprice,omitempty"`
+	Imgsrc        *string  `json:"imgsrc,omitempty"`
+}
+
+type Cart struct {
+	ID     int            `json:"id"`
+	UserID int            `json:"userid"`
+	Items  []*CartProduct `json:"items"`
+}
+
 type MakeOrder struct {
 	UserID            int       `json:"userid"`
 	Items             []int     `json:"items"`
