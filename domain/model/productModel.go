@@ -55,7 +55,7 @@ type Cart struct {
 type MakeOrder struct {
 	UserID            int       `json:"userid"`
 	Items             []int     `json:"items"`
-	Address           string    `json:"adress"`
+	Address           string    `json:"address"`
 	Paymentcardnumber string    `json:"card,omitempty"`
 	DeliveryDate      time.Time `json:"deliveryDate"`
 }
