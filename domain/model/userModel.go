@@ -20,7 +20,7 @@ type UserLogin struct {
 	Password string `json:"password"`
 }
 
-type Adress struct {
+type Address struct {
 	ID       int    `json:"id"`
 	City     string `json:"city"`
 	Street   string `json:"street"`
@@ -41,7 +41,7 @@ type UserProfile struct {
 	Username       string           `json:"username"`
 	Phone          string           `json:"phone,omitempty"`
 	Avatar         string           `json:"avatar,omitempty"`
-	Adress         []*Adress        `json:"adress,omitempty"`
+	Address        []*Address       `json:"address,omitempty"`
 	PaymentMethods []*PaymentMethod `json:"paymentmethods,omitempty"`
 }
 

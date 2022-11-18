@@ -31,7 +31,7 @@ type Order struct {
 	Items             []*OrderItem `json:"items"`
 	OrderStatus       string       `json:"orderstatus"`
 	PaymentStatus     string       `json:"paymentstatus"`
-	Adress            *string      `json:"adress"`
+	Address           *string      `json:"address"`
 	Paymentcardnumber *string      `json:"card"`
 	CreationDate      *time.Time   `json:"creationDate"`
 	DeliveryDate      *time.Time   `json:"deliveryDate"`
@@ -40,7 +40,7 @@ type Order struct {
 type MakeOrder struct {
 	UserID            int       `json:"userid"`
 	Items             []int     `json:"items"`
-	Adress            string    `json:"adress"`
+	Address           string    `json:"adress"`
 	Paymentcardnumber string    `json:"card,omitempty"`
 	DeliveryDate      time.Time `json:"deliveryDate"`
 }

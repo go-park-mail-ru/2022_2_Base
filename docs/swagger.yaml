@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  model.Adress:
+  model.Address:
     properties:
       city:
         type: string
@@ -34,7 +34,7 @@ definitions:
     type: object
   model.Order:
     properties:
-      adress:
+      address:
         type: string
       card:
         type: string
@@ -126,9 +126,9 @@ definitions:
     type: object
   model.UserProfile:
     properties:
-      adress:
+      address:
         items:
-          $ref: '#/definitions/model.Adress'
+          $ref: '#/definitions/model.Address'
         type: array
       avatar:
         type: string

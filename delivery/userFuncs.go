@@ -46,7 +46,7 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 	user := r.Context().Value("userdata").(*model.UserDB)
 
-	adresses, err := api.usecase.GetAdressesByUserID(user.ID)
+	addresses, err := api.usecase.GetAddressesByUserID(user.ID)
 	if err != nil {
 		log.Println("err get adresses ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -75,7 +75,7 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	userProfile.Username = sanitizer.Sanitize(userProfile.Username)
 	userProfile.Phone = sanitizer.Sanitize(userProfile.Phone)
 	userProfile.Avatar = sanitizer.Sanitize(userProfile.Avatar)
-	for _, addr := range adresses {
+	for _, addr := range addresses {
 		addr.City = sanitizer.Sanitize(addr.City)
 		addr.House = sanitizer.Sanitize(addr.House)
 		addr.Street = sanitizer.Sanitize(addr.Street)
@@ -88,7 +88,7 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	userProfile.Adress = adresses
+	userProfile.Address = addresses
 	userProfile.PaymentMethods = payments
 	json.NewEncoder(w).Encode(userProfile)
 }

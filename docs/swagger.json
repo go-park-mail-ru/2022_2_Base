@@ -675,7 +675,7 @@
         }
     },
     "definitions": {
-        "model.Adress": {
+        "model.Address": {
             "type": "object",
             "properties": {
                 "city": {
@@ -727,7 +727,7 @@
         "model.Order": {
             "type": "object",
             "properties": {
-                "adress": {
+                "address": {
                     "type": "string"
                 },
                 "card": {
@@ -869,10 +869,10 @@
         "model.UserProfile": {
             "type": "object",
             "properties": {
-                "adress": {
+                "address": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Adress"
+                        "$ref": "#/definitions/model.Address"
                     }
                 },
                 "avatar": {

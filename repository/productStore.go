@@ -117,7 +117,7 @@ func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
 	defer rows.Close()
 	cart := model.Order{}
 	for rows.Next() {
-		err := rows.Scan(&cart.ID, &cart.UserID, &cart.OrderStatus, &cart.PaymentStatus, &cart.Adress, &cart.Paymentcardnumber, &cart.CreationDate, &cart.DeliveryDate)
+		err := rows.Scan(&cart.ID, &cart.UserID, &cart.OrderStatus, &cart.PaymentStatus, &cart.Address, &cart.Paymentcardnumber, &cart.CreationDate, &cart.DeliveryDate)
 		if err != nil {
 			return nil, err
 		}
@@ -202,7 +202,7 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 }
 
 func (ps *ProductStore) MakeOrder(in *model.MakeOrder) error {
-	_, err := ps.db.Exec(context.Background(), `UPDATE orders SET orderStatus = $1, paymentStatus = $2, address = $3, paymentcardnumber = $4, creationDate = $5, deliveryDate = $6  WHERE userID = $7 AND orderStatus = $8;`, "created", "not started", in.Adress, in.Paymentcardnumber, time.Now().Format("2006.01.02 15:04:05"), in.DeliveryDate, in.UserID, "cart")
+	_, err := ps.db.Exec(context.Background(), `UPDATE orders SET orderStatus = $1, paymentStatus = $2, address = $3, paymentcardnumber = $4, creationDate = $5, deliveryDate = $6  WHERE userID = $7 AND orderStatus = $8;`, "created", "not started", in.Address, in.Paymentcardnumber, time.Now().Format("2006.01.02 15:04:05"), in.DeliveryDate, in.UserID, "cart")
 	if err != nil {
 		return err
 	}

@@ -682,7 +682,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "model.Adress": {
+        "model.Address": {
             "type": "object",
             "properties": {
                 "city": {
@@ -734,7 +734,7 @@ const docTemplate = `{
         "model.Order": {
             "type": "object",
             "properties": {
-                "adress": {
+                "address": {
                     "type": "string"
                 },
                 "card": {
@@ -876,10 +876,10 @@ const docTemplate = `{
         "model.UserProfile": {
             "type": "object",
             "properties": {
-                "adress": {
+                "address": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Adress"
+                        "$ref": "#/definitions/model.Address"
                     }
                 },
                 "avatar": {

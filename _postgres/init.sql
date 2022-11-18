@@ -38,7 +38,7 @@ CREATE TABLE orderItems (
     count INT NOT NULL
 );
 
-CREATE TABLE adress (
+CREATE TABLE address (
     id  SERIAL PRIMARY KEY,
     userID INT NOT NULL,
     city VARCHAR (50) NOT NULL,
