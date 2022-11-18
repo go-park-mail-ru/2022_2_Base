@@ -86,7 +86,7 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	}
 	prodCart := model.Cart{ID: cart.ID, UserID: cart.UserID}
 	for _, prod := range cart.Items {
-		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, DiscountPrice: prod.Item.DiscountPrice, Imgsrc: &prod.Item.Category})
+		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, DiscountPrice: prod.Item.DiscountPrice, Imgsrc: prod.Item.Imgsrc})
 	}
 	json.NewEncoder(w).Encode(prodCart)
 }
