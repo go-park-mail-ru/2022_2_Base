@@ -7,6 +7,7 @@ import (
 	"serv/domain/model"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -20,9 +21,18 @@ func NewProductStore(db *pgxpool.Pool) *ProductStore {
 	}
 }
 
-func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int) ([]*model.Product, error) {
+func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort string) ([]*model.Product, error) {
 	products := []*model.Product{}
-	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
+	var rows pgx.Rows
+	var err error
+	if sort == "" {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
+	} else if sort == "price" {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE id > $1 ORDER BY price LIMIT $2;`, lastitemid, count)
+	} else if sort == "rating" {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE id > $1 ORDER BY rating DESC LIMIT $2;`, lastitemid, count)
+	}
+
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -40,9 +50,18 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int) ([]*mode
 	return products, nil
 }
 
-func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastitemid int, count int) ([]*model.Product, error) {
+func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastitemid int, count int, sort string) ([]*model.Product, error) {
 	products := []*model.Product{}
-	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND id > $2 LIMIT $3;`, category, lastitemid, count)
+	var rows pgx.Rows
+	var err error
+	if sort == "" {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND id > $2 LIMIT $3;`, category, lastitemid, count)
+	} else if sort == "price" {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND id > $2 ORDER BY price LIMIT $3;`, category, lastitemid, count)
+	} else if sort == "rating" {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND id > $2 ORDER BY rating DESC LIMIT $3;`, category, lastitemid, count)
+	}
+
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -164,7 +183,7 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 			return nil
 		}
 	}
-	_, err = ps.db.Exec(context.Background(), `INSERT INTO orderItems (userID, itemID, orderID, count) VALUES ($1, $2, $3, $4);`, userID, itemID, cart.ID, 1)
+	_, err = ps.db.Exec(context.Background(), `INSERT INTO orderItems (itemID, orderID, count) VALUES ($1, $2, $3);`, itemID, cart.ID, 1)
 	if err != nil {
 		return err
 	}

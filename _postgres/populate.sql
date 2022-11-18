@@ -20,7 +20,7 @@ INSERT INTO users (email, username, password) VALUES
 ('art@art',	'aaa', '12345678'),
 ('art2@art',	'bbb', '12345678');
 
-INSERT INTO adress (userID, city, street, house, priority) VALUES
+INSERT INTO address (userID, city, street, house, priority) VALUES
 (1, 'Moscow', 'IZM', '123', false);
 
 INSERT INTO payment (userID, type, number, expiryDate, priority) VALUES

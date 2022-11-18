@@ -31,6 +31,7 @@ func NewProductHandler(puc *usecase.ProductUsecase) *ProductHandler {
 // @Tags Products
 // @Param   lastitemid    query     string  true  "lastitemid"
 // @Param   count         query     string  true  "count"
+// @Param   sort         query     string  false  "sort"
 // @Success 200 {object} model.Product
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /products [get]
@@ -41,6 +42,7 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 	sanitizer := bluemonday.UGCPolicy()
 	lastitemidS := r.URL.Query().Get("lastitemid")
 	countS := r.URL.Query().Get("count")
+	sort := r.URL.Query().Get("sort")
 	lastitemid, err := strconv.Atoi(lastitemidS)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -51,7 +53,7 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	products, err := api.usecase.GetProducts(lastitemid, count)
+	products, err := api.usecase.GetProducts(lastitemid, count, sort)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -76,6 +78,7 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 // @Param category path string true "The category of products"
 // @Param   lastitemid    query     string  true  "lastitemid"
 // @Param   count         query     string  true  "count"
+// @Param   sort         query     string  false  "sort"
 // @Success 200 {object} model.Product
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /products/{category} [get]
@@ -88,6 +91,11 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 	sanitizer := bluemonday.UGCPolicy()
 	lastitemidS := r.URL.Query().Get("lastitemid")
 	countS := r.URL.Query().Get("count")
+	sort := r.URL.Query().Get("sort")
+	// log.Println("rrr", sort)
+	// if sort == "" {
+	// 	log.Println("zzzz")
+	// }
 	lastitemid, err := strconv.Atoi(lastitemidS)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -99,7 +107,7 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 		return
 	}
 
-	products, err := api.usecase.GetProductsWithCategory(category, lastitemid, count)
+	products, err := api.usecase.GetProductsWithCategory(category, lastitemid, count, sort)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return

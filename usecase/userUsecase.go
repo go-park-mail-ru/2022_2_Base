@@ -176,8 +176,8 @@ func (api *UserUsecase) ChangeUserPayments(userID int, userPayments []*model.Pay
 	}
 	for _, paymFromDB := range userPayments {
 		flag := true
-		for _, addr := range queryPayments {
-			if addr.ID == paymFromDB.ID {
+		for _, paym := range queryPayments {
+			if paym.ID == paymFromDB.ID {
 				flag = false
 				break
 			}

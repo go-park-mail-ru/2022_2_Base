@@ -143,7 +143,7 @@ definitions:
       username:
         type: string
     type: object
-host: 89.208.198.137:8080
+host: 127.0.0.1:8080
 info:
   contact:
     email: support@swagger.io
@@ -406,6 +406,10 @@ paths:
         name: count
         required: true
         type: string
+      - description: sort
+        in: query
+        name: sort
+        type: string
       produces:
       - application/json
       responses:
@@ -442,6 +446,10 @@ paths:
         in: query
         name: count
         required: true
+        type: string
+      - description: sort
+        in: query
+        name: sort
         type: string
       produces:
       - application/json

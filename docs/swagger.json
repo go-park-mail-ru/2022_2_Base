@@ -15,7 +15,7 @@
         },
         "version": "1.0"
     },
-    "host": "89.208.198.137:8080",
+    "host": "127.0.0.1:8080",
     "basePath": "/api/v1",
     "paths": {
         "/cart": {
@@ -387,6 +387,12 @@
                         "name": "count",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -440,6 +446,12 @@
                         "name": "count",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
                     }
                 ],
                 "responses": {
