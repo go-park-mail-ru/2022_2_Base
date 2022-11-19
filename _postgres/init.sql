@@ -18,26 +18,6 @@ CREATE TABLE users (
     avatar VARCHAR (30)
 );
 
-
-CREATE TABLE orders
-(
-    id            SERIAL PRIMARY KEY,
-    userID        INT REFERENCES users (id) ON DELETE CASCADE,
-    orderStatus   VARCHAR(20) NOT NULL,
-    paymentStatus VARCHAR(30) NOT NULL,
-    address       VARCHAR(50),
-    paymentcardnumber      VARCHAR(16),
-    creationDate  timestamp,
-    deliveryDate  timestamp
-);
-
-CREATE TABLE orderItems (
-    id  SERIAL PRIMARY KEY,
-    itemID INT NOT NULL,
-    orderID INT NOT NULL,
-    count INT NOT NULL
-);
-
 CREATE TABLE address (
     id  SERIAL PRIMARY KEY,
     userID INT NOT NULL,
@@ -54,4 +34,22 @@ CREATE TABLE payment (
     number VARCHAR (50) NOT NULL,
     expiryDate VARCHAR (50) NOT NULL,
     priority BOOLEAN NOT NULL
+);
+
+CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,
+    userID INT REFERENCES users (id) ON DELETE CASCADE,
+    orderStatus VARCHAR(20) NOT NULL,
+    paymentStatus VARCHAR(30) NOT NULL,
+    addressID INT REFERENCES address (id) ON DELETE RESTRICT,
+    paymentCardID INT REFERENCES payment (id) ON DELETE RESTRICT,
+    creationDate TIMESTAMP,
+    deliveryDate TIMESTAMP
+);
+
+CREATE TABLE orderItems (
+    id  SERIAL PRIMARY KEY,
+    itemID INT NOT NULL,
+    orderID INT NOT NULL,
+    count INT NOT NULL
 );

@@ -706,7 +706,7 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "primary": {
+                "priority": {
                     "type": "boolean"
                 },
                 "street": {
@@ -724,10 +724,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "address": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "card": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "deliveryDate": {
                     "type": "string"
@@ -747,10 +747,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "address": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "card": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "creationDate": {
                     "type": "string"

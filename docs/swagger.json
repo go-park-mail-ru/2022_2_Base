@@ -699,7 +699,7 @@
                 "id": {
                     "type": "integer"
                 },
-                "primary": {
+                "priority": {
                     "type": "boolean"
                 },
                 "street": {
@@ -717,10 +717,10 @@
             "type": "object",
             "properties": {
                 "address": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "card": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "deliveryDate": {
                     "type": "string"
@@ -740,10 +740,10 @@
             "type": "object",
             "properties": {
                 "address": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "card": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "creationDate": {
                     "type": "string"

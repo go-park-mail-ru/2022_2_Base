@@ -17,11 +17,10 @@ INSERT INTO products (name, category, price, discountPrice, rating, imgsrc) VALU
 ('Монитор Xiaomi Mi 24', 'monitors', 14999, 13999, 4, 'https://img.mvideo.ru/Big/30058309bb.jpg');
 
 INSERT INTO users (email, username, password) VALUES
-('art@art',	'aaa', '12345678'),
-('art2@art',	'bbb', '12345678');
+('art@art',	'aaa', '12345678');
 
 INSERT INTO address (userID, city, street, house, priority) VALUES
-(1, 'Moscow', 'IZM', '123', false);
+(1, 'default', 'default', 'default', false);
 
-INSERT INTO payment (userID, type, number, expiryDate, priority) VALUES
-(1, 'Card', '22222', '3333', false);
+INSERT INTO payment (userID, paymentType, number, expiryDate, priority) VALUES
+(1, 'Card', 'default', '1975-08-19T23:15:30.000Z', false);

@@ -118,6 +118,9 @@ func (api *UserUsecase) ChangeUser(oldUserData *model.UserDB, params *model.User
 
 func (api *UserUsecase) ChangeUserAddresses(userID int, userAddresses []*model.Address, queryAddresses []*model.Address) error {
 	for _, addr := range queryAddresses {
+		if addr == nil {
+			continue
+		}
 		flag := true
 		for _, addrFromDB := range userAddresses {
 			if addr.ID == addrFromDB.ID {
@@ -139,6 +142,9 @@ func (api *UserUsecase) ChangeUserAddresses(userID int, userAddresses []*model.A
 	for _, addrFromDB := range userAddresses {
 		flag := true
 		for _, addr := range queryAddresses {
+			if addr == nil {
+				continue
+			}
 			if addr.ID == addrFromDB.ID {
 				flag = false
 				break
@@ -156,6 +162,9 @@ func (api *UserUsecase) ChangeUserAddresses(userID int, userAddresses []*model.A
 
 func (api *UserUsecase) ChangeUserPayments(userID int, userPayments []*model.PaymentMethod, queryPayments []*model.PaymentMethod) error {
 	for _, paym := range queryPayments {
+		if paym == nil {
+			continue
+		}
 		flag := true
 		for _, paymFromDB := range userPayments {
 			if paym.ID == paymFromDB.ID {
@@ -177,6 +186,9 @@ func (api *UserUsecase) ChangeUserPayments(userID int, userPayments []*model.Pay
 	for _, paymFromDB := range userPayments {
 		flag := true
 		for _, paym := range queryPayments {
+			if paym == nil {
+				continue
+			}
 			if paym.ID == paymFromDB.ID {
 				flag = false
 				break

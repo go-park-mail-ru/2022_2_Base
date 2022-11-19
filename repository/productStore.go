@@ -121,7 +121,7 @@ func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem,
 }
 
 func (ps *ProductStore) CreateCart(userID int) error {
-	_, err := ps.db.Exec(context.Background(), `INSERT INTO orders (userID, orderStatus, paymentStatus) VALUES ($1, $2, $3);`, userID, "cart", "not started")
+	_, err := ps.db.Exec(context.Background(), `INSERT INTO orders (userID, orderStatus, paymentStatus, addressID, paymentcardID) VALUES ($1, $2, $3, 1, 1);`, userID, "cart", "not started")
 	if err != nil {
 		return err
 	}
@@ -129,16 +129,26 @@ func (ps *ProductStore) CreateCart(userID int) error {
 }
 
 func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
-	rows, err := ps.db.Query(context.Background(), `SELECT ID, userID, orderStatus, paymentStatus, address, paymentcardnumber, creationDate, deliveryDate  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
+	rows, err := ps.db.Query(context.Background(), `SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	cart := model.Order{}
+	cart := &model.Order{}
 	for rows.Next() {
-		err := rows.Scan(&cart.ID, &cart.UserID, &cart.OrderStatus, &cart.PaymentStatus, &cart.Address, &cart.Paymentcardnumber, &cart.CreationDate, &cart.DeliveryDate)
+		err := rows.Scan(&cart.ID, &cart.UserID, &cart.OrderStatus, &cart.PaymentStatus, &cart.AddressID, &cart.PaymentcardID, &cart.CreationDate, &cart.DeliveryDate)
 		if err != nil {
 			return nil, err
+		}
+		if cart.ID == 0 {
+			err = ps.CreateCart(userID)
+			if err != nil {
+				return nil, err
+			}
+			cart, err = ps.GetCart(userID)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -147,7 +157,7 @@ func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
 		return nil, err
 	}
 	cart.Items = orderItems
-	return &cart, nil
+	return cart, nil
 }
 
 func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
@@ -221,7 +231,7 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 }
 
 func (ps *ProductStore) MakeOrder(in *model.MakeOrder) error {
-	_, err := ps.db.Exec(context.Background(), `UPDATE orders SET orderStatus = $1, paymentStatus = $2, address = $3, paymentcardnumber = $4, creationDate = $5, deliveryDate = $6  WHERE userID = $7 AND orderStatus = $8;`, "created", "not started", in.Address, in.Paymentcardnumber, time.Now().Format("2006.01.02 15:04:05"), in.DeliveryDate, in.UserID, "cart")
+	_, err := ps.db.Exec(context.Background(), `UPDATE orders SET orderStatus = $1, paymentStatus = $2, addressID = $3, paymentcardID = $4, creationDate = $5, deliveryDate = $6  WHERE userID = $7 AND orderStatus = $8;`, "created", "not started", in.AddressID, in.PaymentcardID, time.Now().Format("2006.01.02 15:04:05"), in.DeliveryDate, in.UserID, "cart")
 	if err != nil {
 		return err
 	}

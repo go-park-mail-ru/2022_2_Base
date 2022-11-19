@@ -26,15 +26,15 @@ type OrderItem struct {
 }
 
 type Order struct {
-	ID                int          `json:"id"`
-	UserID            int          `json:"userid"`
-	Items             []*OrderItem `json:"items"`
-	OrderStatus       string       `json:"orderstatus"`
-	PaymentStatus     string       `json:"paymentstatus"`
-	Address           *string      `json:"address"`
-	Paymentcardnumber *string      `json:"card"`
-	CreationDate      *time.Time   `json:"creationDate"`
-	DeliveryDate      *time.Time   `json:"deliveryDate"`
+	ID            int          `json:"id"`
+	UserID        int          `json:"userid"`
+	Items         []*OrderItem `json:"items"`
+	OrderStatus   string       `json:"orderstatus"`
+	PaymentStatus string       `json:"paymentstatus"`
+	AddressID     int          `json:"address"`
+	PaymentcardID int          `json:"card"`
+	CreationDate  *time.Time   `json:"creationDate"`
+	DeliveryDate  *time.Time   `json:"deliveryDate"`
 }
 
 type CartProduct struct {
@@ -53,9 +53,9 @@ type Cart struct {
 }
 
 type MakeOrder struct {
-	UserID            int       `json:"userid"`
-	Items             []int     `json:"items"`
-	Address           string    `json:"address"`
-	Paymentcardnumber string    `json:"card,omitempty"`
-	DeliveryDate      time.Time `json:"deliveryDate"`
+	UserID        int       `json:"userid"`
+	Items         []int     `json:"items"`
+	AddressID     int       `json:"address"`
+	PaymentcardID int       `json:"card"`
+	DeliveryDate  time.Time `json:"deliveryDate"`
 }

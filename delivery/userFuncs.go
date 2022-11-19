@@ -124,7 +124,7 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	oldUserData := r.Context().Value("userdata").(*model.UserDB)
-
+	//log.Println("zzz")
 	err = api.usecase.ChangeUser(oldUserData, &req)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)

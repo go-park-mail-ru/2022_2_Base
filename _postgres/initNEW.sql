@@ -39,16 +39,15 @@ CREATE TABLE users
 --     'returned'
 -- );
 
-CREATE TABLE orders
-(
-    id            SERIAL PRIMARY KEY,
-    userID        INT REFERENCES users (id) ON DELETE CASCADE,
-    orderStatus   VARCHAR(20) NOT NULL,
+CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,
+    userID INT REFERENCES users (id) ON DELETE CASCADE,
+    orderStatus VARCHAR(20) NOT NULL,
     paymentStatus VARCHAR(30) NOT NULL,
-    address       VARCHAR(50),
-    paymentcardnumber      VARCHAR(16),
-    creationDate  timestamp,
-    deliveryDate  timestamp
+    addressID INT REFERENCES address (id) ON DELETE RESTRICT,
+    paymentCardID INT REFERENCES payment (id) ON DELETE RESTRICT,
+    creationDate TIMESTAMP,
+    deliveryDate TIMESTAMP
 );
 
 -- Table orders:

@@ -8,7 +8,7 @@ definitions:
         type: string
       id:
         type: integer
-      primary:
+      priority:
         type: boolean
       street:
         type: string
@@ -20,9 +20,9 @@ definitions:
   model.MakeOrder:
     properties:
       address:
-        type: string
+        type: integer
       card:
-        type: string
+        type: integer
       deliveryDate:
         type: string
       items:
@@ -35,9 +35,9 @@ definitions:
   model.Order:
     properties:
       address:
-        type: string
+        type: integer
       card:
-        type: string
+        type: integer
       creationDate:
         type: string
       deliveryDate:

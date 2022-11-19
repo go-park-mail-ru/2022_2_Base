@@ -25,7 +25,7 @@ type Address struct {
 	City     string `json:"city"`
 	Street   string `json:"street"`
 	House    string `json:"house"`
-	Priority bool   `json:"primary"`
+	Priority bool   `json:"priority"`
 }
 
 type PaymentMethod struct {
