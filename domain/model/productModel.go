@@ -59,3 +59,15 @@ type MakeOrder struct {
 	PaymentcardID int       `json:"card"`
 	DeliveryDate  time.Time `json:"deliveryDate"`
 }
+
+type OrderModelGetOrders struct {
+	ID            int            `json:"id"`
+	UserID        int            `json:"userid"`
+	Items         []*CartProduct `json:"items"`
+	OrderStatus   string         `json:"orderstatus"`
+	PaymentStatus string         `json:"paymentstatus"`
+	Address       Address        `json:"address"`
+	Paymentcard   PaymentMethod  `json:"card"`
+	CreationDate  *time.Time     `json:"creationDate"`
+	DeliveryDate  *time.Time     `json:"deliveryDate"`
+}

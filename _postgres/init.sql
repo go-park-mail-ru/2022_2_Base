@@ -29,7 +29,6 @@ CREATE TABLE address
     priority BOOLEAN     NOT NULL DEFAULT FALSE
 );
 
-
 CREATE TABLE payment
 (
     id          SERIAL PRIMARY KEY,

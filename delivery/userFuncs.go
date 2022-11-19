@@ -82,9 +82,9 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, paym := range payments {
-		paym.Type = sanitizer.Sanitize(paym.Type)
+		paym.PaymentType = sanitizer.Sanitize(paym.PaymentType)
 		paym.Number = sanitizer.Sanitize(paym.Number)
-		paym.ExpiryDate = sanitizer.Sanitize(paym.ExpiryDate)
+		//paym.ExpiryDate = sanitizer.Sanitize(paym.ExpiryDate)
 
 	}
 

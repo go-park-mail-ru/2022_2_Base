@@ -333,6 +333,35 @@ paths:
       summary: makes user's order
       tags:
       - Order
+  /cart/orders:
+    get:
+      consumes:
+      - application/json
+      description: gets user's orders
+      operationId: GetOrder
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Order'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: gets user's orders
+      tags:
+      - Order
   /login:
     post:
       consumes:

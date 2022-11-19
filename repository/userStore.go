@@ -61,7 +61,7 @@ func (us *UserStore) DeleteUsersAddress(addressID int) error {
 }
 
 func (us *UserStore) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE payment SET type = $1, number = $2, expirydate = $3, priority = $4 WHERE id = $5;`, in.Type, in.Number, in.ExpiryDate, in.Priority, paymentID)
+	_, err := us.db.Exec(context.Background(), `UPDATE payment SET paymentType = $1, number = $2, expirydate = $3, priority = $4 WHERE id = $5;`, in.PaymentType, in.Number, in.ExpiryDate, in.Priority, paymentID)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (us *UserStore) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) 
 }
 
 func (us *UserStore) AddUsersPayment(userID int, in *model.PaymentMethod) error {
-	_, err := us.db.Exec(context.Background(), `INSERT INTO payment (userid, type, number, expirydate, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.Type, in.Number, in.ExpiryDate, "false")
+	_, err := us.db.Exec(context.Background(), `INSERT INTO payment (userid, paymentType, number, expirydate, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.PaymentType, in.Number, in.ExpiryDate, "false")
 	if err != nil {
 		return err
 	}
@@ -124,14 +124,14 @@ func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, e
 
 func (us *UserStore) GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error) {
 	payments := []*model.PaymentMethod{}
-	rows, err := us.db.Query(context.Background(), `SELECT payment.id, type, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1`, userID)
+	rows, err := us.db.Query(context.Background(), `SELECT payment.id, paymentType, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1`, userID)
 	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		dat := model.PaymentMethod{}
-		err := rows.Scan(&dat.ID, &dat.Type, &dat.Number, &dat.ExpiryDate, &dat.Priority)
+		err := rows.Scan(&dat.ID, &dat.PaymentType, &dat.Number, &dat.ExpiryDate, &dat.Priority)
 		if err != nil {
 			return nil, err
 		}

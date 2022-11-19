@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 type UserDB struct {
 	ID       int     `json:"id"`
 	Email    string  `json:"email"`
@@ -29,11 +31,11 @@ type Address struct {
 }
 
 type PaymentMethod struct {
-	ID         int    `json:"id"`
-	Type       string `json:"type"`
-	Number     string `json:"number"`
-	ExpiryDate string `json:"expirydate"`
-	Priority   bool   `json:"priority"`
+	ID          int       `json:"id"`
+	PaymentType string    `json:"type"`
+	Number      string    `json:"number"`
+	ExpiryDate  time.Time `json:"expirydate"`
+	Priority    bool      `json:"priority"`
 }
 
 type UserProfile struct {

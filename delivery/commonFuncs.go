@@ -251,12 +251,17 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
-	// 	log.Println("err get user from context ")
-	// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-	// 	return
-	// }
-	// UserData := r.Context().Value("userdata").(*model.UserDB)
+	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	oldUserData := r.Context().Value("userdata").(*model.UserDB)
+
+	if oldUserData.ID != req.UserID {
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
 
 	err = api.prHandler.usecase.MakeOrder(&req)
 	if err != nil {
@@ -266,4 +271,67 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(&model.Response{})
+}
+
+// GetOrders godoc
+// @Summary gets user's orders
+// @Description gets user's orders
+// @ID GetOrder
+// @Accept  json
+// @Produce  json
+// @Tags Order
+// @Success 200 {object} model.Order
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /cart/orders [get]
+func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	UserData := r.Context().Value("userdata").(*model.UserDB)
+
+	orders, err := api.prHandler.usecase.GetOrders(UserData.ID)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	var responseOrders []*model.OrderModelGetOrders
+	for _, order := range orders {
+		order.OrderStatus = sanitizer.Sanitize(order.OrderStatus)
+		order.PaymentStatus = sanitizer.Sanitize(order.PaymentStatus)
+
+		newOrder := model.OrderModelGetOrders{ID: order.ID, UserID: order.UserID, OrderStatus: order.OrderStatus, PaymentStatus: order.PaymentStatus, CreationDate: order.CreationDate, DeliveryDate: order.DeliveryDate}
+
+		for _, prod := range order.Items {
+			if prod.Item.Imgsrc != nil {
+				*prod.Item.Imgsrc = sanitizer.Sanitize(*prod.Item.Imgsrc)
+			}
+			prod.Item.Name = sanitizer.Sanitize(prod.Item.Name)
+			prod.Item.Category = sanitizer.Sanitize(prod.Item.Category)
+			newOrder.Items = append(newOrder.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, DiscountPrice: prod.Item.DiscountPrice, Imgsrc: prod.Item.Imgsrc})
+		}
+		newOrder.Address, err = api.prHandler.usecase.GetOrdersAddress(order.AddressID)
+		if err != nil {
+			log.Println("db error: ", err)
+			ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+			return
+		}
+		newOrder.Paymentcard, err = api.prHandler.usecase.GetOrdersPayment(order.PaymentcardID)
+		if err != nil {
+			log.Println("db error: ", err)
+			ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+			return
+		}
+
+		responseOrders = append(responseOrders, &newOrder)
+	}
+	json.NewEncoder(w).Encode(&model.Response{Body: responseOrders})
 }

@@ -237,3 +237,64 @@ func (ps *ProductStore) MakeOrder(in *model.MakeOrder) error {
 	}
 	return nil
 }
+
+func (ps *ProductStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
+	orders := []*model.Order{}
+	rows, err := ps.db.Query(context.Background(), `SELECT * FROM orders WHERE userid = $1 AND orderstatus <> 'cart';`, userID)
+
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return nil, baseErrors.ErrServerError500
+	}
+	log.Println("got orders from db")
+	for rows.Next() {
+		dat := model.Order{}
+		err := rows.Scan(&dat.ID, &dat.UserID, &dat.OrderStatus, &dat.PaymentStatus, &dat.AddressID, &dat.PaymentcardID, &dat.CreationDate, &dat.DeliveryDate)
+		if err != nil {
+			return nil, err
+		}
+		orders = append(orders, &dat)
+	}
+	for _, order := range orders {
+		orderItems, err := ps.GetOrderItemsFromStore(order.ID)
+		if err != nil {
+			return nil, err
+		}
+		order.Items = orderItems
+	}
+
+	return orders, nil
+}
+
+func (us *ProductStore) GetOrdersAddressFromStore(addressID int) (*model.Address, error) {
+	adress := model.Address{}
+	rows, err := us.db.Query(context.Background(), `SELECT id, city, street, house, priority FROM address WHERE id  = $1`, addressID)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		err := rows.Scan(&adress.ID, &adress.City, &adress.Street, &adress.House, &adress.Priority)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &adress, nil
+}
+
+func (us *ProductStore) GetOrdersPaymentFromStore(paymentID int) (*model.PaymentMethod, error) {
+	payment := model.PaymentMethod{}
+	rows, err := us.db.Query(context.Background(), `SELECT id, paymentType, number, expiryDate, priority FROM payment WHERE id  = $1`, paymentID)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		err := rows.Scan(&payment.ID, &payment.PaymentType, &payment.Number, &payment.ExpiryDate, &payment.Priority)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &payment, nil
+}

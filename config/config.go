@@ -17,6 +17,7 @@ var PathCart = "/cart"
 var PathAddItemToCart = "/insertintocart"
 var PathDeleteItemFromCart = "/deletefromcart"
 var PathMakeOrder = "/makeorder"
+var PathGetOrders = "/orders"
 
 var Headers = map[string]string{
 	//"Access-Control-Allow-Origin":      "http://127.0.0.1:8081",
