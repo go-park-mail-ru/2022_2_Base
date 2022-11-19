@@ -18,22 +18,26 @@ CREATE TABLE users (
     avatar VARCHAR (30)
 );
 
-CREATE TABLE address (
-    id  SERIAL PRIMARY KEY,
-    userID INT NOT NULL,
-    city VARCHAR (50) NOT NULL,
-    street VARCHAR (50) NOT NULL,
-    house VARCHAR (50) NOT NULL,
-    priority BOOL NOT NULL
+CREATE TABLE address
+(
+    id       SERIAL PRIMARY KEY,
+    userID   INT REFERENCES users (id) ON DELETE CASCADE,
+    city     VARCHAR(50) NOT NULL,
+    street   VARCHAR(50) NOT NULL,
+    house    VARCHAR(50) NOT NULL,
+    flat     VARCHAR(50) NULL,
+    priority BOOLEAN     NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE payment (
-    id  SERIAL PRIMARY KEY,
-    userID INT NOT NULL,
-    type VARCHAR (50) NOT NULL,
-    number VARCHAR (50) NOT NULL,
-    expiryDate VARCHAR (50) NOT NULL,
-    priority BOOLEAN NOT NULL
+
+CREATE TABLE payment
+(
+    id          SERIAL PRIMARY KEY,
+    userID      INT REFERENCES users (id) ON DELETE CASCADE,
+    paymentType VARCHAR(50) NOT NULL,
+    number      VARCHAR(16) NOT NULL,
+    expiryDate  DATE        NOT NULL,
+    priority    BOOLEAN     NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE orders (
