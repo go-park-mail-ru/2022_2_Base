@@ -460,6 +460,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/products/comments/{id}": {
+            "get": {
+                "description": "gets product's comments",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "gets product's comments",
+                "operationId": "GetComments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of product",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Comment"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/products/{category}": {
             "get": {
                 "description": "Gets products by category",
@@ -501,6 +552,45 @@ const docTemplate = `{
                         "description": "sort",
                         "name": "sort",
                         "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}": {
+            "get": {
+                "description": "Gets product by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets product by id",
+                "operationId": "getProductByID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of product",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -647,6 +737,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/makecomment": {
+            "post": {
+                "description": "creates product's comment by user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "creates product's comment by user",
+                "operationId": "CreateComment",
+                "parameters": [
+                    {
+                        "description": "Comment params",
+                        "name": "comment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.CreateComment"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/user/profile": {
             "get": {
                 "description": "gets user by username in cookies",
@@ -752,6 +895,52 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "street": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Comment": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "drawbacks": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "itemid": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "number"
+                },
+                "userid": {
+                    "type": "integer"
+                },
+                "worths": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CreateComment": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "drawbacks": {
+                    "type": "string"
+                },
+                "itemid": {
+                    "type": "integer"
+                },
+                "userid": {
+                    "type": "integer"
+                },
+                "worths": {
                     "type": "string"
                 }
             }
@@ -962,7 +1151,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "127.0.0.1:8080",
+	Host:             "89.208.198.137:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Reozon API",

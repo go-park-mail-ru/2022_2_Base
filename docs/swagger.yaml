@@ -13,6 +13,36 @@ definitions:
       street:
         type: string
     type: object
+  model.Comment:
+    properties:
+      comment:
+        type: string
+      drawbacks:
+        type: string
+      id:
+        type: integer
+      itemid:
+        type: integer
+      rating:
+        type: number
+      userid:
+        type: integer
+      worths:
+        type: string
+    type: object
+  model.CreateComment:
+    properties:
+      comment:
+        type: string
+      drawbacks:
+        type: string
+      itemid:
+        type: integer
+      userid:
+        type: integer
+      worths:
+        type: string
+    type: object
   model.Error:
     properties:
       error: {}
@@ -143,7 +173,7 @@ definitions:
       username:
         type: string
     type: object
-host: 127.0.0.1:8080
+host: 89.208.198.137:8080
 info:
   contact:
     email: support@swagger.io
@@ -495,6 +525,68 @@ paths:
       summary: Gets products by category
       tags:
       - Products
+  /products/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Gets product by id
+      operationId: getProductByID
+      parameters:
+      - description: Id of product
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets product by id
+      tags:
+      - Products
+  /products/comments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: gets product's comments
+      operationId: GetComments
+      parameters:
+      - description: Id of product
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Comment'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: gets product's comments
+      tags:
+      - Comments
   /session:
     get:
       consumes:
@@ -582,6 +674,42 @@ paths:
       summary: Set user's avatar
       tags:
       - User
+  /user/makecomment:
+    post:
+      consumes:
+      - application/json
+      description: creates product's comment by user
+      operationId: CreateComment
+      parameters:
+      - description: Comment params
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateComment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: creates product's comment by user
+      tags:
+      - Comments
   /user/profile:
     get:
       consumes:

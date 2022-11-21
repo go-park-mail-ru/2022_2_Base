@@ -31,6 +31,10 @@ func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, c
 	return products, nil
 }
 
+func (api *ProductUsecase) GetProductByID(id int) (*model.Product, error) {
+	return api.store.GetProductFromStoreByID(id)
+}
+
 func (api *ProductUsecase) GetCart(userID int) (*model.Order, error) {
 	cart, err := api.store.GetCart(userID)
 	if err != nil {
@@ -117,4 +121,16 @@ func (api *ProductUsecase) GetOrdersPayment(paymentID int) (model.PaymentMethod,
 		return model.PaymentMethod{}, err
 	}
 	return *payment, nil
+}
+
+func (api *ProductUsecase) GetComments(productID int) ([]*model.Comment, error) {
+	comments, err := api.store.GetCommentsFromStore(productID)
+	if err != nil {
+		return nil, err
+	}
+	return comments, nil
+}
+
+func (api *ProductUsecase) CreateComment(in *model.Comment) error {
+	return api.store.CreateCommentInStore(in)
 }

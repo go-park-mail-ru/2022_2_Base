@@ -118,3 +118,40 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 	}
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
 }
+
+// GetProductByID godoc
+// @Summary Gets product by id
+// @Description Gets product by id
+// @ID getProductByID
+// @Accept  json
+// @Produce  json
+// @Tags Products
+// @Param id path string true "Id of product"
+// @Success 200 {object} model.Product
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /products/{id} [get]
+func (api *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	s := strings.Split(r.URL.Path, "/")
+	idS := s[len(s)-1]
+	id, err := strconv.Atoi(idS)
+	product, err := api.usecase.GetProductByID(id)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	if product.Imgsrc != nil {
+		*product.Imgsrc = sanitizer.Sanitize(*product.Imgsrc)
+	}
+	product.Name = sanitizer.Sanitize(product.Name)
+	product.Category = sanitizer.Sanitize(product.Category)
+
+	json.NewEncoder(w).Encode(&model.Response{Body: product})
+}

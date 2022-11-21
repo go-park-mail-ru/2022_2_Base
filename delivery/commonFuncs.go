@@ -6,6 +6,8 @@ import (
 	"net/http"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
+	"strconv"
+	"strings"
 
 	"github.com/microcosm-cc/bluemonday"
 )
@@ -22,7 +24,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 127.0.0.1:8080
+// @host 89.208.198.137:8080
 // @BasePath  /api/v1
 
 type OrderHandler struct {
@@ -334,4 +336,83 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		responseOrders = append(responseOrders, &newOrder)
 	}
 	json.NewEncoder(w).Encode(&model.Response{Body: responseOrders})
+}
+
+// GetComments godoc
+// @Summary gets product's comments
+// @Description gets product's comments
+// @ID GetComments
+// @Accept  json
+// @Produce  json
+// @Tags Comments
+// @Param id path string true "Id of product"
+// @Success 200 {object} model.Comment
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /products/comments/{id} [get]
+func (api *OrderHandler) GetComments(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	s := strings.Split(r.URL.Path, "/")
+	idS := s[len(s)-1]
+	id, err := strconv.Atoi(idS)
+	comments, err := api.prHandler.usecase.GetComments(id)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	for _, comm := range comments {
+		comm.Worths = sanitizer.Sanitize(comm.Worths)
+		comm.Drawbacks = sanitizer.Sanitize(comm.Drawbacks)
+		comm.Comment = sanitizer.Sanitize(comm.Comment)
+	}
+	json.NewEncoder(w).Encode(&model.Response{Body: comments})
+}
+
+// CreateComment godoc
+// @Summary creates product's comment by user
+// @Description creates product's comment by user
+// @ID CreateComment
+// @Accept  json
+// @Produce  json
+// @Tags Comments
+// @Param comment body model.CreateComment true "Comment params"
+// @Success 200 {object} model.Response "OK"
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /user/makecomment [post]
+func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var req model.Comment
+	err := decoder.Decode(&req)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	oldUserData := r.Context().Value("userdata").(*model.UserDB)
+	if oldUserData.ID != req.UserID {
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+	err = api.prHandler.usecase.CreateComment(&req)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	json.NewEncoder(w).Encode(&model.Response{})
 }

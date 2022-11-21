@@ -15,7 +15,7 @@
         },
         "version": "1.0"
     },
-    "host": "127.0.0.1:8080",
+    "host": "89.208.198.137:8080",
     "basePath": "/api/v1",
     "paths": {
         "/cart": {
@@ -453,6 +453,57 @@
                 }
             }
         },
+        "/products/comments/{id}": {
+            "get": {
+                "description": "gets product's comments",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "gets product's comments",
+                "operationId": "GetComments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of product",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Comment"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/products/{category}": {
             "get": {
                 "description": "Gets products by category",
@@ -494,6 +545,45 @@
                         "description": "sort",
                         "name": "sort",
                         "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{id}": {
+            "get": {
+                "description": "Gets product by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets product by id",
+                "operationId": "getProductByID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of product",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -640,6 +730,59 @@
                 }
             }
         },
+        "/user/makecomment": {
+            "post": {
+                "description": "creates product's comment by user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "creates product's comment by user",
+                "operationId": "CreateComment",
+                "parameters": [
+                    {
+                        "description": "Comment params",
+                        "name": "comment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.CreateComment"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/user/profile": {
             "get": {
                 "description": "gets user by username in cookies",
@@ -745,6 +888,52 @@
                     "type": "boolean"
                 },
                 "street": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Comment": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "drawbacks": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "itemid": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "number"
+                },
+                "userid": {
+                    "type": "integer"
+                },
+                "worths": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CreateComment": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "drawbacks": {
+                    "type": "string"
+                },
+                "itemid": {
+                    "type": "integer"
+                },
+                "userid": {
+                    "type": "integer"
+                },
+                "worths": {
                     "type": "string"
                 }
             }
