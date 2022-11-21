@@ -23,20 +23,33 @@ func NewProductStore(db *pgxpool.Pool) *ProductStore {
 
 func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort string) ([]*model.Product, error) {
 	products := []*model.Product{}
+	lastProduct, err := ps.GetProductFromStoreByID(lastitemid)
+	if err != nil {
+		return nil, err
+	}
 	var rows pgx.Rows
-	var err error
 	if sort == "" {
 		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
-	} else if sort == "price" {
-		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE id > $1 ORDER BY price LIMIT $2;`, lastitemid, count)
-	} else if sort == "rating" {
-		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE id > $1 ORDER BY rating DESC LIMIT $2;`, lastitemid, count)
+	} else if sort == "priceup" {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE (price, id) > ($1, $2) ORDER BY price LIMIT $3;`, lastProduct.Price, lastitemid, count)
+	} else if sort == "pricedown" {
+		if lastProduct.Price == 0 {
+			lastProduct.Price = 1e10
+		}
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE (price, id) < ($1, $2) ORDER BY (price, id) DESC LIMIT $3;`, lastProduct.Price, lastitemid, count)
+	} else if sort == "ratingup" {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE (rating, id) > ($1, $2) ORDER BY rating ASC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
+	} else if sort == "ratingdown" {
+		if lastProduct.Rating == 0 {
+			lastProduct.Rating = 6
+		}
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE (rating, id) < ($1, $2) ORDER BY (rating, id) DESC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
 	}
 
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
-		return nil, baseErrors.ErrServerError500
+		return nil, err
 	}
 	log.Println("got products from db")
 	for rows.Next() {
@@ -53,19 +66,32 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort str
 func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastitemid int, count int, sort string) ([]*model.Product, error) {
 	products := []*model.Product{}
 	var rows pgx.Rows
-	var err error
+	lastProduct, err := ps.GetProductFromStoreByID(lastitemid)
+	if err != nil {
+		return nil, err
+	}
 	if sort == "" {
 		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND id > $2 LIMIT $3;`, category, lastitemid, count)
-	} else if sort == "price" {
-		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND id > $2 ORDER BY price LIMIT $3;`, category, lastitemid, count)
-	} else if sort == "rating" {
-		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND id > $2 ORDER BY rating DESC LIMIT $3;`, category, lastitemid, count)
+	} else if sort == "priceup" {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND (price, id) > ($2, $3) ORDER BY price LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
+	} else if sort == "pricedown" {
+		if lastProduct.Price == 0 {
+			lastProduct.Price = 1e10
+		}
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND (price, id) < ($2, $3) ORDER BY price DESC LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
+	} else if sort == "ratingup" {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND (rating, id) > ($2, $3) ORDER BY rating ASC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
+	} else if sort == "ratingdown" {
+		if lastProduct.Rating == 0 {
+			lastProduct.Rating = 6
+		}
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND (rating, id) < ($2, $3) ORDER BY (rating, id) DESC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
 	}
 
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
-		return nil, baseErrors.ErrServerError500
+		return nil, err
 	}
 	log.Println("got products from db")
 	for rows.Next() {
@@ -79,26 +105,23 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 	return products, nil
 }
 
-// func (ps *ProductStore) GetProductsFromStoreByIDs(itemsIDs *[]string) ([]*model.Product, error) {
-// 	products := []*model.Product{}
-// 	itemsIDsString := "{" + strings.Join(*itemsIDs, ",") + "}"
-// 	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products WHERE id = ANY($1::int[]);`, itemsIDsString)
-// 	defer rows.Close()
-// 	if err != nil {
-// 		log.Println("err get rows: ", err)
-// 		return nil, baseErrors.ErrServerError500
-// 	}
-// 	log.Println("got products by ids from db")
-// 	for rows.Next() {
-// 		dat := model.Product{}
-// 		err := rows.Scan(&dat.ID, &dat.Name, &dat.Description, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		products = append(products, &dat)
-// 	}
-// 	return products, nil
-// }
+func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, error) {
+	product := model.Product{}
+	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products WHERE id = $1;`, itemsID)
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return nil, err
+	}
+	log.Println("got product by id from db")
+	for rows.Next() {
+		err := rows.Scan(&product.ID, &product.Name, &product.Category, &product.Price, &product.DiscountPrice, &product.Rating, &product.Imgsrc)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &product, nil
+}
 
 func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
@@ -245,7 +268,7 @@ func (ps *ProductStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
-		return nil, baseErrors.ErrServerError500
+		return nil, err
 	}
 	log.Println("got orders from db")
 	for rows.Next() {

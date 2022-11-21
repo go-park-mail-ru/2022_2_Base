@@ -8,7 +8,7 @@ type Product struct {
 	Category      string   `json:"category"`
 	Price         float64  `json:"price"`
 	DiscountPrice *float64 `json:"lowprice,omitempty"`
-	Rating        *float64 `json:"rating,omitempty"`
+	Rating        float64  `json:"rating,omitempty"`
 	Imgsrc        *string  `json:"imgsrc,omitempty"`
 }
 
