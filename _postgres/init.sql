@@ -56,3 +56,13 @@ CREATE TABLE orderItems (
     orderID INT NOT NULL,
     count INT NOT NULL
 );
+
+CREATE TABLE comments (
+    id  SERIAL PRIMARY KEY,
+    itemID INT REFERENCES products (id) ON DELETE CASCADE,
+    userID INT REFERENCES users (id) ON DELETE CASCADE,
+    worths VARCHAR(300) NOT NULL, 
+    drawbacks VARCHAR(300) NOT NULL,
+    comment VARCHAR(300) NOT NULL,
+    rating Float
+);

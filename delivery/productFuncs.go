@@ -92,10 +92,6 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 	lastitemidS := r.URL.Query().Get("lastitemid")
 	countS := r.URL.Query().Get("count")
 	sort := r.URL.Query().Get("sort")
-	// log.Println("rrr", sort)
-	// if sort == "" {
-	// 	log.Println("zzzz")
-	// }
 	lastitemid, err := strconv.Atoi(lastitemidS)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)

@@ -45,7 +45,7 @@ func (us *UserStore) UpdateUsersAddress(adressID int, in *model.Address) error {
 }
 
 func (us *UserStore) AddUsersAddress(userID int, in *model.Address) error {
-	_, err := us.db.Exec(context.Background(), `INSERT INTO address (userid, city, street, house, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.City, in.Street, in.House, "false")
+	_, err := us.db.Exec(context.Background(), `INSERT INTO address (userid, city, street, house, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.City, in.Street, in.House, in.Street)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (us *UserStore) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) 
 }
 
 func (us *UserStore) AddUsersPayment(userID int, in *model.PaymentMethod) error {
-	_, err := us.db.Exec(context.Background(), `INSERT INTO payment (userid, paymentType, number, expirydate, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.PaymentType, in.Number, in.ExpiryDate, "false")
+	_, err := us.db.Exec(context.Background(), `INSERT INTO payment (userid, paymentType, number, expirydate, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.PaymentType, in.Number, in.ExpiryDate, in.Priority)
 	if err != nil {
 		return err
 	}

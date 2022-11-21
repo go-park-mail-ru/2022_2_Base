@@ -186,7 +186,7 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 	}
 	for _, prod := range orderItems {
 		if prod.Item.ID == itemID {
-			_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count+1 WHERE orderID = $1;`, cart.ID)
+			_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
 			if err != nil {
 				return err
 			}
@@ -212,7 +212,7 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 	for _, prod := range orderItems {
 		if prod.Item.ID == itemID {
 			if prod.Count != 1 {
-				_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count-1 WHERE orderID = $1;`, cart.ID)
+				_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count-1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
 				if err != nil {
 					return err
 				}
