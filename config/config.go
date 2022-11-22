@@ -9,7 +9,7 @@ var PathSessions = BasePath + "/session"
 var PathDocs = BasePath + "/docs"
 var PathMain = BasePath + "/products"
 var PathProductByID = BasePath + "/products/{id}"
-var PathCategory = BasePath + "/products/{category}"
+var PathCategory = BasePath + "/category/{category}"
 var PathComments = BasePath + "/products/comments/{id}"
 
 var PathProfile = "/profile"

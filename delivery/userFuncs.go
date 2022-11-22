@@ -127,6 +127,7 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	//log.Println("zzz")
 	err = api.usecase.ChangeUser(oldUserData, &req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}

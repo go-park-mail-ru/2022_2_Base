@@ -28,9 +28,8 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort str
 		return nil, err
 	}
 	var rows pgx.Rows
-	if sort == "" {
-		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
-	} else if sort == "priceup" {
+
+	if sort == "priceup" {
 		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE (price, id) > ($1, $2) ORDER BY price LIMIT $3;`, lastProduct.Price, lastitemid, count)
 	} else if sort == "pricedown" {
 		if lastProduct.Price == 0 {
@@ -44,6 +43,8 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort str
 			lastProduct.Rating = 6
 		}
 		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE (rating, id) < ($1, $2) ORDER BY (rating, id) DESC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
+	} else {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
 	}
 
 	defer rows.Close()
@@ -70,9 +71,7 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 	if err != nil {
 		return nil, err
 	}
-	if sort == "" {
-		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND id > $2 LIMIT $3;`, category, lastitemid, count)
-	} else if sort == "priceup" {
+	if sort == "priceup" {
 		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND (price, id) > ($2, $3) ORDER BY price LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
 	} else if sort == "pricedown" {
 		if lastProduct.Price == 0 {
@@ -86,6 +85,8 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 			lastProduct.Rating = 6
 		}
 		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND (rating, id) < ($2, $3) ORDER BY (rating, id) DESC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
+	} else {
+		rows, err = ps.db.Query(context.Background(), `SELECT * FROM products WHERE category = $1 AND id > $2 LIMIT $3;`, category, lastitemid, count)
 	}
 
 	defer rows.Close()

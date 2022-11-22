@@ -81,7 +81,7 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 // @Param   sort         query     string  false  "sort"
 // @Success 200 {object} model.Product
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /products/{category} [get]
+// @Router /category/{category} [get]
 func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return

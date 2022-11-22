@@ -37,7 +37,7 @@ func (us *UserStore) UpdateUser(userID int, in *model.UserProfile) error {
 }
 
 func (us *UserStore) UpdateUsersAddress(adressID int, in *model.Address) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE address SET city = $1, street = $2, house = $3, priority = $4 WHERE id = $5;`, in.City, in.Street, in.House, in.Priority, adressID)
+	_, err := us.db.Exec(context.Background(), `UPDATE address SET city = $1, street = $2, house = $3, flat = $4, priority = $5 WHERE id = $6;`, in.City, in.Street, in.House, in.Flat, in.Priority, adressID)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func (us *UserStore) UpdateUsersAddress(adressID int, in *model.Address) error {
 }
 
 func (us *UserStore) AddUsersAddress(userID int, in *model.Address) error {
-	_, err := us.db.Exec(context.Background(), `INSERT INTO address (userid, city, street, house, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.City, in.Street, in.House, in.Street)
+	_, err := us.db.Exec(context.Background(), `INSERT INTO address (userid, city, street, house, flat, priority) VALUES ($1, $2, $3, $4, $5, $6);`, userID, in.City, in.Street, in.House, in.Flat, in.Priority)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,8 @@ func (us *UserStore) AddUsersAddress(userID int, in *model.Address) error {
 }
 
 func (us *UserStore) DeleteUsersAddress(addressID int) error {
-	_, err := us.db.Exec(context.Background(), `DELETE FROM address WHERE id = $1;`, addressID)
+	_, err := us.db.Exec(context.Background(), `UPDATE address SET deleted = true WHERE id = $1;`, addressID)
+	//_, err := us.db.Exec(context.Background(), `DELETE FROM address WHERE id = $1;`, addressID)
 	if err != nil {
 		return err
 	}
@@ -77,7 +78,8 @@ func (us *UserStore) AddUsersPayment(userID int, in *model.PaymentMethod) error 
 }
 
 func (us *UserStore) DeleteUsersPayment(paymentID int) error {
-	_, err := us.db.Exec(context.Background(), `DELETE FROM payment WHERE id = $1;`, paymentID)
+	_, err := us.db.Exec(context.Background(), `UPDATE payment SET deleted = true WHERE id = $1;`, paymentID)
+	//_, err := us.db.Exec(context.Background(), `DELETE FROM payment WHERE id = $1;`, paymentID)
 	if err != nil {
 		return err
 	}
@@ -105,14 +107,14 @@ func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, e
 
 func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error) {
 	adresses := []*model.Address{}
-	rows, err := us.db.Query(context.Background(), `SELECT address.id, city, street, house, priority FROM address JOIN users ON address.userid = users.id WHERE users.id  = $1`, userID)
+	rows, err := us.db.Query(context.Background(), `SELECT address.id, city, street, house, flat, priority FROM address JOIN users ON address.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
 	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
 		dat := model.Address{}
-		err := rows.Scan(&dat.ID, &dat.City, &dat.Street, &dat.House, &dat.Priority)
+		err := rows.Scan(&dat.ID, &dat.City, &dat.Street, &dat.House, &dat.Flat, &dat.Priority)
 		if err != nil {
 			return nil, err
 		}
@@ -124,7 +126,7 @@ func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, e
 
 func (us *UserStore) GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error) {
 	payments := []*model.PaymentMethod{}
-	rows, err := us.db.Query(context.Background(), `SELECT payment.id, paymentType, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1`, userID)
+	rows, err := us.db.Query(context.Background(), `SELECT payment.id, paymentType, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
 	defer rows.Close()
 	if err != nil {
 		return nil, err

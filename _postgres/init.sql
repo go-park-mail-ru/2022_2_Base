@@ -1,7 +1,7 @@
 
 CREATE TABLE products (
     id  SERIAL PRIMARY KEY,
-	name VARCHAR (30) NOT NULL,
+	name VARCHAR (80) NOT NULL,
     category VARCHAR (50),
     price FLOAT NOT NULL,
     discountPrice FLOAT,
@@ -26,7 +26,8 @@ CREATE TABLE address
     street   VARCHAR(50) NOT NULL,
     house    VARCHAR(50) NOT NULL,
     flat     VARCHAR(50) NULL,
-    priority BOOLEAN     NOT NULL DEFAULT FALSE
+    priority BOOLEAN     NOT NULL DEFAULT FALSE,
+    deleted  BOOLEAN     NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE payment
@@ -36,7 +37,8 @@ CREATE TABLE payment
     paymentType VARCHAR(50) NOT NULL,
     number      VARCHAR(16) NOT NULL,
     expiryDate  DATE        NOT NULL,
-    priority    BOOLEAN     NOT NULL DEFAULT FALSE
+    priority    BOOLEAN     NOT NULL DEFAULT FALSE,
+    deleted     BOOLEAN     NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE orders (

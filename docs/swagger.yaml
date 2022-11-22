@@ -4,6 +4,8 @@ definitions:
     properties:
       city:
         type: string
+      flat:
+        type: string
       house:
         type: string
       id:
@@ -392,6 +394,47 @@ paths:
       summary: gets user's orders
       tags:
       - Order
+  /category/{category}:
+    get:
+      consumes:
+      - application/json
+      description: Gets products by category
+      operationId: GetProductsByCategory
+      parameters:
+      - description: The category of products
+        in: path
+        name: category
+        required: true
+        type: string
+      - description: lastitemid
+        in: query
+        name: lastitemid
+        required: true
+        type: string
+      - description: count
+        in: query
+        name: count
+        required: true
+        type: string
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets products by category
+      tags:
+      - Products
   /login:
     post:
       consumes:
@@ -482,47 +525,6 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Gets products for main page
-      tags:
-      - Products
-  /products/{category}:
-    get:
-      consumes:
-      - application/json
-      description: Gets products by category
-      operationId: GetProductsByCategory
-      parameters:
-      - description: The category of products
-        in: path
-        name: category
-        required: true
-        type: string
-      - description: lastitemid
-        in: query
-        name: lastitemid
-        required: true
-        type: string
-      - description: count
-        in: query
-        name: count
-        required: true
-        type: string
-      - description: sort
-        in: query
-        name: sort
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Product'
-        "500":
-          description: Internal Server Error - Request is valid but operation failed
-            at server side
-          schema:
-            $ref: '#/definitions/model.Error'
-      summary: Gets products by category
       tags:
       - Products
   /products/{id}:

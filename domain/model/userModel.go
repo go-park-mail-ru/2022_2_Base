@@ -27,6 +27,7 @@ type Address struct {
 	City     string `json:"city"`
 	Street   string `json:"street"`
 	House    string `json:"house"`
+	Flat     string `json:"flat"`
 	Priority bool   `json:"priority"`
 }
 

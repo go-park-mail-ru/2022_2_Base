@@ -325,6 +325,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/category/{category}": {
+            "get": {
+                "description": "Gets products by category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets products by category",
+                "operationId": "GetProductsByCategory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The category of products",
+                        "name": "category",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "lastitemid",
+                        "name": "lastitemid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "count",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Log in user",
@@ -500,65 +559,6 @@ const docTemplate = `{
                         "description": "Unauthorized - Access token is missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error - Request is valid but operation failed at server side",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/products/{category}": {
-            "get": {
-                "description": "Gets products by category",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Products"
-                ],
-                "summary": "Gets products by category",
-                "operationId": "GetProductsByCategory",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "The category of products",
-                        "name": "category",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "lastitemid",
-                        "name": "lastitemid",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "count",
-                        "name": "count",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "sort",
-                        "name": "sort",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Product"
                         }
                     },
                     "500": {
@@ -883,6 +883,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "city": {
+                    "type": "string"
+                },
+                "flat": {
                     "type": "string"
                 },
                 "house": {
