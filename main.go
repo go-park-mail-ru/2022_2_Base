@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 
 	_ "serv/docs"
 	"serv/repository"
@@ -45,7 +44,7 @@ type authenticationMiddleware struct {
 	userUsecase usecase.UserUsecase
 }
 
-func WithUser(ctx context.Context, user *model.UserDB) context.Context {
+func WithUser(ctx context.Context, user *model.UserProfile) context.Context {
 	return context.WithValue(ctx, "userdata", user)
 }
 
@@ -80,19 +79,34 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 			deliv.ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 			return
 		}
+		addresses, err := amw.userUsecase.GetAddressesByUserID(user.ID)
+		if err != nil {
+			log.Println("err get adresses ", err)
+			deliv.ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+			return
+		}
+		payments, err := amw.userUsecase.GetPaymentMethodByUserID(user.ID)
+		if err != nil {
+			log.Println("err get payments ", err)
+			deliv.ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+			return
+		}
+
 		if user.Email == "" {
 			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 			return
 		}
 
-		next.ServeHTTP(w, r.WithContext(WithUser(r.Context(), &user)))
+		userData := model.UserProfile{ID: user.ID, Email: user.Email, Username: user.Username, Phone: *user.Phone, Avatar: *user.Avatar, Address: addresses, PaymentMethods: payments}
+
+		next.ServeHTTP(w, r.WithContext(WithUser(r.Context(), &userData)))
 	})
 }
 
 func main() {
 	myRouter := mux.NewRouter()
-	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
-	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
+	urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
+	//urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	log.Println("conn: ", urlDB)
 	db, err := pgxpool.New(context.Background(), urlDB)
 	if err != nil {

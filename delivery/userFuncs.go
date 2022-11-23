@@ -39,57 +39,58 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if user := r.Context().Value("userdata").(*model.UserDB); user == nil {
+	if user := r.Context().Value("userdata").(*model.UserProfile); user == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	user := r.Context().Value("userdata").(*model.UserDB)
+	userProfile := r.Context().Value("userdata").(*model.UserProfile)
 
-	addresses, err := api.usecase.GetAddressesByUserID(user.ID)
-	if err != nil {
-		log.Println("err get adresses ", err)
-		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-		return
-	}
-	payments, err := api.usecase.GetPaymentMethodByUserID(user.ID)
-	if err != nil {
-		log.Println("err get payments ", err)
-		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-		return
-	}
+	// addresses, err := api.usecase.GetAddressesByUserID(user.ID)
+	// if err != nil {
+	// 	log.Println("err get adresses ", err)
+	// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+	// 	return
+	// }
+	// payments, err := api.usecase.GetPaymentMethodByUserID(user.ID)
+	// if err != nil {
+	// 	log.Println("err get payments ", err)
+	// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+	// 	return
+	// }
 
-	userProfile := model.UserProfile{Email: user.Email, Username: user.Username}
-	if user.Phone != nil {
-		userProfile.Phone = *user.Phone
-	} else {
-		userProfile.Phone = ""
-	}
-	if user.Avatar != nil {
-		userProfile.Avatar = *user.Avatar
-	} else {
-		userProfile.Avatar = ""
-	}
+	// userProfile := model.UserProfile{Email: user.Email, Username: user.Username}
+	// if user.Phone != nil {
+	// 	userProfile.Phone = *user.Phone
+	// } else {
+	// 	userProfile.Phone = ""
+	// }
+	// if user.Avatar != nil {
+	// 	userProfile.Avatar = *user.Avatar
+	// } else {
+	// 	userProfile.Avatar = ""
+	// }
 
 	userProfile.Email = sanitizer.Sanitize(userProfile.Email)
 	userProfile.Username = sanitizer.Sanitize(userProfile.Username)
 	userProfile.Phone = sanitizer.Sanitize(userProfile.Phone)
 	userProfile.Avatar = sanitizer.Sanitize(userProfile.Avatar)
-	for _, addr := range addresses {
+	for _, addr := range userProfile.Address {
 		addr.City = sanitizer.Sanitize(addr.City)
 		addr.House = sanitizer.Sanitize(addr.House)
 		addr.Street = sanitizer.Sanitize(addr.Street)
 	}
 
-	for _, paym := range payments {
+	for _, paym := range userProfile.PaymentMethods {
 		paym.PaymentType = sanitizer.Sanitize(paym.PaymentType)
 		paym.Number = sanitizer.Sanitize(paym.Number)
 		//paym.ExpiryDate = sanitizer.Sanitize(paym.ExpiryDate)
 
 	}
 
-	userProfile.Address = addresses
-	userProfile.PaymentMethods = payments
+	//userProfile.Address = addresses
+	//userProfile.PaymentMethods = payments
+	userProfile.ID = 0
 	json.NewEncoder(w).Encode(userProfile)
 }
 
@@ -118,13 +119,13 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	oldUserData := r.Context().Value("userdata").(*model.UserDB)
-	//log.Println("zzz")
+	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
+
 	err = api.usecase.ChangeUser(oldUserData, &req)
 	if err != nil {
 		log.Println(err)
@@ -152,12 +153,12 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	oldUserData := r.Context().Value("userdata").(*model.UserDB)
+	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -165,6 +166,7 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
+
 	defer file.Close()
 	err = api.usecase.SetAvatar(oldUserData.ID, file)
 	if err != nil {
@@ -173,12 +175,6 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	fileName := "/img/avatar" + strconv.FormatUint(uint64(oldUserData.ID), 10) + ".jpg"
 	newUserData := model.UserProfile{Avatar: fileName}
-	//newUserData.Avatar = fileName
-	// if userDB.Phone != nil {
-	// 	newUserData.Phone = *userDB.Phone
-	// } else {
-	// 	newUserData.Phone = ""
-	// }
 
 	err = api.usecase.ChangeUser(oldUserData, &newUserData)
 	if err != nil {

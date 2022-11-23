@@ -54,7 +54,6 @@ func (us *UserStore) AddUsersAddress(userID int, in *model.Address) error {
 
 func (us *UserStore) DeleteUsersAddress(addressID int) error {
 	_, err := us.db.Exec(context.Background(), `UPDATE address SET deleted = true WHERE id = $1;`, addressID)
-	//_, err := us.db.Exec(context.Background(), `DELETE FROM address WHERE id = $1;`, addressID)
 	if err != nil {
 		return err
 	}
@@ -79,7 +78,6 @@ func (us *UserStore) AddUsersPayment(userID int, in *model.PaymentMethod) error 
 
 func (us *UserStore) DeleteUsersPayment(paymentID int) error {
 	_, err := us.db.Exec(context.Background(), `UPDATE payment SET deleted = true WHERE id = $1;`, paymentID)
-	//_, err := us.db.Exec(context.Background(), `DELETE FROM payment WHERE id = $1;`, paymentID)
 	if err != nil {
 		return err
 	}

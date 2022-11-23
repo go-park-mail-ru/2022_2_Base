@@ -65,22 +65,8 @@ func (api *UserUsecase) GetPaymentMethodByUserID(userID int) ([]*model.PaymentMe
 	return api.store.GetPaymentMethodByUserIDFromDB(userID)
 }
 
-func (api *UserUsecase) ChangeUser(oldUserData *model.UserDB, params *model.UserProfile) error {
-	addresses, err := api.GetAddressesByUserID(oldUserData.ID)
-	if err != nil {
-		return err
-	}
-	payments, err := api.GetPaymentMethodByUserID(oldUserData.ID)
-	if err != nil {
-		return err
-	}
-	newUser := &model.UserProfile{Email: oldUserData.Email, Username: oldUserData.Username, Address: addresses, PaymentMethods: payments}
-	if oldUserData.Avatar != nil {
-		newUser.Avatar = *oldUserData.Avatar
-	}
-	if oldUserData.Phone != nil {
-		newUser.Phone = *oldUserData.Phone
-	}
+func (api *UserUsecase) ChangeUser(oldUserData *model.UserProfile, params *model.UserProfile) error {
+	newUser := &model.UserProfile{Email: oldUserData.Email, Username: oldUserData.Username, Phone: oldUserData.Phone, Avatar: oldUserData.Avatar, Address: oldUserData.Address, PaymentMethods: oldUserData.PaymentMethods}
 	if params.Email != "" {
 		newUser.Email = params.Email
 	}
@@ -94,21 +80,19 @@ func (api *UserUsecase) ChangeUser(oldUserData *model.UserDB, params *model.User
 		newUser.Avatar = params.Avatar
 	}
 	if len(params.Address) > 0 {
-		newUser.Address = params.Address
+		err := api.ChangeUserAddresses(oldUserData.ID, oldUserData.Address, params.Address)
+		if err != nil {
+			return err
+		}
 	}
 	if len(params.PaymentMethods) > 0 {
-		newUser.PaymentMethods = params.PaymentMethods
+		err := api.ChangeUserPayments(oldUserData.ID, oldUserData.PaymentMethods, params.PaymentMethods)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = api.store.UpdateUser(oldUserData.ID, newUser)
-	if err != nil {
-		return err
-	}
-	err = api.ChangeUserAddresses(oldUserData.ID, addresses, params.Address)
-	if err != nil {
-		return err
-	}
-	err = api.ChangeUserPayments(oldUserData.ID, payments, params.PaymentMethods)
+	err := api.store.UpdateUser(oldUserData.ID, newUser)
 	if err != nil {
 		return err
 	}
@@ -205,8 +189,8 @@ func (api *UserUsecase) ChangeUserPayments(userID int, userPayments []*model.Pay
 }
 
 func (api *UserUsecase) SetAvatar(usedID int, file multipart.File) error {
-	//fileName := "./img/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
-	fileName := "/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
+	fileName := "./img/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
+	//fileName := "/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
 	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		log.Println("error create/open file")
