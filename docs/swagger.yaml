@@ -140,6 +140,11 @@ definitions:
     properties:
       body: {}
     type: object
+  model.Search:
+    properties:
+      search:
+        type: string
+    type: object
   model.UserCreateParams:
     properties:
       email:
@@ -166,6 +171,8 @@ definitions:
         type: string
       email:
         type: string
+      id:
+        type: integer
       paymentmethods:
         items:
           $ref: '#/definitions/model.PaymentMethod'
@@ -589,6 +596,38 @@ paths:
       summary: gets product's comments
       tags:
       - Comments
+  /search:
+    post:
+      consumes:
+      - application/json
+      description: Gets product by search
+      operationId: getProductBySearch
+      parameters:
+      - description: search string
+        in: body
+        name: search
+        required: true
+        schema:
+          $ref: '#/definitions/model.Search'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets product by search
+      tags:
+      - Products
   /session:
     get:
       consumes:
@@ -645,6 +684,38 @@ paths:
       summary: Signs up and returns the authentication  cookie
       tags:
       - User
+  /suggestions:
+    post:
+      consumes:
+      - application/json
+      description: Gets uggestions
+      operationId: getSuggestions
+      parameters:
+      - description: search string
+        in: body
+        name: search
+        required: true
+        schema:
+          $ref: '#/definitions/model.Search'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets suggestions
+      tags:
+      - Products
   /user/avatar:
     post:
       consumes:

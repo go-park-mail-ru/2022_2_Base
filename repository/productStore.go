@@ -5,6 +5,7 @@ import (
 	"log"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -122,6 +123,52 @@ func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, er
 		}
 	}
 	return &product, nil
+}
+
+func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Product, error) {
+	products := []*model.Product{}
+	searchWords := strings.Split(search, " ")
+	searchWordsUnite := strings.Join(searchWords, "")
+	searchLetters := strings.Split(searchWordsUnite, "")
+	searchString := strings.ToLower(`%` + strings.Join(searchLetters, "%") + `%`)
+	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products WHERE LOWER(name) LIKE $1 LIMIT 20;`, searchString)
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return nil, err
+	}
+	log.Println("got products from db")
+	for rows.Next() {
+		dat := model.Product{}
+		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, &dat)
+	}
+	return products, nil
+}
+
+func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error) {
+	suggestions := []string{}
+	searchWords := strings.Split(search, " ")
+	searchString := strings.ToLower(`%` + strings.Join(searchWords, " ") + `%`)
+	rows, err := ps.db.Query(context.Background(), `SELECT name FROM products WHERE LOWER(name) LIKE $1 LIMIT 3;`, searchString)
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return nil, err
+	}
+	log.Println("got products from db")
+	for rows.Next() {
+		var dat string
+		err := rows.Scan(&dat)
+		if err != nil {
+			return nil, err
+		}
+		suggestions = append(suggestions, dat)
+	}
+	return suggestions, nil
 }
 
 func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {

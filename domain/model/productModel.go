@@ -71,3 +71,7 @@ type OrderModelGetOrders struct {
 	CreationDate  *time.Time     `json:"creationDate"`
 	DeliveryDate  *time.Time     `json:"deliveryDate"`
 }
+
+type Search struct {
+	Search string `json:"search"`
+}

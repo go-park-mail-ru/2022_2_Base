@@ -155,3 +155,79 @@ func (api *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request
 
 	json.NewEncoder(w).Encode(&model.Response{Body: product})
 }
+
+// GetProductBySearch godoc
+// @Summary Gets product by search
+// @Description Gets product by search
+// @ID getProductBySearch
+// @Accept  json
+// @Produce  json
+// @Tags Products
+// @Param search body model.Search true "search string"
+// @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /search [post]
+func (api *ProductHandler) GetProductsBySearch(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	decoder := json.NewDecoder(r.Body)
+	var req model.Search
+	err := decoder.Decode(&req)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	products, err := api.usecase.GetProductsBySearch(req.Search)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	for _, prod := range products {
+		if prod.Imgsrc != nil {
+			*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
+		}
+		prod.Name = sanitizer.Sanitize(prod.Name)
+		prod.Category = sanitizer.Sanitize(prod.Category)
+	}
+	json.NewEncoder(w).Encode(&model.Response{Body: products})
+}
+
+// GetSuggestions godoc
+// @Summary Gets suggestions
+// @Description Gets uggestions
+// @ID getSuggestions
+// @Accept  json
+// @Produce  json
+// @Tags Products
+// @Param search body model.Search true "search string"
+// @Success 200 {object} model.Response
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /suggestions [post]
+func (api *ProductHandler) GetSuggestions(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	decoder := json.NewDecoder(r.Body)
+	var req model.Search
+	err := decoder.Decode(&req)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	suggestions, err := api.usecase.GetSuggestions(req.Search)
+	if err != nil {
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	for _, sugg := range suggestions {
+		sugg = sanitizer.Sanitize(sugg)
+	}
+	json.NewEncoder(w).Encode(&model.Response{Body: suggestions})
+}

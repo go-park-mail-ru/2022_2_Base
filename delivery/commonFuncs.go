@@ -24,7 +24,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 127.0.0.1:8080
+// @host 89.208.198.137:8080
 // @BasePath  /api/v1
 
 type OrderHandler struct {
@@ -75,10 +75,8 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-
 	cart.OrderStatus = sanitizer.Sanitize(cart.OrderStatus)
 	cart.PaymentStatus = sanitizer.Sanitize(cart.PaymentStatus)
-	//*cart.Adress = sanitizer.Sanitize(*cart.Adress)
 	for _, prod := range cart.Items {
 		if prod.Item.Imgsrc != nil {
 			*prod.Item.Imgsrc = sanitizer.Sanitize(*prod.Item.Imgsrc)

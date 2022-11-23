@@ -609,6 +609,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/search": {
+            "post": {
+                "description": "Gets product by search",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets product by search",
+                "operationId": "getProductBySearch",
+                "parameters": [
+                    {
+                        "description": "search string",
+                        "name": "search",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Search"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/session": {
             "get": {
                 "description": "Checks if user has active session",
@@ -679,6 +726,53 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Conflict - UserDB already exists",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/suggestions": {
+            "post": {
+                "description": "Gets uggestions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets suggestions",
+                "operationId": "getSuggestions",
+                "parameters": [
+                    {
+                        "description": "search string",
+                        "name": "search",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Search"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -1094,6 +1188,14 @@ const docTemplate = `{
                 "body": {}
             }
         },
+        "model.Search": {
+            "type": "object",
+            "properties": {
+                "search": {
+                    "type": "string"
+                }
+            }
+        },
         "model.UserCreateParams": {
             "type": "object",
             "properties": {
@@ -1133,6 +1235,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "id": {
+                    "type": "integer"
                 },
                 "paymentmethods": {
                     "type": "array",

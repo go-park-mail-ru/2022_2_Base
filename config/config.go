@@ -11,6 +11,8 @@ var PathMain = BasePath + "/products"
 var PathProductByID = BasePath + "/products/{id}"
 var PathCategory = BasePath + "/category/{category}"
 var PathComments = BasePath + "/products/comments/{id}"
+var PathSeacrh = BasePath + "/search"
+var PathSuggestions = BasePath + "/suggestions"
 
 var PathProfile = "/profile"
 var PathAvatar = "/avatar"

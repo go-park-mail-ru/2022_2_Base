@@ -35,6 +35,14 @@ func (api *ProductUsecase) GetProductByID(id int) (*model.Product, error) {
 	return api.store.GetProductFromStoreByID(id)
 }
 
+func (api *ProductUsecase) GetProductsBySearch(search string) ([]*model.Product, error) {
+	return api.store.GetProductsBySearchFromStore(search)
+}
+
+func (api *ProductUsecase) GetSuggestions(search string) ([]string, error) {
+	return api.store.GetSuggestionsFromStore(search)
+}
+
 func (api *ProductUsecase) GetCart(userID int) (*model.Order, error) {
 	cart, err := api.store.GetCart(userID)
 	if err != nil {
