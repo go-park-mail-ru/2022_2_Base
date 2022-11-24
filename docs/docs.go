@@ -25,51 +25,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/avatar": {
-            "post": {
-                "description": "sets user's avatar",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Set user's avatar",
-                "operationId": "setAvatar",
-                "parameters": [
-                    {
-                        "type": "file",
-                        "description": "user's avatar",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Access token is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error - Request is valid but operation failed at server side",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/cart": {
             "get": {
                 "description": "gets user's cart",
@@ -152,6 +107,272 @@ const docTemplate = `{
                         "description": "Unauthorized - Access token is missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/cart/deletefromcart": {
+            "post": {
+                "description": "Deletes Item From cart",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Deletes Item From cart",
+                "operationId": "DeleteItemFromCart",
+                "parameters": [
+                    {
+                        "description": "ProductCart item",
+                        "name": "items",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ProductCartItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found - Requested entity is not found in database",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/cart/insertintocart": {
+            "post": {
+                "description": "Adds item to cart",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Adds item to cart",
+                "operationId": "AddItemToCart",
+                "parameters": [
+                    {
+                        "description": "ProductCart item",
+                        "name": "items",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ProductCartItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/cart/makeorder": {
+            "post": {
+                "description": "makes user's order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "makes user's order",
+                "operationId": "MakeOrder",
+                "parameters": [
+                    {
+                        "description": "MakeOrder params",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.MakeOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/cart/orders": {
+            "get": {
+                "description": "gets user's orders",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "gets user's orders",
+                "operationId": "GetOrder",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/category/{category}": {
+            "get": {
+                "description": "Gets products by category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets products by category",
+                "operationId": "GetProductsByCategory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The category of products",
+                        "name": "category",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "lastitemid",
+                        "name": "lastitemid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "count",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
                         }
                     },
                     "500": {
@@ -246,48 +467,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/makeorder": {
-            "post": {
-                "description": "makes user's order",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Order"
-                ],
-                "summary": "makes user's order",
-                "operationId": "MakeOrder",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request - Problem with the request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Access token is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error - Request is valid but operation failed at server side",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/products": {
             "get": {
                 "description": "Gets products for main page",
@@ -302,6 +481,28 @@ const docTemplate = `{
                 ],
                 "summary": "Gets products for main page",
                 "operationId": "getMain",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "lastitemid",
+                        "name": "lastitemid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "count",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -318,9 +519,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/profile": {
+        "/products/comments/{id}": {
             "get": {
-                "description": "gets user by username in cookies",
+                "description": "gets product's comments",
                 "consumes": [
                     "application/json"
                 ],
@@ -328,15 +529,30 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Comments"
                 ],
-                "summary": "Get current user",
-                "operationId": "getUser",
+                "summary": "gets product's comments",
+                "operationId": "GetComments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of product",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.UserProfile"
+                            "$ref": "#/definitions/model.Comment"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
                         }
                     },
                     "401": {
@@ -352,9 +568,11 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "post": {
-                "description": "changes user parameters",
+            }
+        },
+        "/products/{id}": {
+            "get": {
+                "description": "Gets product by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -362,18 +580,57 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Products"
                 ],
-                "summary": "changes user parameters",
-                "operationId": "changeUserParameters",
+                "summary": "Gets product by id",
+                "operationId": "getProductByID",
                 "parameters": [
                     {
-                        "description": "UserProfile params",
-                        "name": "user",
+                        "type": "string",
+                        "description": "Id of product",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/search": {
+            "post": {
+                "description": "Gets product by search",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets product by search",
+                "operationId": "getProductBySearch",
+                "parameters": [
+                    {
+                        "description": "search string",
+                        "name": "search",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.UserProfile"
+                            "$ref": "#/definitions/model.Search"
                         }
                     }
                 ],
@@ -381,17 +638,11 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/model.Product"
                         }
                     },
                     "400": {
                         "description": "Bad request - Problem with the request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - Access token is missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -487,19 +738,352 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/suggestions": {
+            "post": {
+                "description": "Gets uggestions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets suggestions",
+                "operationId": "getSuggestions",
+                "parameters": [
+                    {
+                        "description": "search string",
+                        "name": "search",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Search"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/avatar": {
+            "post": {
+                "description": "sets user's avatar",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Set user's avatar",
+                "operationId": "setAvatar",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "user's avatar",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/makecomment": {
+            "post": {
+                "description": "creates product's comment by user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "creates product's comment by user",
+                "operationId": "CreateComment",
+                "parameters": [
+                    {
+                        "description": "Comment params",
+                        "name": "comment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.CreateComment"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/profile": {
+            "get": {
+                "description": "gets user by username in cookies",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get current user",
+                "operationId": "getUser",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.UserProfile"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "changes user parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "changes user parameters",
+                "operationId": "changeUserParameters",
+                "parameters": [
+                    {
+                        "description": "UserProfile params",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.UserProfile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "model.Address": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "flat": {
+                    "type": "string"
+                },
+                "house": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "priority": {
+                    "type": "boolean"
+                },
+                "street": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Comment": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "drawbacks": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "itemid": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "number"
+                },
+                "userid": {
+                    "type": "integer"
+                },
+                "worths": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CreateComment": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "drawbacks": {
+                    "type": "string"
+                },
+                "itemid": {
+                    "type": "integer"
+                },
+                "userid": {
+                    "type": "integer"
+                },
+                "worths": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Error": {
             "type": "object",
             "properties": {
                 "error": {}
             }
         },
+        "model.MakeOrder": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "integer"
+                },
+                "card": {
+                    "type": "integer"
+                },
+                "deliveryDate": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "userid": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.Order": {
             "type": "object",
             "properties": {
-                "adress": {
+                "address": {
+                    "type": "integer"
+                },
+                "card": {
+                    "type": "integer"
+                },
+                "creationDate": {
+                    "type": "string"
+                },
+                "deliveryDate": {
                     "type": "string"
                 },
                 "id": {
@@ -508,7 +1092,7 @@ const docTemplate = `{
                 "items": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.OrderItem"
                     }
                 },
                 "orderstatus": {
@@ -522,10 +1106,41 @@ const docTemplate = `{
                 }
             }
         },
+        "model.OrderItem": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "item": {
+                    "$ref": "#/definitions/model.Product"
+                }
+            }
+        },
+        "model.PaymentMethod": {
+            "type": "object",
+            "properties": {
+                "expirydate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Product": {
             "type": "object",
             "properties": {
-                "description": {
+                "category": {
                     "type": "string"
                 },
                 "id": {
@@ -559,10 +1174,26 @@ const docTemplate = `{
                 }
             }
         },
+        "model.ProductCartItem": {
+            "type": "object",
+            "properties": {
+                "itemid": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.Response": {
             "type": "object",
             "properties": {
                 "body": {}
+            }
+        },
+        "model.Search": {
+            "type": "object",
+            "properties": {
+                "search": {
+                    "type": "string"
+                }
             }
         },
         "model.UserCreateParams": {
@@ -593,16 +1224,25 @@ const docTemplate = `{
         "model.UserProfile": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Address"
+                    }
+                },
                 "avatar": {
                     "type": "string"
                 },
                 "email": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "integer"
+                },
                 "paymentmethods": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.PaymentMethod"
                     }
                 },
                 "phone": {

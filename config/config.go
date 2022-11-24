@@ -8,13 +8,24 @@ var PathSignUp = BasePath + "/signup"
 var PathSessions = BasePath + "/session"
 var PathDocs = BasePath + "/docs"
 var PathMain = BasePath + "/products"
-var PathProfile = BasePath + "/profile"
-var PathAvatar = BasePath + "/avatar"
-var PathCart = BasePath + "/cart"
-var PathMakeOrder = BasePath + "/makeorder"
+var PathProductByID = BasePath + "/products/{id}"
+var PathCategory = BasePath + "/category/{category}"
+var PathComments = BasePath + "/products/comments/{id}"
+var PathSeacrh = BasePath + "/search"
+var PathSuggestions = BasePath + "/suggestions"
+
+var PathProfile = "/profile"
+var PathAvatar = "/avatar"
+var PathMakeComment = "/makecomment"
+
+var PathCart = "/cart"
+var PathAddItemToCart = "/insertintocart"
+var PathDeleteItemFromCart = "/deletefromcart"
+var PathMakeOrder = "/makeorder"
+var PathGetOrders = "/orders"
 
 var Headers = map[string]string{
-	"Access-Control-Allow-Origin":      "http://89.208.198.137:8081",
+	//"Access-Control-Allow-Origin":      "http://127.0.0.1:8081",
 	"Access-Control-Allow-Credentials": "true",
 	"Access-Control-Allow-Headers":     "Origin, Content-Type, accept",
 	"Access-Control-Allow-Methods":     "GET, POST, DELETE, OPTIONS",

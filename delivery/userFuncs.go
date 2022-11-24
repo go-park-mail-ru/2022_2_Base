@@ -9,6 +9,8 @@ import (
 	"strconv"
 
 	usecase "serv/usecase"
+
+	"github.com/microcosm-cc/bluemonday"
 )
 
 type UserHandler struct {
@@ -31,45 +33,34 @@ func NewUserHandler(uuc *usecase.UserUsecase) *UserHandler {
 // @Success 200 {object} model.UserProfile
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /profile [get]
+// @Router /user/profile [get]
 func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		log.Println("no session")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-	usName, err := api.usecase.GetSession(session.Value)
-	if err != nil {
-		log.Println("no session2")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	user, err := api.usecase.GetUserByUsername(usName)
-	if err != nil {
+	sanitizer := bluemonday.UGCPolicy()
+	if user := r.Context().Value("userdata").(*model.UserProfile); user == nil {
+		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if user.Email == "" {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
+	userProfile := r.Context().Value("userdata").(*model.UserProfile)
+
+	userProfile.Email = sanitizer.Sanitize(userProfile.Email)
+	userProfile.Username = sanitizer.Sanitize(userProfile.Username)
+	userProfile.Phone = sanitizer.Sanitize(userProfile.Phone)
+	userProfile.Avatar = sanitizer.Sanitize(userProfile.Avatar)
+	for _, addr := range userProfile.Address {
+		addr.City = sanitizer.Sanitize(addr.City)
+		addr.House = sanitizer.Sanitize(addr.House)
+		addr.Street = sanitizer.Sanitize(addr.Street)
 	}
 
-	userProfile := model.UserProfile{Email: user.Email, Username: user.Username}
-	if user.Phone != nil {
-		userProfile.Phone = *user.Phone
-	} else {
-		userProfile.Phone = ""
+	for _, paym := range userProfile.PaymentMethods {
+		paym.PaymentType = sanitizer.Sanitize(paym.PaymentType)
+		paym.Number = sanitizer.Sanitize(paym.Number)
 	}
-	if user.Avatar != nil {
-		userProfile.Avatar = *user.Avatar
-	} else {
-		userProfile.Avatar = ""
-	}
+	userProfile.ID = 0
 	json.NewEncoder(w).Encode(userProfile)
 }
 
@@ -85,39 +76,29 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /profile [post]
+// @Router /user/profile [post]
 func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
-		return
-	}
-	_, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
 	decoder := json.NewDecoder(r.Body)
 	var req model.UserProfile
-	err = decoder.Decode(&req)
+	err := decoder.Decode(&req)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-
-	oldUserData, err := api.usecase.GetUserByUsername(req.Email)
-	if err != nil {
-		log.Println("db error: ", err)
+	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if oldUserData.Email == "" {
-		log.Println("error user not found")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
+	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
 
-	err = api.usecase.ChangeUser(oldUserData.Email, req)
+	err = api.usecase.ChangeUser(oldUserData, &req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
@@ -136,36 +117,18 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} model.Response "OK"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
-// @Router /avatar [post]
+// @Router /user/avatar [post]
 func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
-	}
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-	usName, err := api.usecase.GetSession(session.Value)
-	if err != nil {
-		log.Println("no session")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
 
-	user, err := api.usecase.GetUserByUsername(usName)
-	if err != nil {
-		log.Println("db error: ", err)
+	}
+	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	if user.Email == "" {
-		log.Println("error user not found")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	userDB := model.UserDB{ID: user.ID, Email: user.Email, Username: user.Username, Password: user.Password}
+	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -173,21 +136,17 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
+
 	defer file.Close()
-	err = api.usecase.SetAvatar(userDB.ID, file)
+	err = api.usecase.SetAvatar(oldUserData.ID, file)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	fileName := "/img/avatars/avatar" + strconv.FormatUint(uint64(userDB.ID), 10) + ".jpg"
-	newUserData := model.UserProfile{Email: userDB.Email, Username: userDB.Username, Avatar: fileName}
-	if userDB.Phone != nil {
-		newUserData.Phone = *userDB.Phone
-	} else {
-		newUserData.Phone = ""
-	}
+	fileName := "/img/avatar" + strconv.FormatUint(uint64(oldUserData.ID), 10) + ".jpg"
+	newUserData := model.UserProfile{Avatar: fileName}
 
-	err = api.usecase.ChangeUser(userDB.Email, newUserData)
+	err = api.usecase.ChangeUser(oldUserData, &newUserData)
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return

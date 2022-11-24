@@ -33,13 +33,16 @@ services:
     links:
       - postgres:postgres
     volumes:
-      - .:/app
+      - ./:/app
+      - /home/ubuntu/front-next/dist/img:/avatars
     depends_on:
       - "postgres"
     networks:
       - mynet
 
 volumes:
+  .:
+    external: true
   dbData:
 
 
