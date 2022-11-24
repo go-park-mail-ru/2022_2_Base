@@ -79,22 +79,29 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) error {
 		return err
 	}
 	remainedItemsIDs := []int{}
+	boughtItemsIDs := []int{}
 	for _, orderItem := range cart.Items {
 		flag := true
+		flag2 := false
 		for _, id := range in.Items {
 			if orderItem.Item.ID == id {
 				flag = false
+				flag2 = true
 			}
 		}
 		if flag {
 			for i := 0; i < orderItem.Count; i++ {
 				remainedItemsIDs = append(remainedItemsIDs, orderItem.Item.ID)
 			}
-
+		}
+		if flag2 {
+			for i := 0; i < orderItem.Count; i++ {
+				boughtItemsIDs = append(boughtItemsIDs, orderItem.Item.ID)
+			}
 		}
 	}
 
-	err = api.store.MakeOrder(in)
+	err = api.store.MakeOrder(in, &boughtItemsIDs)
 	if err != nil {
 		return err
 	}
