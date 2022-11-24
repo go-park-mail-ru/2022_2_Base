@@ -62,12 +62,12 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserDB)
+	UserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	cart, err := api.prHandler.usecase.GetCart(UserData.ID)
 	if err != nil {
@@ -117,12 +117,12 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserDB)
+	UserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	err = api.prHandler.usecase.UpdateOrder(UserData.ID, &req.Items)
 	if err != nil {
@@ -160,12 +160,12 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserDB)
+	UserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	err = api.prHandler.usecase.AddToOrder(UserData.ID, req.ItemID)
 	if err != nil {
@@ -204,12 +204,12 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserDB)
+	UserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	err = api.prHandler.usecase.DeleteFromOrder(UserData.ID, req.ItemID)
 	if err == baseErrors.ErrNotFound404 {
@@ -251,12 +251,12 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	oldUserData := r.Context().Value("userdata").(*model.UserDB)
+	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	if oldUserData.ID != req.UserID {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
@@ -290,12 +290,12 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserDB)
+	UserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	orders, err := api.prHandler.usecase.GetOrders(UserData.ID)
 	if err != nil {
@@ -396,12 +396,12 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if oldUserData := r.Context().Value("userdata").(*model.UserDB); oldUserData == nil {
+	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	oldUserData := r.Context().Value("userdata").(*model.UserDB)
+	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
 	if oldUserData.ID != req.UserID {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
