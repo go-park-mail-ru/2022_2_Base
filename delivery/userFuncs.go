@@ -46,31 +46,6 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 	userProfile := r.Context().Value("userdata").(*model.UserProfile)
 
-	// addresses, err := api.usecase.GetAddressesByUserID(user.ID)
-	// if err != nil {
-	// 	log.Println("err get adresses ", err)
-	// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-	// 	return
-	// }
-	// payments, err := api.usecase.GetPaymentMethodByUserID(user.ID)
-	// if err != nil {
-	// 	log.Println("err get payments ", err)
-	// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-	// 	return
-	// }
-
-	// userProfile := model.UserProfile{Email: user.Email, Username: user.Username}
-	// if user.Phone != nil {
-	// 	userProfile.Phone = *user.Phone
-	// } else {
-	// 	userProfile.Phone = ""
-	// }
-	// if user.Avatar != nil {
-	// 	userProfile.Avatar = *user.Avatar
-	// } else {
-	// 	userProfile.Avatar = ""
-	// }
-
 	userProfile.Email = sanitizer.Sanitize(userProfile.Email)
 	userProfile.Username = sanitizer.Sanitize(userProfile.Username)
 	userProfile.Phone = sanitizer.Sanitize(userProfile.Phone)
@@ -84,12 +59,7 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	for _, paym := range userProfile.PaymentMethods {
 		paym.PaymentType = sanitizer.Sanitize(paym.PaymentType)
 		paym.Number = sanitizer.Sanitize(paym.Number)
-		//paym.ExpiryDate = sanitizer.Sanitize(paym.ExpiryDate)
-
 	}
-
-	//userProfile.Address = addresses
-	//userProfile.PaymentMethods = payments
 	userProfile.ID = 0
 	json.NewEncoder(w).Encode(userProfile)
 }
