@@ -98,8 +98,13 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 			return
 		}
 
-		userData := model.UserProfile{ID: user.ID, Email: user.Email, Username: user.Username, Phone: *user.Phone, Avatar: *user.Avatar, Address: addresses, PaymentMethods: payments}
-
+		userData := model.UserProfile{ID: user.ID, Email: user.Email, Username: user.Username, Address: addresses, PaymentMethods: payments}
+		if user.Phone != nil {
+			userData.Phone = *user.Phone
+		}
+		if user.Avatar != nil {
+			userData.Avatar = *user.Avatar
+		}
 		next.ServeHTTP(w, r.WithContext(WithUser(r.Context(), &userData)))
 	})
 }
