@@ -23,6 +23,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	auth "serv/microservices/auth/gen_files"
+	orders "serv/microservices/orders/gen_files"
 )
 
 func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
@@ -114,6 +115,9 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 var (
 	sessManager auth.AuthCheckerClient
 )
+var (
+	ordersManager orders.OrdersWorkerClient
+)
 
 func main() {
 	myRouter := mux.NewRouter()
@@ -128,24 +132,36 @@ func main() {
 	}
 	defer db.Close()
 
-	grcpConn, err := grpc.Dial(
+	grcpConnAuth, err := grpc.Dial(
 		"127.0.0.1:8082",
 		grpc.WithInsecure(),
 	)
 	if err != nil {
-		log.Println("cant connect to grpc")
+		log.Println("cant connect to grpc auth")
 	} else {
 		log.Println("connected to grpc auth service")
 	}
-	defer grcpConn.Close()
+	defer grcpConnAuth.Close()
 
-	sessManager = auth.NewAuthCheckerClient(grcpConn)
+	grcpConnOrders, err := grpc.Dial(
+		"127.0.0.1:8083",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		log.Println("cant connect to grpc orders")
+	} else {
+		log.Println("connected to grpc orders service")
+	}
+	defer grcpConnOrders.Close()
+
+	sessManager = auth.NewAuthCheckerClient(grcpConnAuth)
+	ordersManager = orders.NewOrdersWorkerClient(grcpConnOrders)
 
 	userStore := repository.NewUserStore(db)
 	productStore := repository.NewProductStore(db)
 
 	userUsecase := usecase.NewUserUsecase(userStore, &sessManager)
-	productUsecase := usecase.NewProductUsecase(productStore)
+	productUsecase := usecase.NewProductUsecase(productStore, &ordersManager)
 
 	userHandler := deliv.NewUserHandler(userUsecase)
 	sessionHandler := deliv.NewSessionHandler(userUsecase)

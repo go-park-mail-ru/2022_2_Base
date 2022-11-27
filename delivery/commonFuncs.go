@@ -8,6 +8,7 @@ import (
 	"serv/domain/model"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/microcosm-cc/bluemonday"
 )
@@ -303,33 +304,85 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
+
 	var responseOrders []*model.OrderModelGetOrders
-	for _, order := range orders {
+	for _, order := range orders.Orders {
 		order.OrderStatus = sanitizer.Sanitize(order.OrderStatus)
 		order.PaymentStatus = sanitizer.Sanitize(order.PaymentStatus)
 
-		newOrder := model.OrderModelGetOrders{ID: order.ID, UserID: order.UserID, OrderStatus: order.OrderStatus, PaymentStatus: order.PaymentStatus, CreationDate: order.CreationDate, DeliveryDate: order.DeliveryDate}
-
+		//newOrder := model.OrderModelGetOrders{ID: int(order.ID), UserID: int(order.UserID), OrderStatus: order.OrderStatus, PaymentStatus: order.PaymentStatus, CreationDate: order.CreationDate, DeliveryDate: order.DeliveryDate}
+		newOrder := model.OrderModelGetOrders{ID: int(order.ID), UserID: int(order.UserID), OrderStatus: order.OrderStatus, PaymentStatus: order.PaymentStatus}
+		//cr and deliv date
 		for _, prod := range order.Items {
-			if prod.Item.Imgsrc != nil {
-				*prod.Item.Imgsrc = sanitizer.Sanitize(*prod.Item.Imgsrc)
+			if prod.Imgsrc != nil {
+				*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
 			}
-			prod.Item.Name = sanitizer.Sanitize(prod.Item.Name)
-			prod.Item.Category = sanitizer.Sanitize(prod.Item.Category)
-			newOrder.Items = append(newOrder.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, DiscountPrice: prod.Item.DiscountPrice, Imgsrc: prod.Item.Imgsrc})
+			prod.Name = sanitizer.Sanitize(prod.Name)
+			//prod.Category = sanitizer.Sanitize(prod.Category)
+			newOrder.Items = append(newOrder.Items, &model.CartProduct{ID: int(prod.ID), Name: prod.Name, Count: int(prod.Count), Price: prod.Price, DiscountPrice: prod.DiscountPrice, Imgsrc: prod.Imgsrc})
 		}
-		newOrder.Address, err = api.prHandler.usecase.GetOrdersAddress(order.AddressID)
-		if err != nil {
-			log.Println("db error: ", err)
-			ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-			return
-		}
-		newOrder.Paymentcard, err = api.prHandler.usecase.GetOrdersPayment(order.PaymentcardID)
-		if err != nil {
-			log.Println("db error: ", err)
-			ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-			return
-		}
+		//newOrder.CreationDate = &time.Time{order.CreationDate.Year + 2}
+		// layout := "2006-01-02T15:04:05.000Z"
+		// str := "2014-11-12T11:45:26.371Z"
+		// t, err := time.Parse(layout, str)
+		//layout := "2006-01-02T15:20:00.000Z"
+		// str := strconv.Itoa(int(order.CreationDate.Year)) + "-0" + strconv.Itoa(int(order.CreationDate.Month)) + "-" + strconv.Itoa(int(order.CreationDate.Day)) + "T" + strconv.Itoa(int(order.CreationDate.Hour)) + ":" + strconv.Itoa(int(order.CreationDate.Minutes)) + ":00.000Z"
+		// str2 := strconv.Itoa(int(order.DeliveryDate.Year)) + "-0" + strconv.Itoa(int(order.DeliveryDate.Month)) + "-" + strconv.Itoa(int(order.DeliveryDate.Day)) + "T" + strconv.Itoa(int(order.DeliveryDate.Hour)) + ":" + strconv.Itoa(int(order.DeliveryDate.Minutes)) + ":00.000Z"
+		// t, err := time.Parse(time.RFC3339, str)
+		// if err != nil {
+		// 	log.Println("date parse error: ", err)
+		// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		// 	return
+		// }
+		// t2, err := time.Parse(time.RFC3339, str2)
+		// if err != nil {
+		// 	log.Println("date parse error2: ", err)
+		// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		// 	return
+		// }
+		// newOrder.CreationDate = &t
+		// newOrder.DeliveryDate = &t2
+		// i, err := strconv.ParseInt("1405544146", 10, 64)
+		// if err != nil {
+		// 	panic(err)
+		// }
+		// tm := time.Unix(i, 0)
+		// fmt.Println(tm.UTC())
+
+		// unixTimeUTC := time.Unix(order.CreationDate, 0) //gives unix time stamp in utc
+		// unitTimeInRFC3339_1 := unixTimeUTC.Format(time.RFC3339)
+		t1 := time.Unix(order.CreationDate, 0)
+		newOrder.CreationDate = &t1
+		t2 := time.Unix(order.DeliveryDate, 0)
+		newOrder.DeliveryDate = &t2
+		//newOrder.DeliveryDate = time.Unix(order.DeliveryDate, 0)
+
+		newOrder.Address = model.Address{ID: int(order.Address.ID), City: order.Address.City, Street: order.Address.Street, House: order.Address.House, Flat: order.Address.Flat, Priority: order.Address.Priority}
+		newOrder.Address.City = sanitizer.Sanitize(newOrder.Address.City)
+		newOrder.Address.Street = sanitizer.Sanitize(newOrder.Address.Street)
+		newOrder.Address.House = sanitizer.Sanitize(newOrder.Address.House)
+		newOrder.Address.Flat = sanitizer.Sanitize(newOrder.Address.Flat)
+
+		newOrder.Paymentcard = model.PaymentMethod{ID: int(order.PaymentMethod.ID), PaymentType: order.PaymentMethod.PaymentType, Number: order.PaymentMethod.Number, Priority: order.PaymentMethod.Priority}
+		//date
+		t3 := time.Unix(order.PaymentMethod.ExpiryDate, 0)
+		newOrder.Paymentcard.ExpiryDate = t3
+		newOrder.Paymentcard.PaymentType = sanitizer.Sanitize(newOrder.Paymentcard.PaymentType)
+		newOrder.Paymentcard.Number = sanitizer.Sanitize(newOrder.Paymentcard.Number)
+		newOrder.Address.House = sanitizer.Sanitize(newOrder.Address.House)
+		newOrder.Address.Flat = sanitizer.Sanitize(newOrder.Address.Flat)
+		// newOrder.Address, err = api.prHandler.usecase.GetOrdersAddress(order.AddressID)
+		// if err != nil {
+		// 	log.Println("db error: ", err)
+		// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		// 	return
+		// }
+		// newOrder.Paymentcard, err = api.prHandler.usecase.GetOrdersPayment(order.PaymentcardID)
+		// if err != nil {
+		// 	log.Println("db error: ", err)
+		// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		// 	return
+		// }
 
 		responseOrders = append(responseOrders, &newOrder)
 	}
