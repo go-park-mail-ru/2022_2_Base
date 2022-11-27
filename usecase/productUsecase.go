@@ -138,7 +138,7 @@ func (api *ProductUsecase) GetOrdersPayment(paymentID int) (model.PaymentMethod,
 	return *payment, nil
 }
 
-func (api *ProductUsecase) GetComments(productID int) ([]*model.Comment, error) {
+func (api *ProductUsecase) GetComments(productID int) ([]*model.CommentDB, error) {
 	comments, err := api.store.GetCommentsFromStore(productID)
 	if err != nil {
 		return nil, err
@@ -146,6 +146,6 @@ func (api *ProductUsecase) GetComments(productID int) ([]*model.Comment, error) 
 	return comments, nil
 }
 
-func (api *ProductUsecase) CreateComment(in *model.Comment) error {
+func (api *ProductUsecase) CreateComment(in *model.CreateComment) error {
 	return api.store.CreateCommentInStore(in)
 }
