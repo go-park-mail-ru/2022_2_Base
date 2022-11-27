@@ -91,6 +91,7 @@ func main() {
 		"127.0.0.1:8081",
 		grpc.WithInsecure(),
 	)
+
 	if err != nil {
 		log.Fatalf("cant connect to grpc")
 	}
