@@ -4,12 +4,12 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
 
 	_ "serv/docs"
 	"serv/repository"
 
 	"github.com/gorilla/mux"
+	"google.golang.org/grpc"
 
 	deliv "serv/delivery"
 	usecase "serv/usecase"
@@ -21,6 +21,8 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	auth "serv/microservices/auth/gen_files"
 )
 
 func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
@@ -57,7 +59,7 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 			return
 		}
-		usName, err := amw.userUsecase.GetSession(session.Value)
+		usName, err := amw.userUsecase.CheckSession(session.Value)
 		if err != nil {
 			log.Println("no session2")
 			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
@@ -109,10 +111,14 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 	})
 }
 
+var (
+	sessManager auth.AuthCheckerClient
+)
+
 func main() {
 	myRouter := mux.NewRouter()
-	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
-	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
+	urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
+	//urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	log.Println("conn: ", urlDB)
 	db, err := pgxpool.New(context.Background(), urlDB)
 	if err != nil {
@@ -122,10 +128,23 @@ func main() {
 	}
 	defer db.Close()
 
+	grcpConn, err := grpc.Dial(
+		"127.0.0.1:8082",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		log.Println("cant connect to grpc")
+	} else {
+		log.Println("connected to grpc auth service")
+	}
+	defer grcpConn.Close()
+
+	sessManager = auth.NewAuthCheckerClient(grcpConn)
+
 	userStore := repository.NewUserStore(db)
 	productStore := repository.NewProductStore(db)
 
-	userUsecase := usecase.NewUserUsecase(userStore)
+	userUsecase := usecase.NewUserUsecase(userStore, &sessManager)
 	productUsecase := usecase.NewProductUsecase(productStore)
 
 	userHandler := deliv.NewUserHandler(userUsecase)

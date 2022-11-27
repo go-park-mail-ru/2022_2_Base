@@ -2,11 +2,15 @@ module serv
 
 go 1.18
 
-require github.com/gorilla/mux v1.8.0
+require (
+	github.com/gorilla/mux v1.8.0
+	google.golang.org/protobuf v1.27.1
+)
 
 require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.13.0 // indirect
@@ -20,8 +24,9 @@ require (
 	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
-	golang.org/x/net v0.0.0-20221002022538-bcab6841153b // indirect
-	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/text v0.4.0 // indirect
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 )
 
 require (
@@ -40,7 +45,8 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/swaggo/http-swagger v1.3.3
 	github.com/swaggo/swag v1.8.6
-	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec // indirect
+	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/tools v0.1.12 // indirect
+	google.golang.org/grpc v1.51.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
