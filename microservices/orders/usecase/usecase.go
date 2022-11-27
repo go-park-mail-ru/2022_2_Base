@@ -23,11 +23,6 @@ func (om *OrderUsecase) MakeOrder(ctx context.Context, in *orders.MakeOrderType)
 	return om.store.MakeOrder(ctx, in)
 }
 
-// func (om *OrderUsecase) GetOrders(ctx context.Context, userID *orders.UserID) (*orders.OrdersResponse, error) {
-// 	log.Println("call GetOrders usecase")
-// 	return om.store.GetOrdersFromStore(ctx, userID)
-// }
-
 func (api *OrderUsecase) GetOrders(userID int) ([]*model.Order, error) {
 	orders, err := api.store.GetOrdersFromStore(userID)
 	if err != nil {

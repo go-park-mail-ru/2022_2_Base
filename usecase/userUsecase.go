@@ -14,25 +14,18 @@ import (
 )
 
 type UserUsecase struct {
-	//sessions map[string]string
 	sessManager auth.AuthCheckerClient
 	store       rep.UserStore
 }
 
 func NewUserUsecase(us *rep.UserStore, sessManager *auth.AuthCheckerClient) *UserUsecase {
 	return &UserUsecase{
-		//sessions: make(map[string]string),
 		sessManager: *sessManager,
 		store:       *us,
 	}
 }
 
-// var (
-// 	sessManager auth.AuthCheckerClient
-// )
-
 func (uh *UserUsecase) SetSession(userEmail string) (*auth.SessionID, error) {
-	//uh.sessions[key] = value
 	sess, err := uh.sessManager.Create(
 		context.Background(),
 		&auth.Session{
@@ -41,10 +34,6 @@ func (uh *UserUsecase) SetSession(userEmail string) (*auth.SessionID, error) {
 	return sess, err
 }
 func (uh *UserUsecase) CheckSession(sessID string) (string, error) {
-	// if res, ok := uh.sessions[key]; ok {
-	// 	return res, nil
-	// }
-	// return "", baseErrors.ErrUnauthorized401
 	sess, err := uh.sessManager.Check(
 		context.Background(),
 		&auth.SessionID{
@@ -57,7 +46,6 @@ func (uh *UserUsecase) CheckSession(sessID string) (string, error) {
 }
 
 func (uh *UserUsecase) DeleteSession(sessID string) error {
-	//delete(uh.sessions, value)
 	ans, err := uh.sessManager.Delete(
 		context.Background(),
 		&auth.SessionID{

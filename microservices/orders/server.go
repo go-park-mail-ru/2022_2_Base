@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-
-	//conf "serv/config"
 	conf "serv/config"
 	orderdl "serv/microservices/orders/delivery"
 	orders "serv/microservices/orders/gen_files"

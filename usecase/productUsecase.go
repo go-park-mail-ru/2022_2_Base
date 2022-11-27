@@ -111,19 +111,6 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) error {
 	if err != nil {
 		return err
 	}
-	//err := ps.UpdateCart(in.UserID, items)
-	// err = api.store.MakeOrder(in, &boughtItemsIDs)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// message MakeOrderType {
-	// 	int32 UserID = 1;
-	// 	repeated int32 Items = 2 [packed=true];
-	// 	int32 AddressID = 3;
-	// 	int32 PaymentcardID = 4;
-	// 	Date DeliveryDate = 5;
-	//   }
 
 	_, err = api.ordersManager.MakeOrder(
 		context.Background(),
@@ -132,7 +119,7 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) error {
 			Items:         boughtItemsIDsINT32,
 			AddressID:     int32(in.AddressID),
 			PaymentcardID: int32(in.PaymentcardID),
-			//date
+			DeliveryDate:  in.DeliveryDate.Unix(),
 		})
 	if err != nil {
 		return err
@@ -147,7 +134,6 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) error {
 }
 
 func (api *ProductUsecase) GetOrders(userID int) (*orders.OrdersResponse, error) {
-	//orders, err := api.ordersManager.GetOrders(userID)
 	ordersResponse, err := api.ordersManager.GetOrders(
 		context.Background(),
 		&orders.UserID{
@@ -158,22 +144,6 @@ func (api *ProductUsecase) GetOrders(userID int) (*orders.OrdersResponse, error)
 	}
 	return ordersResponse, nil
 }
-
-// func (api *ProductUsecase) GetOrdersAddress(addressID int) (model.Address, error) {
-// 	address, err := api.store.GetOrdersAddressFromStore(addressID)
-// 	if err != nil {
-// 		return model.Address{}, err
-// 	}
-// 	return *address, nil
-// }
-
-// func (api *ProductUsecase) GetOrdersPayment(paymentID int) (model.PaymentMethod, error) {
-// 	payment, err := api.store.GetOrdersPaymentFromStore(paymentID)
-// 	if err != nil {
-// 		return model.PaymentMethod{}, err
-// 	}
-// 	return *payment, nil
-// }
 
 func (api *ProductUsecase) GetComments(productID int) ([]*model.Comment, error) {
 	comments, err := api.store.GetCommentsFromStore(productID)
