@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"math"
 	"serv/domain/model"
 	rep "serv/repository"
 )
@@ -25,7 +26,7 @@ func (api *ProductUsecase) GetProducts(lastitemid int, count int, sort string) (
 		if err != nil {
 			return nil, err
 		}
-		product.Rating = rating
+		product.Rating = math.Round(rating*100) / 100
 		product.CommentsCount = &commsCount
 	}
 	return products, nil
@@ -41,7 +42,7 @@ func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, c
 		if err != nil {
 			return nil, err
 		}
-		product.Rating = rating
+		product.Rating = math.Round(rating*100) / 100
 		product.CommentsCount = &commsCount
 	}
 	return products, nil
@@ -56,7 +57,7 @@ func (api *ProductUsecase) GetProductByID(id int) (*model.Product, error) {
 	if err != nil {
 		return nil, err
 	}
-	product.Rating = rating
+	product.Rating = math.Round(rating*100) / 100
 	product.CommentsCount = &commsCount
 	return product, nil
 }
@@ -71,7 +72,7 @@ func (api *ProductUsecase) GetProductsBySearch(search string) ([]*model.Product,
 		if err != nil {
 			return nil, err
 		}
-		product.Rating = rating
+		product.Rating = math.Round(rating*100) / 100
 		product.CommentsCount = &commsCount
 	}
 	return products, nil
