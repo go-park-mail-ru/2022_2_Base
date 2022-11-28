@@ -125,6 +125,27 @@ func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, er
 	return &product, nil
 }
 
+func (ps *ProductStore) GetProductsRatingAndCommsCountFromStore(itemsID int) (float64, int, error) {
+	var rating *float64
+	var commsCount *int
+	rows, err := ps.db.Query(context.Background(), `SELECT COUNT(id), AVG(rating) FROM comments WHERE itemid = $1;`, itemsID)
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return 0, 0, nil
+	}
+	for rows.Next() {
+		err := rows.Scan(&commsCount, &rating)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+	if rating == nil || commsCount == nil {
+		return 0, 0, nil
+	}
+	return *rating, *commsCount, nil
+}
+
 func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Product, error) {
 	products := []*model.Product{}
 	searchWords := strings.Split(search, " ")

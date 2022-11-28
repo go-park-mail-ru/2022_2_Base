@@ -109,6 +109,8 @@ definitions:
     properties:
       category:
         type: string
+      commentscount:
+        type: integer
       id:
         type: integer
       imgsrc:

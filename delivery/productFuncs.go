@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
@@ -45,16 +46,19 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 	sort := r.URL.Query().Get("sort")
 	lastitemid, err := strconv.Atoi(lastitemidS)
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 	count, err := strconv.Atoi(countS)
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 	products, err := api.usecase.GetProducts(lastitemid, count, sort)
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
@@ -94,17 +98,20 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 	sort := r.URL.Query().Get("sort")
 	lastitemid, err := strconv.Atoi(lastitemidS)
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 	count, err := strconv.Atoi(countS)
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 
 	products, err := api.usecase.GetProductsWithCategory(category, lastitemid, count, sort)
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
@@ -140,10 +147,12 @@ func (api *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request
 	id, err := strconv.Atoi(idS)
 	product, err := api.usecase.GetProductByID(id)
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
@@ -177,12 +186,14 @@ func (api *ProductHandler) GetProductsBySearch(w http.ResponseWriter, r *http.Re
 	var req model.Search
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 
 	products, err := api.usecase.GetProductsBySearch(req.Search)
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
@@ -217,12 +228,14 @@ func (api *ProductHandler) GetSuggestions(w http.ResponseWriter, r *http.Request
 	var req model.Search
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 
 	suggestions, err := api.usecase.GetSuggestions(req.Search)
 	if err != nil {
+		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}

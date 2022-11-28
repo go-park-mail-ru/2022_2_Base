@@ -20,6 +20,14 @@ func (api *ProductUsecase) GetProducts(lastitemid int, count int, sort string) (
 	if err != nil {
 		return nil, err
 	}
+	for _, product := range products {
+		rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.Rating = rating
+		product.CommentsCount = &commsCount
+	}
 	return products, nil
 }
 
@@ -28,15 +36,45 @@ func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, c
 	if err != nil {
 		return nil, err
 	}
+	for _, product := range products {
+		rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.Rating = rating
+		product.CommentsCount = &commsCount
+	}
 	return products, nil
 }
 
 func (api *ProductUsecase) GetProductByID(id int) (*model.Product, error) {
-	return api.store.GetProductFromStoreByID(id)
+	product, err := api.store.GetProductFromStoreByID(id)
+	if err != nil {
+		return nil, err
+	}
+	rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+	if err != nil {
+		return nil, err
+	}
+	product.Rating = rating
+	product.CommentsCount = &commsCount
+	return product, nil
 }
 
 func (api *ProductUsecase) GetProductsBySearch(search string) ([]*model.Product, error) {
-	return api.store.GetProductsBySearchFromStore(search)
+	products, err := api.store.GetProductsBySearchFromStore(search)
+	if err != nil {
+		return nil, err
+	}
+	for _, product := range products {
+		rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.Rating = rating
+		product.CommentsCount = &commsCount
+	}
+	return products, nil
 }
 
 func (api *ProductUsecase) GetSuggestions(search string) ([]string, error) {

@@ -1140,6 +1140,9 @@ const docTemplate = `{
                 "category": {
                     "type": "string"
                 },
+                "commentscount": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
