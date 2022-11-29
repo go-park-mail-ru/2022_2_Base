@@ -214,7 +214,7 @@ func (api *UserUsecase) SetUsernamesForComments(comms []*model.CommentDB) ([]*mo
 		if err != nil {
 			return nil, err
 		}
-		comment := &model.Comment{Username: usName, Pros: comm.Pros, Cons: comm.Cons, Comment: comm.Comment, Rating: comm.Rating}
+		comment := &model.Comment{Username: usName, UserID: comm.UserID, Pros: comm.Pros, Cons: comm.Cons, Comment: comm.Comment, Rating: comm.Rating}
 		comments = append(comments, comment)
 	}
 	return comments, nil

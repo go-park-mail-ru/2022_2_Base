@@ -28,6 +28,7 @@ type CommentDB struct {
 }
 
 type Comment struct {
+	UserID   int     `json:"userid"`
 	Username string  `json:"username"`
 	Pros     string  `json:"pros,omitempty"`
 	Cons     string  `json:"cons,omitempty"`
