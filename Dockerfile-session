@@ -1,0 +1,7 @@
+FROM golang:alpine
+LABEL maintainer="Base"
+WORKDIR /auth
+COPY . .
+RUN go build -o authIm ./microservices/auth/
+EXPOSE 8082
+CMD ["./authIm"]

@@ -1,0 +1,7 @@
+FROM golang:alpine
+LABEL maintainer="Base"
+WORKDIR /orders
+COPY . .
+RUN go build -o ordersIm ./microservices/orders/
+EXPOSE 8083
+CMD ["./ordersIm"]
