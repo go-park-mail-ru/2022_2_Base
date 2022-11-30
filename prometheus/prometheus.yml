@@ -22,6 +22,6 @@ scrape_configs:
     static_configs:
       - targets: [ 'docker.for.linux.localhost:8083' ]
 
-  - job_name: 'node'
+  - job_name: 'system'
     static_configs:
       - targets: [ 'docker.for.linux.localhost:9100' ]
