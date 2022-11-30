@@ -111,12 +111,14 @@ func (api *SessionHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
 	_, err = api.usecase.CheckSession(session.Value)
 	if err != nil {
+		log.Println("no sess ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
@@ -164,6 +166,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var req model.UserCreateParams
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -176,7 +179,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if user.Email != "" {
-		log.Println("error user exists")
+		log.Println("error user exists ", err)
 		ReturnErrorJSON(w, baseErrors.ErrConflict409, 409)
 		return
 	}
@@ -184,13 +187,13 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	//validation
 	match, _ := regexp.MatchString(`^(.+)@(.+)$`, req.Email)
 	if !match {
-		log.Println("validation error")
+		log.Println("validation error ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
 	if len(req.Password) < 6 {
-		log.Println("validation error")
+		log.Println("validation error ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
@@ -241,6 +244,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	hashTok := HashToken{Secret: []byte("Base")}
 	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(10*time.Hour).Unix())
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
@@ -267,12 +271,14 @@ func (api *SessionHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 	}
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
 	_, err = api.usecase.CheckSession(session.Value)
 	if err != nil {
+		log.Println("no sess ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
@@ -281,6 +287,7 @@ func (api *SessionHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 	hashTok := HashToken{Secret: []byte("Base")}
 	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(24*time.Hour).Unix())
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}

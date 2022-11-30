@@ -36,6 +36,7 @@ func (om *OrderManager) GetOrders(ctx context.Context, userID *orders.UserID) (*
 		log.Println("error ", err)
 		return nil, err
 	}
+	log.Println("got orders count ", len(ordersArr))
 	var responseOrders orders.OrdersResponse
 	for _, order := range ordersArr {
 

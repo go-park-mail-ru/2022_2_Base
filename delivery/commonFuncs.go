@@ -25,7 +25,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 127.0.0.1:8080
+// @host 89.208.198.137:8080
 // @BasePath  /api/v1
 
 type OrderHandler struct {
@@ -114,6 +114,7 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 	var req model.ProductCart
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -157,6 +158,7 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 	var req model.ProductCartItem
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -201,6 +203,7 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 	var req model.ProductCartItem
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -214,6 +217,7 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 
 	err = api.prHandler.usecase.DeleteFromOrder(UserData.ID, req.ItemID)
 	if err == baseErrors.ErrNotFound404 {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrNotFound404, 404)
 		return
 	}
@@ -248,6 +252,7 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 	var req model.MakeOrder
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -260,6 +265,7 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	if oldUserData.ID != req.UserID {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
@@ -363,6 +369,7 @@ func (api *OrderHandler) GetComments(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(idS)
 	comments, err := api.prHandler.usecase.GetComments(id)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
@@ -396,6 +403,7 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	var req model.Comment
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -407,6 +415,7 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	}
 	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
 	if oldUserData.ID != req.UserID {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}

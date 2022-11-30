@@ -33,13 +33,13 @@ func (os *OrderStore) MakeOrder(ctx context.Context, in *orders.MakeOrderType) e
 
 func (os *OrderStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
 	orders := []*model.Order{}
-	rows, err := os.db.Query(context.Background(), `SELECT * FROM orders WHERE userid = $1 AND orderstatus <> 'cart';`, userID)
+	rows, err := os.db.Query(context.Background(), `SELECT id, userid, orderstatus, paymentstatus, addressid, paymentcardid, creationdate, deliverydate FROM orders WHERE userid = $1 AND orderstatus <> 'cart';`, userID)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
-	log.Println("got orders from db")
+
 	for rows.Next() {
 		dat := model.Order{}
 		err := rows.Scan(&dat.ID, &dat.UserID, &dat.OrderStatus, &dat.PaymentStatus, &dat.AddressID, &dat.PaymentcardID, &dat.CreationDate, &dat.DeliveryDate)
@@ -55,6 +55,7 @@ func (os *OrderStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
 		}
 		order.Items = orderItems
 	}
+	log.Println("got orders from db, count: ", len(orders))
 	return orders, nil
 }
 
