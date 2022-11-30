@@ -3,7 +3,6 @@ module serv
 go 1.18
 
 require (
-	github.com/albertogviana/prometheus-middleware v0.0.2
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
 	google.golang.org/protobuf v1.28.1
@@ -29,6 +28,7 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
 	golang.org/x/net v0.2.0 // indirect
@@ -52,6 +52,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/swaggo/http-swagger v1.3.3
 	github.com/swaggo/swag v1.8.6
+	gitlab.com/msvechla/mux-prometheus v0.0.2
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	google.golang.org/grpc v1.51.0

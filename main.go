@@ -9,9 +9,10 @@ import (
 	_ "serv/docs"
 	"serv/repository"
 
-	prometheusmiddleware "github.com/albertogviana/prometheus-middleware"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	muxprom "gitlab.com/msvechla/mux-prometheus/pkg/middleware"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -224,8 +225,11 @@ func main() {
 
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	myRouter.Use(loggingAndCORSHeadersMiddleware)
-	prometheusMiddleware := prometheusmiddleware.NewPrometheusMiddleware(prometheusmiddleware.Opts{})
-	myRouter.Use(prometheusMiddleware.InstrumentHandlerDuration)
+	instrumentation := muxprom.NewDefaultInstrumentation()
+	myRouter.Use(instrumentation.Middleware)
+	//myRouter.Use(prometheusMiddleware)
+	//prometheusMiddleware := prometheusmiddleware.NewPrometheusMiddleware(prometheusmiddleware.Opts{})
+	//myRouter.Use(prometheusMiddleware.InstrumentHandlerDuration)
 	myRouter.Path("/metrics").Handler(promhttp.Handler())
 
 	amw := authenticationMiddleware{*userUsecase}
