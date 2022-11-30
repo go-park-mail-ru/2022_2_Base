@@ -56,30 +56,6 @@ services:
       - './_postgres:/docker-entrypoint'
       - 'dbData:/var/lib/postgresql/data'
 
-  app:
-    container_name: go
-    environment:
-      - DB_PORT=${DB_PORT}
-      - TEST_POSTGRES_USER=${TEST_DB_USER}
-      - TEST_POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
-      - TEST_POSTGRES_DB=${TEST_DB_NAME}
-      - TEST_DATABASE_HOST=${TEST_DB_HOST}
-      - TEST_DATABASE_PORT=${TEST_DB_PORT}
-    build:
-      context: .
-    ports:
-      - 8080:8080
-    restart: on-failure
-    links:
-      - postgres:postgres
-    volumes:
-      - ./:/app
-      - /home/ubuntu/front-next/dist/img:/avatars
-    depends_on:
-      - "postgres"
-    networks:
-      - mynet
-
   session:
     build:
       context: .
@@ -128,6 +104,30 @@ services:
         interval: 30s
         timeout: 10s
         retries: 5
+
+  app:
+    container_name: go
+    environment:
+      - DB_PORT=${DB_PORT}
+      - TEST_POSTGRES_USER=${TEST_DB_USER}
+      - TEST_POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
+      - TEST_POSTGRES_DB=${TEST_DB_NAME}
+      - TEST_DATABASE_HOST=${TEST_DB_HOST}
+      - TEST_DATABASE_PORT=${TEST_DB_PORT}
+    build:
+      context: .
+    ports:
+      - 8080:8080
+    restart: on-failure
+    links:
+      - postgres:postgres
+    volumes:
+      - ./:/app
+      - /home/ubuntu/front-next/dist/img:/avatars
+    depends_on:
+      - "postgres"
+    networks:
+      - mynet
 
 volumes:
   grafana-storage:

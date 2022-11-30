@@ -2,6 +2,11 @@ FROM golang:alpine
 LABEL maintainer="Base"
 WORKDIR /orders
 COPY . .
-RUN go build -o ordersIm ./microservices/orders/
+
+RUN go install github.com/githubnemo/CompileDaemon@latest
+
+CMD /bin/bash -c '$GOPATH/bin/CompileDaemon -log-prefix=false -polling=true -polling-interval=500 -build="go build ./microservices/orders/" -command="./orders"'
+
+#RUN go build -o ordersIm ./microservices/orders/
 EXPOSE 8083
-CMD ["./ordersIm"]
+#CMD ["./ordersIm"]

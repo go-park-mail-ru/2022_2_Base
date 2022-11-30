@@ -1,7 +1,13 @@
 FROM golang:alpine
-LABEL maintainer="Base"
+
 WORKDIR /auth
 COPY . .
-RUN go build -o authIm ./microservices/auth/
+#RUN go build -o authIm ./microservices/auth/
+RUN go install github.com/githubnemo/CompileDaemon@latest
+
+CMD /bin/bash -c '$GOPATH/bin/CompileDaemon -log-prefix=false -polling=true -polling-interval=500 -build="go build ./microservices/auth/" -command="./auth"'
 EXPOSE 8082
-CMD ["./authIm"]
+
+
+LABEL maintainer="Base"
+#CMD ["./authIm"]
