@@ -158,7 +158,7 @@ func main() {
 
 	grcpConnAuth, err := grpc.Dial(
 		//"127.0.0.1:8082",
-		"session:8082",
+		"auth:8082",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
