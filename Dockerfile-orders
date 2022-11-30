@@ -4,5 +4,5 @@ WORKDIR /orders
 COPY . .
 RUN go install github.com/githubnemo/CompileDaemon@latest
 RUN apk update && apk add bash
-CMD /bin/bash -c '$GOPATH/bin/CompileDaemon -log-prefix=false -polling=true -polling-interval=500 -build="go build ./microservices/orders/" -command="./orders"'
 EXPOSE 8083
+CMD /bin/bash -c '$GOPATH/bin/CompileDaemon -log-prefix=false -polling=true -polling-interval=500 -build="go build ./microservices/orders/" -command="./orders"'

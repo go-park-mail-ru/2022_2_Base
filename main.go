@@ -14,6 +14,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	deliv "serv/delivery"
 	usecase "serv/usecase"
@@ -155,8 +156,9 @@ func main() {
 	defer db.Close()
 
 	grcpConnAuth, err := grpc.Dial(
-		"127.0.0.1:8082",
-		grpc.WithInsecure(),
+		//"127.0.0.1:8082",
+		"auth",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		log.Println("cant connect to grpc auth")
@@ -166,8 +168,9 @@ func main() {
 	defer grcpConnAuth.Close()
 
 	grcpConnOrders, err := grpc.Dial(
-		"127.0.0.1:8083",
-		grpc.WithInsecure(),
+		//"127.0.0.1:8083",
+		"orders",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		log.Println("cant connect to grpc orders")

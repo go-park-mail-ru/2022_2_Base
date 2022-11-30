@@ -16,7 +16,7 @@ services:
       - "9100:9100"
     restart: always
     deploy:
-       mode: global
+      mode: global
 
   grafana:
     image: grafana/grafana:latest
@@ -25,7 +25,7 @@ services:
       - "3000:3000"
     volumes:
       - grafana-storage:/var/lib/grafana
-  
+
   prometheus:
     image: prom/prometheus:v2.24.0
     volumes:
@@ -39,7 +39,6 @@ services:
     ports:
       - 9090:9090
     restart: always
-
 
   postgres:
     container_name: postgres
@@ -82,9 +81,9 @@ services:
       dockerfile: ./Dockerfile-orders
     container_name: orders
     ports:
-        - "8083:8083"
+      - "8083:8083"
     expose:
-        - "8083"
+      - "8083"
     environment:
       - DB_PORT=${DB_PORT}
       - TEST_POSTGRES_USER=${TEST_DB_USER}
@@ -93,17 +92,20 @@ services:
       - TEST_DATABASE_HOST=${TEST_DB_HOST}
       - TEST_DATABASE_PORT=${TEST_DB_PORT}
     volumes:
-        - ./:/orders
+      - ./:/orders
     restart: on-failure
     depends_on:
-        - postgres
+      - postgres
+      - session
+    networks:
+      - mynet
     links:
       - postgres:postgres
     healthcheck:
-        test: [ "CMD", "curl", "-f", "http://localhost:8083" ]
-        interval: 30s
-        timeout: 10s
-        retries: 5
+      test: [ "CMD", "curl", "-f", "http://localhost:8083" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   app:
     container_name: go
@@ -126,6 +128,8 @@ services:
       - /home/ubuntu/front-next/dist/img:/avatars
     depends_on:
       - "postgres"
+      - "session"
+      - "orders"
     networks:
       - mynet
 
