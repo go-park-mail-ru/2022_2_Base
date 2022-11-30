@@ -102,6 +102,7 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 		}
 
 		if user.Email == "" {
+			log.Println("err get Email ", err)
 			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 			return
 		}
@@ -157,7 +158,7 @@ func main() {
 
 	grcpConnAuth, err := grpc.Dial(
 		//"127.0.0.1:8082",
-		"auth",
+		"session:8082",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -169,7 +170,7 @@ func main() {
 
 	grcpConnOrders, err := grpc.Dial(
 		//"127.0.0.1:8083",
-		"orders",
+		"orders:8083",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

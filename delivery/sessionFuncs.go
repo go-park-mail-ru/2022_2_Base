@@ -44,19 +44,23 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req model.UserLogin
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println("get UserLogin ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 	user, err := api.usecase.GetUserByUsername(req.Email)
 	if err != nil {
+		log.Println("get GetUserByUsername ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
 	if user.Email == "" {
+		log.Println("get Email ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 	if user.Password != req.Password {
+		log.Println("get Password ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
