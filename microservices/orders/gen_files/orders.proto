@@ -1,0 +1,71 @@
+syntax = "proto3";
+// export PATH="$PATH:$(go env GOPATH)/bin"
+// go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+// protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --experimental_allow_proto3_optional --go-grpc_opt=paths=source_relative microservices/orders/gen_files/orders.proto
+
+package orders;
+option go_package = "./orders";
+
+message Address {
+  int32 ID = 1;
+  string City = 2;
+  string Street = 3;
+  string House = 4;
+  string Flat = 5;
+  bool Priority = 6;
+}
+
+message PaymentMethod {
+  int32 ID = 1;
+  string PaymentType = 2;
+  string Number = 3;
+  int64 ExpiryDate = 4;
+  bool Priority = 5;
+}
+
+message MakeOrderType {
+  int32 UserID = 1;
+  repeated int32 Items = 2 [packed=true];
+  int32 AddressID = 3;
+  int32 PaymentcardID = 4;
+  int64 DeliveryDate = 5;
+}
+
+message CartProduct {
+  int32 ID = 1;
+  string Name = 2;
+  int32 Count = 3;
+  double Price = 4;
+  optional double DiscountPrice = 5;
+  optional string Imgsrc = 6;
+}
+
+message Order {
+  int32 ID = 1;
+  int32 UserID = 2;
+  repeated CartProduct Items = 3;
+  string OrderStatus = 4;
+  string PaymentStatus = 5;
+  Address Address = 6;
+  PaymentMethod PaymentMethod = 7;
+  int64 CreationDate = 8;
+  int64 DeliveryDate = 9;
+}
+
+message OrdersResponse {
+  repeated Order orders = 1;
+}
+
+message Nothing {
+  bool isSuccessful = 1;
+}
+
+message UserID {
+  int32 UserID = 1;
+}
+
+// grpc-сервис для работы с заказами
+service OrdersWorker {
+    rpc MakeOrder (MakeOrderType) returns (Nothing) {}
+    rpc GetOrders (UserID) returns (OrdersResponse) {}
+}

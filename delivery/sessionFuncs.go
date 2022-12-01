@@ -9,8 +9,6 @@ import (
 	"serv/domain/model"
 	"time"
 
-	"github.com/google/uuid"
-
 	usecase "serv/usecase"
 )
 
@@ -46,35 +44,45 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req model.UserLogin
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println("get UserLogin ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 	user, err := api.usecase.GetUserByUsername(req.Email)
 	if err != nil {
+		log.Println("get GetUserByUsername ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
 	if user.Email == "" {
+		log.Println("get Email ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 	if user.Password != req.Password {
+		log.Println("get Password ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
-	newUUID := uuid.New()
-	api.usecase.SetSession(newUUID.String(), user.Email)
+	//newUUID := uuid.New()
+	sess, err := api.usecase.SetSession(user.Email)
+	if err != nil {
+		log.Println("error with auth microservice: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 
 	cookie := &http.Cookie{
 		Name:     "session_id",
-		Value:    newUUID.String(),
+		Value:    sess.ID,
 		Expires:  time.Now().Add(10 * time.Hour),
 		HttpOnly: true,
 		Secure:   true,
 	}
 
-	curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
+	//curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
+	curSession := model.Session{ID: user.ID, UserUUID: sess.ID}
 	hashTok := HashToken{Secret: []byte("Base")}
 	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(10*time.Hour).Unix())
 	if err != nil {
@@ -104,25 +112,34 @@ func (api *SessionHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
-	res, err := api.usecase.GetSession(session.Value)
+	_, err = api.usecase.CheckSession(session.Value)
 	if err != nil {
+		log.Println("no sess ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
-	api.usecase.DeleteSession(res)
-
-	curSession := model.Session{ID: 0, UserUUID: session.Value}
-	hashTok := HashToken{Secret: []byte("Base")}
-	_, err = hashTok.CreateCSRFToken(&curSession, time.Now().Unix())
+	//api.usecase.DeleteSession(res)
+	err = api.usecase.DeleteSession(session.Value)
 	if err != nil {
+		log.Println("error with auth microservice: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
+
+	//curSession := model.Session{ID: 0, UserUUID: session.Value}
+	// curSession := model.Session{ID: user.ID, UserUUID: sess.ID}
+	// hashTok := HashToken{Secret: []byte("Base")}
+	// _, err = hashTok.CreateCSRFToken(&curSession, time.Now().Unix())
+	// if err != nil {
+	// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+	// 	return
+	// }
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
@@ -150,6 +167,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var req model.UserCreateParams
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -162,7 +180,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if user.Email != "" {
-		log.Println("error user exists")
+		log.Println("error user exists ", err)
 		ReturnErrorJSON(w, baseErrors.ErrConflict409, 409)
 		return
 	}
@@ -170,13 +188,13 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	//validation
 	match, _ := regexp.MatchString(`^(.+)@(.+)$`, req.Email)
 	if !match {
-		log.Println("validation error")
+		log.Println("validation error ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
 	if len(req.Password) < 6 {
-		log.Println("validation error")
+		log.Println("validation error ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
@@ -188,22 +206,47 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newUUID := uuid.New()
+	// newUUID := uuid.New()
 
-	api.usecase.SetSession(newUUID.String(), req.Email)
+	// api.usecase.SetSession(newUUID.String(), req.Email)
+
+	// cookie := &http.Cookie{
+	// 	Name:     "session_id",
+	// 	Value:    newUUID.String(),
+	// 	Expires:  time.Now().Add(10 * time.Hour),
+	// 	HttpOnly: true,
+	// }
+
+	// curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
+	// hashTok := HashToken{Secret: []byte("Base")}
+	// token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(10*time.Hour).Unix())
+	// if err != nil {
+	// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+	// 	return
+	// }
+	// w.Header().Set("csrf", token)
+
+	sess, err := api.usecase.SetSession(user.Email)
+	if err != nil {
+		log.Println("error with auth microservice: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 
 	cookie := &http.Cookie{
 		Name:     "session_id",
-		Value:    newUUID.String(),
+		Value:    sess.ID,
 		Expires:  time.Now().Add(10 * time.Hour),
 		HttpOnly: true,
 		Secure:   true,
 	}
 
-	curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
+	//curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
+	curSession := model.Session{ID: user.ID, UserUUID: sess.ID}
 	hashTok := HashToken{Secret: []byte("Base")}
 	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(10*time.Hour).Unix())
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
@@ -230,12 +273,14 @@ func (api *SessionHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 	}
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 
-	_, err = api.usecase.GetSession(session.Value)
+	_, err = api.usecase.CheckSession(session.Value)
 	if err != nil {
+		log.Println("no sess ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
@@ -244,6 +289,7 @@ func (api *SessionHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 	hashTok := HashToken{Secret: []byte("Base")}
 	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(24*time.Hour).Unix())
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}

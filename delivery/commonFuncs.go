@@ -8,6 +8,7 @@ import (
 	"serv/domain/model"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/microcosm-cc/bluemonday"
 )
@@ -113,6 +114,7 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 	var req model.ProductCart
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -156,6 +158,7 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 	var req model.ProductCartItem
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -200,6 +203,7 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 	var req model.ProductCartItem
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -213,6 +217,7 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 
 	err = api.prHandler.usecase.DeleteFromOrder(UserData.ID, req.ItemID)
 	if err == baseErrors.ErrNotFound404 {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrNotFound404, 404)
 		return
 	}
@@ -247,6 +252,7 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 	var req model.MakeOrder
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -259,6 +265,7 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	if oldUserData.ID != req.UserID {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
@@ -303,33 +310,36 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
+
 	var responseOrders []*model.OrderModelGetOrders
-	for _, order := range orders {
+	for _, order := range orders.Orders {
 		order.OrderStatus = sanitizer.Sanitize(order.OrderStatus)
 		order.PaymentStatus = sanitizer.Sanitize(order.PaymentStatus)
 
-		newOrder := model.OrderModelGetOrders{ID: order.ID, UserID: order.UserID, OrderStatus: order.OrderStatus, PaymentStatus: order.PaymentStatus, CreationDate: order.CreationDate, DeliveryDate: order.DeliveryDate}
-
+		newOrder := model.OrderModelGetOrders{ID: int(order.ID), UserID: int(order.UserID), OrderStatus: order.OrderStatus, PaymentStatus: order.PaymentStatus}
 		for _, prod := range order.Items {
-			if prod.Item.Imgsrc != nil {
-				*prod.Item.Imgsrc = sanitizer.Sanitize(*prod.Item.Imgsrc)
+			if prod.Imgsrc != nil {
+				*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
 			}
-			prod.Item.Name = sanitizer.Sanitize(prod.Item.Name)
-			prod.Item.Category = sanitizer.Sanitize(prod.Item.Category)
-			newOrder.Items = append(newOrder.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, DiscountPrice: prod.Item.DiscountPrice, Imgsrc: prod.Item.Imgsrc})
+			prod.Name = sanitizer.Sanitize(prod.Name)
+			newOrder.Items = append(newOrder.Items, &model.CartProduct{ID: int(prod.ID), Name: prod.Name, Count: int(prod.Count), Price: prod.Price, DiscountPrice: prod.DiscountPrice, Imgsrc: prod.Imgsrc})
 		}
-		newOrder.Address, err = api.prHandler.usecase.GetOrdersAddress(order.AddressID)
-		if err != nil {
-			log.Println("db error: ", err)
-			ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-			return
-		}
-		newOrder.Paymentcard, err = api.prHandler.usecase.GetOrdersPayment(order.PaymentcardID)
-		if err != nil {
-			log.Println("db error: ", err)
-			ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-			return
-		}
+		t1 := time.Unix(order.CreationDate, 0)
+		newOrder.CreationDate = &t1
+		t2 := time.Unix(order.DeliveryDate, 0)
+		newOrder.DeliveryDate = &t2
+
+		newOrder.Address = model.Address{ID: int(order.Address.ID), City: order.Address.City, Street: order.Address.Street, House: order.Address.House, Flat: order.Address.Flat, Priority: order.Address.Priority}
+		newOrder.Address.City = sanitizer.Sanitize(newOrder.Address.City)
+		newOrder.Address.Street = sanitizer.Sanitize(newOrder.Address.Street)
+		newOrder.Address.House = sanitizer.Sanitize(newOrder.Address.House)
+		newOrder.Address.Flat = sanitizer.Sanitize(newOrder.Address.Flat)
+
+		newOrder.Paymentcard = model.PaymentMethod{ID: int(order.PaymentMethod.ID), PaymentType: order.PaymentMethod.PaymentType, Number: order.PaymentMethod.Number, Priority: order.PaymentMethod.Priority}
+		t3 := time.Unix(order.PaymentMethod.ExpiryDate, 0)
+		newOrder.Paymentcard.ExpiryDate = t3
+		newOrder.Paymentcard.PaymentType = sanitizer.Sanitize(newOrder.Paymentcard.PaymentType)
+		newOrder.Paymentcard.Number = sanitizer.Sanitize(newOrder.Paymentcard.Number)
 
 		responseOrders = append(responseOrders, &newOrder)
 	}
@@ -400,6 +410,7 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	var req model.CreateComment
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -411,6 +422,7 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	}
 	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
 	if oldUserData.ID != req.UserID {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}

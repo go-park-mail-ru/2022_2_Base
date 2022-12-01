@@ -21,4 +21,7 @@ make docker:postgres-bash:
 
 make docker:prune-all:
 	sudo docker system prune -a
+
+make docker:fix:
+	sudo killall containerd-shim	
 	

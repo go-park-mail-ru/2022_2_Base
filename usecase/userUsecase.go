@@ -1,40 +1,60 @@
 package usecase
 
 import (
+	"context"
 	"io"
 	"log"
 	"mime/multipart"
 	"os"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
+	auth "serv/microservices/auth/gen_files"
 	rep "serv/repository"
 	"strconv"
 )
 
 type UserUsecase struct {
-	sessions map[string]string
-	store    rep.UserStore
+	sessManager auth.AuthCheckerClient
+	store       rep.UserStore
 }
 
-func NewUserUsecase(us *rep.UserStore) *UserUsecase {
+func NewUserUsecase(us *rep.UserStore, sessManager *auth.AuthCheckerClient) *UserUsecase {
 	return &UserUsecase{
-		sessions: make(map[string]string),
-		store:    *us,
+		sessManager: *sessManager,
+		store:       *us,
 	}
 }
 
-func (uh *UserUsecase) SetSession(key string, value string) {
-	uh.sessions[key] = value
+func (uh *UserUsecase) SetSession(userEmail string) (*auth.SessionID, error) {
+	sess, err := uh.sessManager.Create(
+		context.Background(),
+		&auth.Session{
+			Login: userEmail,
+		})
+	return sess, err
 }
-func (uh *UserUsecase) GetSession(key string) (string, error) {
-	if res, ok := uh.sessions[key]; ok {
-		return res, nil
+func (uh *UserUsecase) CheckSession(sessID string) (string, error) {
+	sess, err := uh.sessManager.Check(
+		context.Background(),
+		&auth.SessionID{
+			ID: sessID,
+		})
+	if err != nil {
+		return "", err
 	}
-	return "", baseErrors.ErrUnauthorized401
+	return sess.Login, nil
 }
 
-func (uh *UserUsecase) DeleteSession(value string) {
-	delete(uh.sessions, value)
+func (uh *UserUsecase) DeleteSession(sessID string) error {
+	ans, err := uh.sessManager.Delete(
+		context.Background(),
+		&auth.SessionID{
+			ID: sessID,
+		})
+	if err != nil || !ans.IsSuccessful {
+		return err
+	}
+	return nil
 }
 
 func (api *UserUsecase) AddUser(params *model.UserCreateParams) error {
@@ -79,13 +99,13 @@ func (api *UserUsecase) ChangeUser(oldUserData *model.UserProfile, params *model
 	if params.Avatar != "" {
 		newUser.Avatar = params.Avatar
 	}
-	if len(params.Address) > 0 {
+	if len(params.Address) >= 0 {
 		err := api.ChangeUserAddresses(oldUserData.ID, oldUserData.Address, params.Address)
 		if err != nil {
 			return err
 		}
 	}
-	if len(params.PaymentMethods) > 0 {
+	if len(params.PaymentMethods) >= 0 {
 		err := api.ChangeUserPayments(oldUserData.ID, oldUserData.PaymentMethods, params.PaymentMethods)
 		if err != nil {
 			return err

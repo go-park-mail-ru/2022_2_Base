@@ -1,0 +1,8 @@
+FROM golang:alpine
+LABEL maintainer="Base"
+WORKDIR /auth
+COPY . .
+RUN go install github.com/githubnemo/CompileDaemon@latest
+RUN apk update && apk add bash
+EXPOSE 8082
+CMD /bin/bash -c '$GOPATH/bin/CompileDaemon -log-prefix=false -polling=true -polling-interval=500 -build="go build ./microservices/auth/" -command="./auth"'

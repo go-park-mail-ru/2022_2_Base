@@ -10,6 +10,11 @@ import (
 	"serv/repository"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	muxprom "gitlab.com/msvechla/mux-prometheus/pkg/middleware"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	deliv "serv/delivery"
 	usecase "serv/usecase"
@@ -21,22 +26,19 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	auth "serv/microservices/auth/gen_files"
+	orders "serv/microservices/orders/gen_files"
+
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 )
 
 func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println(r.RequestURI, r.Method)
-
-		//for tests on local server
-		origin := r.Header.Get("Origin")
-		if origin == "http://89.208.198.137:8081" || origin == "http://127.0.0.1:8081" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-		}
-
 		for header := range conf.Headers {
 			w.Header().Set(header, conf.Headers[header])
 		}
-
 		next.ServeHTTP(w, r)
 	})
 }
@@ -57,22 +59,12 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 			return
 		}
-		usName, err := amw.userUsecase.GetSession(session.Value)
+		usName, err := amw.userUsecase.CheckSession(session.Value)
 		if err != nil {
 			log.Println("no session2")
 			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 			return
 		}
-
-		// hashTok := HashToken{Secret: []byte("Base")}
-		// token := r.Header.Get("csrf")
-		// curSession := model.Session{ID: 0, UserUUID: session.Value}
-		// flag, err := hashTok.CheckCSRFToken(&curSession, token)
-		// if err != nil || !flag {
-		// 	log.Println("no csrf token")
-		// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		// 	return
-		// }
 
 		user, err := amw.userUsecase.GetUserByUsername(usName)
 		if err != nil {
@@ -94,6 +86,7 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 		}
 
 		if user.Email == "" {
+			log.Println("err get Email ", err)
 			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 			return
 		}
@@ -109,6 +102,13 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 	})
 }
 
+var (
+	sessManager auth.AuthCheckerClient
+)
+var (
+	ordersManager orders.OrdersWorkerClient
+)
+
 func main() {
 	myRouter := mux.NewRouter()
 	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
@@ -122,11 +122,40 @@ func main() {
 	}
 	defer db.Close()
 
+	grcpConnAuth, err := grpc.Dial(
+		"auth:8082",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
+		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
+	)
+	if err != nil {
+		log.Println("cant connect to grpc auth")
+	} else {
+		log.Println("connected to grpc auth service")
+	}
+	defer grcpConnAuth.Close()
+
+	grcpConnOrders, err := grpc.Dial(
+		"orders:8083",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
+		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
+	)
+	if err != nil {
+		log.Println("cant connect to grpc orders")
+	} else {
+		log.Println("connected to grpc orders service")
+	}
+	defer grcpConnOrders.Close()
+
+	sessManager = auth.NewAuthCheckerClient(grcpConnAuth)
+	ordersManager = orders.NewOrdersWorkerClient(grcpConnOrders)
+
 	userStore := repository.NewUserStore(db)
 	productStore := repository.NewProductStore(db)
 
-	userUsecase := usecase.NewUserUsecase(userStore)
-	productUsecase := usecase.NewProductUsecase(productStore)
+	userUsecase := usecase.NewUserUsecase(userStore, &sessManager)
+	productUsecase := usecase.NewProductUsecase(productStore, &ordersManager)
 
 	userHandler := deliv.NewUserHandler(userUsecase)
 	sessionHandler := deliv.NewSessionHandler(userUsecase)
@@ -164,6 +193,10 @@ func main() {
 
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	myRouter.Use(loggingAndCORSHeadersMiddleware)
+
+	instrumentation := muxprom.NewDefaultInstrumentation()
+	myRouter.Use(instrumentation.Middleware)
+	myRouter.Path("/metrics").Handler(promhttp.Handler())
 
 	amw := authenticationMiddleware{*userUsecase}
 	userRouter.Use(amw.checkAuthMiddleware)

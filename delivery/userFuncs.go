@@ -86,6 +86,7 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	var req model.UserProfile
 	err := decoder.Decode(&req)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
@@ -140,6 +141,7 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 	err = api.usecase.SetAvatar(oldUserData.ID, file)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
@@ -148,6 +150,7 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	err = api.usecase.ChangeUser(oldUserData, &newUserData)
 	if err != nil {
+		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
