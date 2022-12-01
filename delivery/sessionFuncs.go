@@ -65,7 +65,6 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//newUUID := uuid.New()
 	sess, err := api.usecase.SetSession(user.Email)
 	if err != nil {
 		log.Println("error with auth microservice: ", err)
@@ -81,7 +80,6 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Secure:   true,
 	}
 
-	//curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
 	curSession := model.Session{ID: user.ID, UserUUID: sess.ID}
 	hashTok := HashToken{Secret: []byte("Base")}
 	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(10*time.Hour).Unix())
@@ -116,31 +114,18 @@ func (api *SessionHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
-
 	_, err = api.usecase.CheckSession(session.Value)
 	if err != nil {
 		log.Println("no sess ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
-
-	//api.usecase.DeleteSession(res)
 	err = api.usecase.DeleteSession(session.Value)
 	if err != nil {
 		log.Println("error with auth microservice: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-
-	//curSession := model.Session{ID: 0, UserUUID: session.Value}
-	// curSession := model.Session{ID: user.ID, UserUUID: sess.ID}
-	// hashTok := HashToken{Secret: []byte("Base")}
-	// _, err = hashTok.CreateCSRFToken(&curSession, time.Now().Unix())
-	// if err != nil {
-	// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-	// 	return
-	// }
-
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
 	json.NewEncoder(w).Encode(&model.Response{})
@@ -206,26 +191,6 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// newUUID := uuid.New()
-
-	// api.usecase.SetSession(newUUID.String(), req.Email)
-
-	// cookie := &http.Cookie{
-	// 	Name:     "session_id",
-	// 	Value:    newUUID.String(),
-	// 	Expires:  time.Now().Add(10 * time.Hour),
-	// 	HttpOnly: true,
-	// }
-
-	// curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
-	// hashTok := HashToken{Secret: []byte("Base")}
-	// token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(10*time.Hour).Unix())
-	// if err != nil {
-	// 	ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-	// 	return
-	// }
-	// w.Header().Set("csrf", token)
-
 	sess, err := api.usecase.SetSession(user.Email)
 	if err != nil {
 		log.Println("error with auth microservice: ", err)
@@ -241,7 +206,6 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		Secure:   true,
 	}
 
-	//curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
 	curSession := model.Session{ID: user.ID, UserUUID: sess.ID}
 	hashTok := HashToken{Secret: []byte("Base")}
 	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(10*time.Hour).Unix())
