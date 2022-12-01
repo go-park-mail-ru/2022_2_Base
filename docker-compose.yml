@@ -42,8 +42,6 @@ services:
     depends_on:
       - "node-exporter"
       - "app"
-      - "session"
-      - "orders"
     ports:
       - 9090:9090
     networks:

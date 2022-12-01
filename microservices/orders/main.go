@@ -40,15 +40,12 @@ func main() {
 
 	ordersManager := orderdl.NewOrdersManager(orderUsecase)
 
-	//server := grpc.NewServer()
 	server := grpc.NewServer(
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
 	)
 	grpc_prometheus.Register(server)
 	orders.RegisterOrdersWorkerServer(server, ordersManager)
-
-	//prometheus.MustRegister(fooCount, hits)
 
 	http.Handle("/metrics", promhttp.Handler())
 

@@ -13,20 +13,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 )
-
-var fooCount = prometheus.NewCounter(prometheus.CounterOpts{
-	Name: "foo_total",
-	Help: "Number of foo successfully processed.",
-})
-
-var hits = prometheus.NewCounterVec(prometheus.CounterOpts{
-	Name: "hits",
-}, []string{"status", "path"})
 
 func main() {
 	lis, err := net.Listen("tcp", ":8082")
@@ -38,28 +28,9 @@ func main() {
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
 	)
-	// Register your gRPC service implementations.
-	//myservice.RegisterMyServiceServer(s.server, &myServiceImpl{})
-	// After all your registrations, make sure all of the Prometheus metrics are initialized.
-
-	// Register Prometheus metrics handler.
-
-	//server := grpc.NewServer()
 	grpc_prometheus.Register(server)
 	session.RegisterAuthCheckerServer(server, NewSessionManager())
-
-	//prometheus.MustRegister(fooCount, hits)
-
 	http.Handle("/metrics", promhttp.Handler())
-	//http.Handle("/metrics", promhttp.Handler())
-
-	// server := grpc.NewServer()
-	// session.RegisterAuthCheckerServer(server, NewSessionManager())
-
-	// prometheus.MustRegister(fooCount, hits)
-
-	// http.Handle("/metrics", promhttp.Handler())
-
 	log.Println("starting server at :8082")
 	server.Serve(lis)
 }

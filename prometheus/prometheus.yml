@@ -19,6 +19,5 @@ scrape_configs:
       - targets: [ 'orders:8083' ]
 
   - job_name: 'node'
-    metrics_path: /metrics
     static_configs:
       - targets: [ 'node-exporter:9100' ]
