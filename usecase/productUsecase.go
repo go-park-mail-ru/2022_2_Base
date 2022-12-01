@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"math"
 	"serv/domain/model"
 	orders "serv/microservices/orders/gen_files"
 	rep "serv/repository"
@@ -24,6 +25,14 @@ func (api *ProductUsecase) GetProducts(lastitemid int, count int, sort string) (
 	if err != nil {
 		return nil, err
 	}
+	for _, product := range products {
+		rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.Rating = math.Round(rating*100) / 100
+		product.CommentsCount = &commsCount
+	}
 	return products, nil
 }
 
@@ -32,15 +41,45 @@ func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, c
 	if err != nil {
 		return nil, err
 	}
+	for _, product := range products {
+		rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.Rating = math.Round(rating*100) / 100
+		product.CommentsCount = &commsCount
+	}
 	return products, nil
 }
 
 func (api *ProductUsecase) GetProductByID(id int) (*model.Product, error) {
-	return api.store.GetProductFromStoreByID(id)
+	product, err := api.store.GetProductFromStoreByID(id)
+	if err != nil {
+		return nil, err
+	}
+	rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+	if err != nil {
+		return nil, err
+	}
+	product.Rating = math.Round(rating*100) / 100
+	product.CommentsCount = &commsCount
+	return product, nil
 }
 
 func (api *ProductUsecase) GetProductsBySearch(search string) ([]*model.Product, error) {
-	return api.store.GetProductsBySearchFromStore(search)
+	products, err := api.store.GetProductsBySearchFromStore(search)
+	if err != nil {
+		return nil, err
+	}
+	for _, product := range products {
+		rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.Rating = math.Round(rating*100) / 100
+		product.CommentsCount = &commsCount
+	}
+	return products, nil
 }
 
 func (api *ProductUsecase) GetSuggestions(search string) ([]string, error) {
@@ -145,7 +184,7 @@ func (api *ProductUsecase) GetOrders(userID int) (*orders.OrdersResponse, error)
 	return ordersResponse, nil
 }
 
-func (api *ProductUsecase) GetComments(productID int) ([]*model.Comment, error) {
+func (api *ProductUsecase) GetComments(productID int) ([]*model.CommentDB, error) {
 	comments, err := api.store.GetCommentsFromStore(productID)
 	if err != nil {
 		return nil, err
@@ -153,6 +192,6 @@ func (api *ProductUsecase) GetComments(productID int) ([]*model.Comment, error) 
 	return comments, nil
 }
 
-func (api *ProductUsecase) CreateComment(in *model.Comment) error {
+func (api *ProductUsecase) CreateComment(in *model.CreateComment) error {
 	return api.store.CreateCommentInStore(in)
 }

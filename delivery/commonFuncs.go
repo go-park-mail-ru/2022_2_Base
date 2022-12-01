@@ -367,15 +367,22 @@ func (api *OrderHandler) GetComments(w http.ResponseWriter, r *http.Request) {
 	s := strings.Split(r.URL.Path, "/")
 	idS := s[len(s)-1]
 	id, err := strconv.Atoi(idS)
-	comments, err := api.prHandler.usecase.GetComments(id)
+	commentsDB, err := api.prHandler.usecase.GetComments(id)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	comments, err := api.usHandler.usecase.SetUsernamesForComments(commentsDB)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
 	for _, comm := range comments {
-		comm.Worths = sanitizer.Sanitize(comm.Worths)
-		comm.Drawbacks = sanitizer.Sanitize(comm.Drawbacks)
+		comm.Username = sanitizer.Sanitize(comm.Username)
+		comm.Pros = sanitizer.Sanitize(comm.Pros)
+		comm.Cons = sanitizer.Sanitize(comm.Cons)
 		comm.Comment = sanitizer.Sanitize(comm.Comment)
 	}
 	json.NewEncoder(w).Encode(&model.Response{Body: comments})
@@ -400,7 +407,7 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	var req model.Comment
+	var req model.CreateComment
 	err := decoder.Decode(&req)
 	if err != nil {
 		log.Println(err)

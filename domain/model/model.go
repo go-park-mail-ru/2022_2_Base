@@ -9,19 +9,29 @@ type Response struct {
 }
 
 type CreateComment struct {
-	ItemID    int    `json:"itemid"`
-	UserID    int    `json:"userid"`
-	Worths    string `json:"worths"`
-	Drawbacks string `json:"drawbacks"`
-	Comment   string `json:"comment"`
+	ItemID  int     `json:"itemid"`
+	UserID  int     `json:"userid"`
+	Pros    string  `json:"pros,omitempty"`
+	Cons    string  `json:"cons,omitempty"`
+	Comment string  `json:"comment,omitempty"`
+	Rating  float64 `json:"rating"`
+}
+
+type CommentDB struct {
+	ID      int     `json:"id"`
+	ItemID  int     `json:"itemid"`
+	UserID  int     `json:"userid"`
+	Pros    string  `json:"pros,omitempty"`
+	Cons    string  `json:"cons,omitempty"`
+	Comment string  `json:"comment,omitempty"`
+	Rating  float64 `json:"rating"`
 }
 
 type Comment struct {
-	ID        int     `json:"id"`
-	ItemID    int     `json:"itemid"`
-	UserID    int     `json:"userid"`
-	Worths    string  `json:"worths"`
-	Drawbacks string  `json:"drawbacks"`
-	Comment   string  `json:"comment"`
-	Rating    float64 `json:"rating,omitempty"`
+	UserID   int     `json:"userid"`
+	Username string  `json:"username"`
+	Pros     string  `json:"pros,omitempty"`
+	Cons     string  `json:"cons,omitempty"`
+	Comment  string  `json:"comment,omitempty"`
+	Rating   float64 `json:"rating"`
 }

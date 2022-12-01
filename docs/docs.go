@@ -1002,14 +1002,11 @@ const docTemplate = `{
                 "comment": {
                     "type": "string"
                 },
-                "drawbacks": {
+                "cons": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
-                },
-                "itemid": {
-                    "type": "integer"
+                "pros": {
+                    "type": "string"
                 },
                 "rating": {
                     "type": "number"
@@ -1017,7 +1014,7 @@ const docTemplate = `{
                 "userid": {
                     "type": "integer"
                 },
-                "worths": {
+                "username": {
                     "type": "string"
                 }
             }
@@ -1028,17 +1025,20 @@ const docTemplate = `{
                 "comment": {
                     "type": "string"
                 },
-                "drawbacks": {
+                "cons": {
                     "type": "string"
                 },
                 "itemid": {
                     "type": "integer"
                 },
+                "pros": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "number"
+                },
                 "userid": {
                     "type": "integer"
-                },
-                "worths": {
-                    "type": "string"
                 }
             }
         },
@@ -1142,6 +1142,9 @@ const docTemplate = `{
             "properties": {
                 "category": {
                     "type": "string"
+                },
+                "commentscount": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "integer"

@@ -63,8 +63,8 @@ CREATE TABLE comments (
     id  SERIAL PRIMARY KEY,
     itemID INT REFERENCES products (id) ON DELETE CASCADE,
     userID INT REFERENCES users (id) ON DELETE CASCADE,
-    worths VARCHAR(300) NOT NULL, 
-    drawbacks VARCHAR(300) NOT NULL,
+    pros VARCHAR(300) NOT NULL, 
+    cons VARCHAR(300) NOT NULL,
     comment VARCHAR(300) NOT NULL,
     rating Float
 );

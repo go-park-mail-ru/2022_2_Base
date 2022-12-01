@@ -19,31 +19,31 @@ definitions:
     properties:
       comment:
         type: string
-      drawbacks:
+      cons:
         type: string
-      id:
-        type: integer
-      itemid:
-        type: integer
+      pros:
+        type: string
       rating:
         type: number
       userid:
         type: integer
-      worths:
+      username:
         type: string
     type: object
   model.CreateComment:
     properties:
       comment:
         type: string
-      drawbacks:
+      cons:
         type: string
       itemid:
         type: integer
+      pros:
+        type: string
+      rating:
+        type: number
       userid:
         type: integer
-      worths:
-        type: string
     type: object
   model.Error:
     properties:
@@ -111,6 +111,8 @@ definitions:
     properties:
       category:
         type: string
+      commentscount:
+        type: integer
       id:
         type: integer
       imgsrc:

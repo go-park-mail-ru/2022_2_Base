@@ -78,6 +78,7 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Value:    sess.ID,
 		Expires:  time.Now().Add(10 * time.Hour),
 		HttpOnly: true,
+		Secure:   true,
 	}
 
 	//curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
@@ -237,6 +238,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		Value:    sess.ID,
 		Expires:  time.Now().Add(10 * time.Hour),
 		HttpOnly: true,
+		Secure:   true,
 	}
 
 	//curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
@@ -293,6 +295,13 @@ func (api *SessionHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("csrf", token)
 
-	http.SetCookie(w, r.Cookies()[0])
+	cookie := &http.Cookie{
+		Name:     "session_id",
+		Value:    r.Cookies()[0].Value,
+		Expires:  r.Cookies()[0].Expires,
+		HttpOnly: true,
+		Secure:   true,
+	}
+	http.SetCookie(w, cookie)
 	json.NewEncoder(w).Encode(&model.Response{})
 }
