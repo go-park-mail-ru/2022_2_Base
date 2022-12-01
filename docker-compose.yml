@@ -36,15 +36,16 @@ services:
     image: prom/prometheus
     volumes:
       - ./prometheus:/etc/config
-        #- prometheus_data:/prometheus
     command:
       - '--config.file=/etc/config/prometheus.yml'
-            #- --config.file=/etc/prometheus/prometheus.yml
     restart: always
     depends_on:
       - "node-exporter"
+      - "go"
     ports:
       - 9090:9090
+    networks:
+      - mynet
 
   postgres:
     container_name: postgres
@@ -113,7 +114,7 @@ services:
       timeout: 10s
       retries: 5
 
-  app:
+  go:
     container_name: go
     environment:
       - DB_PORT=${DB_PORT}
@@ -130,7 +131,7 @@ services:
     links:
       - postgres:postgres
     volumes:
-      - ./:/app
+      - ./:/go
       - /home/ubuntu/front-next/dist/img:/avatars
     depends_on:
       - "postgres"

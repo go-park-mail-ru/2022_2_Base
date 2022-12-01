@@ -99,13 +99,13 @@ func (api *UserUsecase) ChangeUser(oldUserData *model.UserProfile, params *model
 	if params.Avatar != "" {
 		newUser.Avatar = params.Avatar
 	}
-	if len(params.Address) > 0 {
+	if len(params.Address) >= 0 {
 		err := api.ChangeUserAddresses(oldUserData.ID, oldUserData.Address, params.Address)
 		if err != nil {
 			return err
 		}
 	}
-	if len(params.PaymentMethods) > 0 {
+	if len(params.PaymentMethods) >= 0 {
 		err := api.ChangeUserPayments(oldUserData.ID, oldUserData.PaymentMethods, params.PaymentMethods)
 		if err != nil {
 			return err

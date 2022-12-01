@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	orderdl "serv/microservices/orders/delivery"
 	orders "serv/microservices/orders/gen_files"
@@ -12,7 +12,10 @@ import (
 	orderuc "serv/microservices/orders/usecase"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
+
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 )
 
 func main() {
@@ -37,9 +40,18 @@ func main() {
 
 	ordersManager := orderdl.NewOrdersManager(orderUsecase)
 
-	server := grpc.NewServer()
+	//server := grpc.NewServer()
+	server := grpc.NewServer(
+		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
+		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
+	)
 	orders.RegisterOrdersWorkerServer(server, ordersManager)
 
-	fmt.Println("starting server at :8083")
+	grpc_prometheus.Register(server)
+	//prometheus.MustRegister(fooCount, hits)
+
+	http.Handle("/metrics", promhttp.Handler())
+
+	log.Println("starting server at :8083")
 	server.Serve(lis)
 }

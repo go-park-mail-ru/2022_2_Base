@@ -29,6 +29,8 @@ import (
 
 	auth "serv/microservices/auth/gen_files"
 	orders "serv/microservices/orders/gen_files"
+
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 )
 
 func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
@@ -160,6 +162,8 @@ func main() {
 		//"127.0.0.1:8082",
 		"auth:8082",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
+		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
 	)
 	if err != nil {
 		log.Println("cant connect to grpc auth")
@@ -172,6 +176,8 @@ func main() {
 		//"127.0.0.1:8083",
 		"orders:8083",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
+		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
 	)
 	if err != nil {
 		log.Println("cant connect to grpc orders")
