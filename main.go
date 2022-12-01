@@ -225,6 +225,7 @@ func main() {
 
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	myRouter.Use(loggingAndCORSHeadersMiddleware)
+
 	instrumentation := muxprom.NewDefaultInstrumentation()
 	myRouter.Use(instrumentation.Middleware)
 	//myRouter.Use(prometheusMiddleware)
