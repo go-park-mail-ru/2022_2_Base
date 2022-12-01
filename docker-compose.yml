@@ -2,6 +2,7 @@ version: "3.1"
 
 services:
   node-exporter:
+    container_name: node-exporter      
     image: prom/node-exporter
     volumes:
       - /proc:/host/proc:ro
@@ -23,32 +24,27 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    depends_on:
+      - "prometheus"
     ports:
       - "3000:3000"
     volumes:
       - grafana-storage:/var/lib/grafana
 
-  # prometheus:
-  #   image: prom/prometheus:v2.24.0
-  #   volumes:
-  #     - ./prometheus:/etc/prometheus
-  #     - prometheus_data:/prometheus
-  #   command:
-  #     - --config.file=/etc/prometheus/prometheus.yml:ro
-  #   ports:
-  #     - 9090:9090
   prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
+    container_name: prometheus      
+    image: prom/prometheus
+    volumes:
+      - ./prometheus:/etc/config
+        #- prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/config/prometheus.yml'
+            #- --config.file=/etc/prometheus/prometheus.yml
+    restart: always
+    depends_on:
+      - "node-exporter"
     ports:
       - 9090:9090
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-    volumes:
-      - type: bind
-        source: ./prometheus.yml
-        target: /etc/prometheus/prometheus.yml
-      #- ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
 
   postgres:
     container_name: postgres
@@ -154,3 +150,4 @@ volumes:
 networks:
   mynet:
     driver: bridge
+    
