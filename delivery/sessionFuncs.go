@@ -71,7 +71,7 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Value:    newUUID.String(),
 		Expires:  time.Now().Add(10 * time.Hour),
 		HttpOnly: true,
-		//Secure:   true,
+		Secure:   true,
 	}
 
 	curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
@@ -197,7 +197,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		Value:    newUUID.String(),
 		Expires:  time.Now().Add(10 * time.Hour),
 		HttpOnly: true,
-		//Secure:   true,
+		Secure:   true,
 	}
 
 	curSession := model.Session{ID: 0, UserUUID: newUUID.String()}
@@ -254,9 +254,8 @@ func (api *SessionHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 		Value:    r.Cookies()[0].Value,
 		Expires:  r.Cookies()[0].Expires,
 		HttpOnly: true,
-		//Secure:   true,
+		Secure:   true,
 	}
-	//http.SetCookie(w, r.Cookies()[0])
 	http.SetCookie(w, cookie)
 	json.NewEncoder(w).Encode(&model.Response{})
 }

@@ -25,6 +25,8 @@ definitions:
         type: string
       rating:
         type: number
+      userid:
+        type: integer
       username:
         type: string
     type: object

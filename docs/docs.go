@@ -1011,6 +1011,9 @@ const docTemplate = `{
                 "rating": {
                     "type": "number"
                 },
+                "userid": {
+                    "type": "integer"
+                },
                 "username": {
                     "type": "string"
                 }
