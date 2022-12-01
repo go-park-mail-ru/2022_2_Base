@@ -321,9 +321,9 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 	return baseErrors.ErrNotFound404
 }
 
-func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.Comment, error) {
-	comments := []*model.Comment{}
-	rows, err := ps.db.Query(context.Background(), `SELECT * FROM comments WHERE itemid = $1;`, productID)
+func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.CommentDB, error) {
+	comments := []*model.CommentDB{}
+	rows, err := ps.db.Query(context.Background(), `SELECT userid, pros, cons, comment, rating FROM comments WHERE itemid = $1;`, productID)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)

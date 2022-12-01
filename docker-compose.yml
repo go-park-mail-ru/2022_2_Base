@@ -18,6 +18,8 @@ services:
     ports:
       - "9100:9100"
     restart: always
+    networks:
+      - mynet
     deploy:
       mode: global
 
