@@ -205,3 +205,17 @@ func (api *UserUsecase) SetAvatar(usedID int, file multipart.File) error {
 	}
 	return nil
 }
+
+func (api *UserUsecase) SetUsernamesForComments(comms []*model.CommentDB) ([]*model.Comment, error) {
+
+	comments := []*model.Comment{}
+	for _, comm := range comms {
+		usName, err := api.store.GetUsernameByIDFromDB(comm.UserID)
+		if err != nil {
+			return nil, err
+		}
+		comment := &model.Comment{Username: usName, UserID: comm.UserID, Pros: comm.Pros, Cons: comm.Cons, Comment: comm.Comment, Rating: comm.Rating}
+		comments = append(comments, comment)
+	}
+	return comments, nil
+}

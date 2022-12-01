@@ -103,6 +103,25 @@ func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, e
 	return &user, nil
 }
 
+func (us *UserStore) GetUsernameByIDFromDB(userID int) (string, error) {
+	rows, err := us.db.Query(context.Background(), `SELECT username FROM users WHERE id = $1`, userID)
+	if err == sql.ErrNoRows {
+		return "", err
+	}
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	var username string
+	for rows.Next() {
+		err := rows.Scan(&username)
+		if err != nil {
+			return "", err
+		}
+	}
+	return username, nil
+}
+
 func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error) {
 	adresses := []*model.Address{}
 	rows, err := us.db.Query(context.Background(), `SELECT address.id, city, street, house, flat, priority FROM address JOIN users ON address.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)

@@ -125,6 +125,27 @@ func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, er
 	return &product, nil
 }
 
+func (ps *ProductStore) GetProductsRatingAndCommsCountFromStore(itemsID int) (float64, int, error) {
+	var rating *float64
+	var commsCount *int
+	rows, err := ps.db.Query(context.Background(), `SELECT COUNT(id), AVG(rating) FROM comments WHERE itemid = $1;`, itemsID)
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return 0, 0, nil
+	}
+	for rows.Next() {
+		err := rows.Scan(&commsCount, &rating)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+	if rating == nil || commsCount == nil {
+		return 0, 0, nil
+	}
+	return *rating, *commsCount, nil
+}
+
 func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Product, error) {
 	products := []*model.Product{}
 	searchWords := strings.Split(search, " ")
@@ -373,9 +394,9 @@ func (us *ProductStore) GetOrdersPaymentFromStore(paymentID int) (*model.Payment
 	return &payment, nil
 }
 
-func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.Comment, error) {
-	comments := []*model.Comment{}
-	rows, err := ps.db.Query(context.Background(), `SELECT * FROM comments WHERE itemid = $1;`, productID)
+func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.CommentDB, error) {
+	comments := []*model.CommentDB{}
+	rows, err := ps.db.Query(context.Background(), `SELECT userid, pros, cons, comment, rating FROM comments WHERE itemid = $1;`, productID)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -383,8 +404,8 @@ func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.Comment, e
 	}
 	log.Println("got comments from db")
 	for rows.Next() {
-		dat := model.Comment{}
-		err := rows.Scan(&dat.ID, &dat.ItemID, &dat.UserID, &dat.Worths, &dat.Drawbacks, &dat.Comment, &dat.Rating)
+		dat := model.CommentDB{}
+		err := rows.Scan(&dat.UserID, &dat.Pros, &dat.Cons, &dat.Comment, &dat.Rating)
 		if err != nil {
 			return nil, err
 		}
@@ -393,8 +414,8 @@ func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.Comment, e
 	return comments, nil
 }
 
-func (ps *ProductStore) CreateCommentInStore(in *model.Comment) error {
-	_, err := ps.db.Exec(context.Background(), `INSERT INTO comments (itemID, userID, worths, drawbacks, comment, rating) VALUES ($1, $2, $3, $4, $5, 0);`, in.ItemID, in.UserID, in.Worths, in.Drawbacks, in.Comment)
+func (ps *ProductStore) CreateCommentInStore(in *model.CreateComment) error {
+	_, err := ps.db.Exec(context.Background(), `INSERT INTO comments (itemID, userID, pros, cons, comment, rating) VALUES ($1, $2, $3, $4, $5, $6);`, in.ItemID, in.UserID, in.Pros, in.Cons, in.Comment, in.Rating)
 	if err != nil {
 		return err
 	}
