@@ -31,7 +31,7 @@ var hits = prometheus.NewCounterVec(prometheus.CounterOpts{
 func main() {
 	lis, err := net.Listen("tcp", ":8082")
 	if err != nil {
-		log.Fatalln("cant listen port", err)
+		log.Println("cant listen port", err)
 	}
 
 	server := grpc.NewServer(
@@ -45,8 +45,9 @@ func main() {
 	// Register Prometheus metrics handler.
 
 	//server := grpc.NewServer()
-	session.RegisterAuthCheckerServer(server, NewSessionManager())
 	grpc_prometheus.Register(server)
+	session.RegisterAuthCheckerServer(server, NewSessionManager())
+
 	//prometheus.MustRegister(fooCount, hits)
 
 	http.Handle("/metrics", promhttp.Handler())

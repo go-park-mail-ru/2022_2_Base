@@ -41,7 +41,9 @@ services:
     restart: always
     depends_on:
       - "node-exporter"
-      - "go"
+      - "app"
+      - "session"
+      - "orders"
     ports:
       - 9090:9090
     networks:
@@ -76,11 +78,6 @@ services:
     restart: on-failure
     networks:
       - mynet
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8082" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   orders:
     build:
@@ -108,13 +105,8 @@ services:
       - mynet
     links:
       - postgres:postgres
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8083" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
-  go:
+  app:
     container_name: go
     environment:
       - DB_PORT=${DB_PORT}
@@ -131,7 +123,7 @@ services:
     links:
       - postgres:postgres
     volumes:
-      - ./:/go
+      - ./:/app
       - /home/ubuntu/front-next/dist/img:/avatars
     depends_on:
       - "postgres"

@@ -21,7 +21,7 @@ import (
 func main() {
 	lis, err := net.Listen("tcp", ":8083")
 	if err != nil {
-		log.Fatalln("cant listen port", err)
+		log.Println("cant listen port", err)
 	}
 	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
 	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
@@ -45,9 +45,9 @@ func main() {
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
 		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
 	)
+	grpc_prometheus.Register(server)
 	orders.RegisterOrdersWorkerServer(server, ordersManager)
 
-	grpc_prometheus.Register(server)
 	//prometheus.MustRegister(fooCount, hits)
 
 	http.Handle("/metrics", promhttp.Handler())
