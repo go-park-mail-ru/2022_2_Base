@@ -191,7 +191,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sess, err := api.usecase.SetSession(user.Email)
+	sess, err := api.usecase.SetSession(req.Email)
 	if err != nil {
 		log.Println("error with auth microservice: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
