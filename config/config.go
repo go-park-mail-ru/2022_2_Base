@@ -25,7 +25,7 @@ var PathMakeOrder = "/makeorder"
 var PathGetOrders = "/orders"
 
 var Headers = map[string]string{
-	"Access-Control-Allow-Origin":      "http://89.208.198.137:8081",
+	//"Access-Control-Allow-Origin":      "http://89.208.198.137:8081",
 	"Access-Control-Allow-Credentials": "true",
 	"Access-Control-Allow-Headers":     "Origin, Content-Type, accept",
 	"Access-Control-Allow-Methods":     "GET, POST, DELETE, OPTIONS",

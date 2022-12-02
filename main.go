@@ -36,6 +36,13 @@ import (
 func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println(r.RequestURI, r.Method)
+
+		//for tests on local server
+		origin := r.Header.Get("Origin")
+		if origin == "http://89.208.198.137:8081" || origin == "http://127.0.0.1:8081" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		}
+
 		for header := range conf.Headers {
 			w.Header().Set(header, conf.Headers[header])
 		}
@@ -65,6 +72,16 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 			return
 		}
+
+		// hashTok := HashToken{Secret: []byte("Base")}
+		// token := r.Header.Get("csrf")
+		// curSession := model.Session{ID: 0, UserUUID: session.Value}
+		// flag, err := hashTok.CheckCSRFToken(&curSession, token)
+		// if err != nil || !flag {
+		// 	log.Println("no csrf token")
+		// 	ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		// 	return
+		// }
 
 		user, err := amw.userUsecase.GetUserByUsername(usName)
 		if err != nil {
@@ -124,6 +141,7 @@ func main() {
 
 	grcpConnAuth, err := grpc.Dial(
 		"auth:8082",
+		//"localhost:8082",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
 		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
@@ -137,6 +155,7 @@ func main() {
 
 	grcpConnOrders, err := grpc.Dial(
 		"orders:8083",
+		//"localhost:8083",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
 		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),

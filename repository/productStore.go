@@ -348,3 +348,15 @@ func (ps *ProductStore) CreateCommentInStore(in *model.CreateComment) error {
 	}
 	return nil
 }
+
+func (ps *ProductStore) UpdateProductRatingInStore(itemID int) error {
+	rating, _, err := ps.GetProductsRatingAndCommsCountFromStore(itemID)
+	if err != nil {
+		return err
+	}
+	_, err = ps.db.Exec(context.Background(), `UPDATE products SET rating = $1 WHERE id = $2;`, rating, itemID)
+	if err != nil {
+		return err
+	}
+	return nil
+}

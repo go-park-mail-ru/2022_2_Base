@@ -193,5 +193,9 @@ func (api *ProductUsecase) GetComments(productID int) ([]*model.CommentDB, error
 }
 
 func (api *ProductUsecase) CreateComment(in *model.CreateComment) error {
-	return api.store.CreateCommentInStore(in)
+	err := api.store.CreateCommentInStore(in)
+	if err != nil {
+		return err
+	}
+	return api.store.UpdateProductRatingInStore(in.ItemID)
 }
