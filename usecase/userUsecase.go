@@ -45,6 +45,19 @@ func (uh *UserUsecase) CheckSession(sessID string) (string, error) {
 	return sess.Login, nil
 }
 
+func (uh *UserUsecase) ChangeEmail(sessID string, newEmail string) error {
+	ans, err := uh.sessManager.ChangeEmail(
+		context.Background(),
+		&auth.NewLogin{
+			ID:    sessID,
+			Login: newEmail,
+		})
+	if err != nil || !ans.IsSuccessful {
+		return err
+	}
+	return nil
+}
+
 func (uh *UserUsecase) DeleteSession(sessID string) error {
 	ans, err := uh.sessManager.Delete(
 		context.Background(),

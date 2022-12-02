@@ -30,17 +30,18 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort str
 	var rows pgx.Rows
 
 	if sort == "priceup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) > ($1, $2) ORDER BY price LIMIT $3;`, lastProduct.Price, lastitemid, count)
+		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) > ($1, $2) ORDER BY (price, id) LIMIT $3;`, lastProduct.Price, lastitemid, count)
 	} else if sort == "pricedown" {
 		if lastProduct.Price == 0 {
 			lastProduct.Price = 1e10
 		}
 		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) < ($1, $2) ORDER BY (price, id) DESC LIMIT $3;`, lastProduct.Price, lastitemid, count)
 	} else if sort == "ratingup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) > ($1, $2) ORDER BY rating ASC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
+		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) > ($1, $2) ORDER BY (rating, id) ASC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
 	} else if sort == "ratingdown" {
-		if lastProduct.Rating == 0 {
-			lastProduct.Rating = 6
+		if lastitemid == 0 {
+			lastitemid = 1e9
+			lastProduct.Rating = 10
 		}
 		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) < ($1, $2) ORDER BY (rating, id) DESC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
 	} else {
@@ -81,13 +82,10 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 	} else if sort == "ratingup" {
 		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) > ($2, $3) ORDER BY (rating, id) ASC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
 	} else if sort == "ratingdown" {
-		if lastProduct.Rating == 0 {
-			lastProduct.Rating = 10
-		}
 		if lastitemid == 0 {
 			lastitemid = 1e9
+			lastProduct.Rating = 10
 		}
-		//log.Println(lastProduct.Rating)
 		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) < ($2, $3) ORDER BY (rating, id) DESC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
 	} else {
 		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND id > $2 ORDER BY id LIMIT $3;`, category, lastitemid, count)

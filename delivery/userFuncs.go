@@ -104,6 +104,21 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	session, err := r.Cookie("session_id")
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
+	if req.Email != "" {
+		err = api.usecase.ChangeEmail(session.Value, req.Email)
+		if err != nil {
+			log.Println("error with auth microservice: ", err)
+			ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+			return
+		}
+	}
 	json.NewEncoder(w).Encode(&model.Response{})
 }
 

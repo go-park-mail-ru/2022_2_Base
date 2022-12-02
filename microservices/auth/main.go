@@ -81,3 +81,11 @@ func (sm *SessionManager) Delete(ctx context.Context, in *session.SessionID) (*s
 	delete(sm.sessions, in.ID)
 	return &session.Nothing{IsSuccessful: true}, nil
 }
+
+func (sm *SessionManager) ChangeEmail(ctx context.Context, in *session.NewLogin) (*session.Nothing, error) {
+	log.Println("call ChangeEmail", in)
+	sm.mu.Lock()
+	defer sm.mu.Unlock()
+	sm.sessions[in.ID] = &session.Session{Login: in.Login}
+	return &session.Nothing{IsSuccessful: true}, nil
+}
