@@ -93,7 +93,7 @@ func (os *OrderStore) GetOrdersPaymentFromStore(paymentID int) (*model.PaymentMe
 
 func (os *OrderStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
-	rows, err := os.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, pr.price, pr.discountprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
+	rows, err := os.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	defer rows.Close()
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func (os *OrderStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, e
 	for rows.Next() {
 		var count int
 		dat := model.Product{}
-		err := rows.Scan(&count, &dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
+		err := rows.Scan(&count, &dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.NominalPrice, &dat.Rating, &dat.Imgsrc)
 		if err != nil {
 			return nil, err
 		}

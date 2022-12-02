@@ -68,6 +68,9 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 		}
 		prod.Name = sanitizer.Sanitize(prod.Name)
 		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
 	}
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
 }
@@ -122,6 +125,9 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 		}
 		prod.Name = sanitizer.Sanitize(prod.Name)
 		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
 	}
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
 }
@@ -161,7 +167,9 @@ func (api *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request
 	}
 	product.Name = sanitizer.Sanitize(product.Name)
 	product.Category = sanitizer.Sanitize(product.Category)
-
+	if product.NominalPrice == product.Price {
+		product.Price = 0
+	}
 	json.NewEncoder(w).Encode(&model.Response{Body: product})
 }
 
@@ -203,6 +211,9 @@ func (api *ProductHandler) GetProductsBySearch(w http.ResponseWriter, r *http.Re
 		}
 		prod.Name = sanitizer.Sanitize(prod.Name)
 		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
 	}
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
 }

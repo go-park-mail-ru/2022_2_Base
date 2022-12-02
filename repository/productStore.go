@@ -55,7 +55,7 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort str
 	log.Println("got products from db")
 	for rows.Next() {
 		dat := model.Product{}
-		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
+		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.NominalPrice, &dat.Rating, &dat.Imgsrc)
 		if err != nil {
 			return nil, err
 		}
@@ -97,7 +97,7 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 	log.Println("got products from db")
 	for rows.Next() {
 		dat := model.Product{}
-		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
+		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.NominalPrice, &dat.Rating, &dat.Imgsrc)
 		if err != nil {
 			return nil, err
 		}
@@ -108,7 +108,7 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 
 func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, error) {
 	product := model.Product{}
-	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products WHERE id = $1;`, itemsID)
+	rows, err := ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id = $1;`, itemsID)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -116,7 +116,7 @@ func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, er
 	}
 	log.Println("got product by id from db")
 	for rows.Next() {
-		err := rows.Scan(&product.ID, &product.Name, &product.Category, &product.Price, &product.DiscountPrice, &product.Rating, &product.Imgsrc)
+		err := rows.Scan(&product.ID, &product.Name, &product.Category, &product.Price, &product.NominalPrice, &product.Rating, &product.Imgsrc)
 		if err != nil {
 			return nil, err
 		}
@@ -151,7 +151,7 @@ func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Pr
 	searchWordsUnite := strings.Join(searchWords, "")
 	searchLetters := strings.Split(searchWordsUnite, "")
 	searchString := strings.ToLower(`%` + strings.Join(searchLetters, "%") + `%`)
-	rows, err := ps.db.Query(context.Background(), `SELECT * FROM products WHERE LOWER(name) LIKE $1 LIMIT 20;`, searchString)
+	rows, err := ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE LOWER(name) LIKE $1 LIMIT 20;`, searchString)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -160,7 +160,7 @@ func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Pr
 	log.Println("got products from db")
 	for rows.Next() {
 		dat := model.Product{}
-		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
+		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.NominalPrice, &dat.Rating, &dat.Imgsrc)
 		if err != nil {
 			return nil, err
 		}
@@ -193,7 +193,7 @@ func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error)
 
 func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
-	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, pr.price, pr.discountprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
+	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	defer rows.Close()
 	if err != nil {
 		return nil, err
@@ -201,7 +201,7 @@ func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem,
 	for rows.Next() {
 		var count int
 		dat := model.Product{}
-		err := rows.Scan(&count, &dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.DiscountPrice, &dat.Rating, &dat.Imgsrc)
+		err := rows.Scan(&count, &dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.NominalPrice, &dat.Rating, &dat.Imgsrc)
 		if err != nil {
 			return nil, err
 		}

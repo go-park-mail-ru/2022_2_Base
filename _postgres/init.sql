@@ -4,8 +4,8 @@ CREATE TABLE products (
 	name VARCHAR (80) NOT NULL,
     category VARCHAR (50),
     price FLOAT NOT NULL,
-    discountPrice FLOAT,
-    rating Float,
+    nominalPrice FLOAT NOT NULL,
+    rating Float DEFAULT 0,
 	imgsrc VARCHAR (50)
 );
 

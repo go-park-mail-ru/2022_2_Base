@@ -15,6 +15,21 @@ definitions:
       street:
         type: string
     type: object
+  model.CartProduct:
+    properties:
+      count:
+        type: integer
+      id:
+        type: integer
+      imgsrc:
+        type: string
+      lowprice:
+        type: number
+      name:
+        type: string
+      price:
+        type: number
+    type: object
   model.Comment:
     properties:
       comment:
@@ -93,6 +108,29 @@ definitions:
         type: integer
       item:
         $ref: '#/definitions/model.Product'
+    type: object
+  model.OrderModelGetOrders:
+    properties:
+      address:
+        $ref: '#/definitions/model.Address'
+      card:
+        $ref: '#/definitions/model.PaymentMethod'
+      creationDate:
+        type: string
+      deliveryDate:
+        type: string
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/model.CartProduct'
+        type: array
+      orderstatus:
+        type: string
+      paymentstatus:
+        type: string
+      userid:
+        type: integer
     type: object
   model.PaymentMethod:
     properties:
@@ -184,7 +222,7 @@ definitions:
       username:
         type: string
     type: object
-host: 89.208.198.137:8080
+host: 127.0.0.1:8080
 info:
   contact:
     email: support@swagger.io
@@ -386,7 +424,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Order'
+            $ref: '#/definitions/model.OrderModelGetOrders'
         "400":
           description: Bad request - Problem with the request
           schema:

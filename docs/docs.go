@@ -301,7 +301,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Order"
+                            "$ref": "#/definitions/model.OrderModelGetOrders"
                         }
                     },
                     "400": {
@@ -996,6 +996,29 @@ const docTemplate = `{
                 }
             }
         },
+        "model.CartProduct": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "imgsrc": {
+                    "type": "string"
+                },
+                "lowprice": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                }
+            }
+        },
         "model.Comment": {
             "type": "object",
             "properties": {
@@ -1114,6 +1137,41 @@ const docTemplate = `{
                 },
                 "item": {
                     "$ref": "#/definitions/model.Product"
+                }
+            }
+        },
+        "model.OrderModelGetOrders": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/model.Address"
+                },
+                "card": {
+                    "$ref": "#/definitions/model.PaymentMethod"
+                },
+                "creationDate": {
+                    "type": "string"
+                },
+                "deliveryDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.CartProduct"
+                    }
+                },
+                "orderstatus": {
+                    "type": "string"
+                },
+                "paymentstatus": {
+                    "type": "string"
+                },
+                "userid": {
+                    "type": "integer"
                 }
             }
         },
@@ -1262,7 +1320,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "89.208.198.137:8080",
+	Host:             "127.0.0.1:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Reozon API",

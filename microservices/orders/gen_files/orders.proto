@@ -36,7 +36,7 @@ message CartProduct {
   string Name = 2;
   int32 Count = 3;
   double Price = 4;
-  optional double DiscountPrice = 5;
+  double NominalPrice = 5;
   optional string Imgsrc = 6;
 }
 
