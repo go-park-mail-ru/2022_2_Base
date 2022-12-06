@@ -1,99 +1,113 @@
 package repository
 
 import (
-	"context"
 	"database/sql"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type UserStore struct {
-	db *pgxpool.Pool
+type UserStoreInterface interface {
+	AddUser(in *model.UserDB) error
+	UpdateUser(userID int, in *model.UserProfile) error
+	ChangeUserPasswordDB(userID int, newPass string) error
+	UpdateUsersAddress(adressID int, in *model.Address) error
+	AddUsersAddress(userID int, in *model.Address) error
+	DeleteUsersAddress(addressID int) error
+	UpdateUsersPayment(paymentID int, in *model.PaymentMethod) error
+	AddUsersPayment(userID int, in *model.PaymentMethod) error
+	DeleteUsersPayment(paymentID int) error
+	GetUserByUsernameFromDB(userEmail string) (*model.UserDB, error)
+	GetUsernameByIDFromDB(userID int) (string, error)
+	GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error)
+	GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error)
 }
 
-func NewUserStore(db *pgxpool.Pool) *UserStore {
-	return &UserStore{
+type UserStoreDB struct {
+	db *sql.DB
+}
+
+func NewUserStoreDB(db *sql.DB) UserStoreInterface {
+	return &UserStoreDB{
 		db: db,
 	}
 }
 
-func (us *UserStore) AddUser(in *model.UserDB) error {
-	_, err := us.db.Exec(context.Background(), `INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
+func (us *UserStoreDB) AddUser(in *model.UserDB) error {
+	_, err := us.db.Exec(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (us *UserStore) UpdateUser(userID int, in *model.UserProfile) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE users SET email = $1, username = $2, phone = $3, avatar = $4 WHERE id = $5;`, in.Email, in.Username, in.Phone, in.Avatar, userID)
+func (us *UserStoreDB) UpdateUser(userID int, in *model.UserProfile) error {
+	_, err := us.db.Exec(`UPDATE users SET email = $1, username = $2, phone = $3, avatar = $4 WHERE id = $5;`, in.Email, in.Username, in.Phone, in.Avatar, userID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (us *UserStore) ChangeUserPasswordDB(userID int, newPass string) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE users SET password = $1 WHERE id = $2;`, newPass, userID)
+func (us *UserStoreDB) ChangeUserPasswordDB(userID int, newPass string) error {
+	_, err := us.db.Exec(`UPDATE users SET password = $1 WHERE id = $2;`, newPass, userID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (us *UserStore) UpdateUsersAddress(adressID int, in *model.Address) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE address SET city = $1, street = $2, house = $3, flat = $4, priority = $5 WHERE id = $6;`, in.City, in.Street, in.House, in.Flat, in.Priority, adressID)
+func (us *UserStoreDB) UpdateUsersAddress(adressID int, in *model.Address) error {
+	_, err := us.db.Exec(`UPDATE address SET city = $1, street = $2, house = $3, flat = $4, priority = $5 WHERE id = $6;`, in.City, in.Street, in.House, in.Flat, in.Priority, adressID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (us *UserStore) AddUsersAddress(userID int, in *model.Address) error {
-	_, err := us.db.Exec(context.Background(), `INSERT INTO address (userid, city, street, house, flat, priority) VALUES ($1, $2, $3, $4, $5, $6);`, userID, in.City, in.Street, in.House, in.Flat, in.Priority)
+func (us *UserStoreDB) AddUsersAddress(userID int, in *model.Address) error {
+	_, err := us.db.Exec(`INSERT INTO address (userid, city, street, house, flat, priority) VALUES ($1, $2, $3, $4, $5, $6);`, userID, in.City, in.Street, in.House, in.Flat, in.Priority)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (us *UserStore) DeleteUsersAddress(addressID int) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE address SET deleted = true WHERE id = $1;`, addressID)
+func (us *UserStoreDB) DeleteUsersAddress(addressID int) error {
+	_, err := us.db.Exec(`UPDATE address SET deleted = true WHERE id = $1;`, addressID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (us *UserStore) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE payment SET paymentType = $1, number = $2, expirydate = $3, priority = $4 WHERE id = $5;`, in.PaymentType, in.Number, in.ExpiryDate, in.Priority, paymentID)
+func (us *UserStoreDB) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) error {
+	_, err := us.db.Exec(`UPDATE payment SET paymentType = $1, number = $2, expirydate = $3, priority = $4 WHERE id = $5;`, in.PaymentType, in.Number, in.ExpiryDate, in.Priority, paymentID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (us *UserStore) AddUsersPayment(userID int, in *model.PaymentMethod) error {
-	_, err := us.db.Exec(context.Background(), `INSERT INTO payment (userid, paymentType, number, expirydate, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.PaymentType, in.Number, in.ExpiryDate, in.Priority)
+func (us *UserStoreDB) AddUsersPayment(userID int, in *model.PaymentMethod) error {
+	_, err := us.db.Exec(`INSERT INTO payment (userid, paymentType, number, expirydate, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.PaymentType, in.Number, in.ExpiryDate, in.Priority)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (us *UserStore) DeleteUsersPayment(paymentID int) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE payment SET deleted = true WHERE id = $1;`, paymentID)
+func (us *UserStoreDB) DeleteUsersPayment(paymentID int) error {
+	_, err := us.db.Exec(`UPDATE payment SET deleted = true WHERE id = $1;`, paymentID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, error) {
-	rows, err := us.db.Query(context.Background(), `SELECT * FROM users WHERE email = $1`, userEmail)
+func (us *UserStoreDB) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, error) {
+	rows, err := us.db.Query(`SELECT * FROM users WHERE email = $1`, userEmail)
 	if err == sql.ErrNoRows {
 		return nil, baseErrors.ErrUnauthorized401
 	}
@@ -111,8 +125,8 @@ func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, e
 	return &user, nil
 }
 
-func (us *UserStore) GetUsernameByIDFromDB(userID int) (string, error) {
-	rows, err := us.db.Query(context.Background(), `SELECT username FROM users WHERE id = $1`, userID)
+func (us *UserStoreDB) GetUsernameByIDFromDB(userID int) (string, error) {
+	rows, err := us.db.Query(`SELECT username FROM users WHERE id = $1`, userID)
 	if err == sql.ErrNoRows {
 		return "", err
 	}
@@ -130,9 +144,9 @@ func (us *UserStore) GetUsernameByIDFromDB(userID int) (string, error) {
 	return username, nil
 }
 
-func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error) {
+func (us *UserStoreDB) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error) {
 	adresses := []*model.Address{}
-	rows, err := us.db.Query(context.Background(), `SELECT address.id, city, street, house, flat, priority FROM address JOIN users ON address.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
+	rows, err := us.db.Query(`SELECT address.id, city, street, house, flat, priority FROM address JOIN users ON address.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
 	defer rows.Close()
 	if err != nil {
 		return nil, err
@@ -149,9 +163,9 @@ func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, e
 	return adresses, nil
 }
 
-func (us *UserStore) GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error) {
+func (us *UserStoreDB) GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error) {
 	payments := []*model.PaymentMethod{}
-	rows, err := us.db.Query(context.Background(), `SELECT payment.id, paymentType, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
+	rows, err := us.db.Query(`SELECT payment.id, paymentType, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
 	defer rows.Close()
 	if err != nil {
 		return nil, err

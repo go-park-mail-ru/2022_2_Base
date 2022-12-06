@@ -1,51 +1,70 @@
 package repository
 
 import (
-	"context"
+	"database/sql"
 	"log"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	"strings"
-
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type ProductStore struct {
-	db *pgxpool.Pool
+// type ProductStor interface {
+//     db
+// }
+
+type ProductStoreInterface interface {
+	GetProductsFromStore(lastitemid int, count int, sort string) ([]*model.Product, error)
+	GetProductsWithCategoryFromStore(category string, lastitemid int, count int, sort string) ([]*model.Product, error)
+	GetProductFromStoreByID(itemsID int) (*model.Product, error)
+	GetProductsRatingAndCommsCountFromStore(itemsID int) (float64, int, error)
+	GetProductsBySearchFromStore(search string) ([]*model.Product, error)
+	GetSuggestionsFromStore(search string) ([]string, error)
+	GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error)
+	CreateCart(userID int) error
+	GetCart(userID int) (*model.Order, error)
+	UpdateCart(userID int, items *[]int) error
+	InsertItemIntoCartById(userID int, itemID int) error
+	DeleteItemFromCartById(userID int, itemID int) error
+	GetCommentsFromStore(productID int) ([]*model.CommentDB, error)
+	CreateCommentInStore(in *model.CreateComment) error
+	UpdateProductRatingInStore(itemID int) error
 }
 
-func NewProductStore(db *pgxpool.Pool) *ProductStore {
-	return &ProductStore{
+type ProductStoreDB struct {
+	db *sql.DB
+}
+
+func NewProductStoreDB(db *sql.DB) ProductStoreInterface {
+	return &ProductStoreDB{
 		db: db,
 	}
 }
 
-func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort string) ([]*model.Product, error) {
+func (ps *ProductStoreDB) GetProductsFromStore(lastitemid int, count int, sort string) ([]*model.Product, error) {
 	products := []*model.Product{}
 	lastProduct, err := ps.GetProductFromStoreByID(lastitemid)
 	if err != nil {
 		return nil, err
 	}
-	var rows pgx.Rows
+	var rows *sql.Rows
 
 	if sort == "priceup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) > ($1, $2) ORDER BY (price, id) LIMIT $3;`, lastProduct.Price, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) > ($1, $2) ORDER BY (price, id) LIMIT $3;`, lastProduct.Price, lastitemid, count)
 	} else if sort == "pricedown" {
 		if lastProduct.Price == 0 {
 			lastProduct.Price = 1e10
 		}
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) < ($1, $2) ORDER BY (price, id) DESC LIMIT $3;`, lastProduct.Price, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) < ($1, $2) ORDER BY (price, id) DESC LIMIT $3;`, lastProduct.Price, lastitemid, count)
 	} else if sort == "ratingup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) > ($1, $2) ORDER BY (rating, id) ASC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) > ($1, $2) ORDER BY (rating, id) ASC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
 	} else if sort == "ratingdown" {
 		if lastitemid == 0 {
 			lastitemid = 1e9
 			lastProduct.Rating = 10
 		}
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) < ($1, $2) ORDER BY (rating, id) DESC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) < ($1, $2) ORDER BY (rating, id) DESC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
 	} else {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
 	}
 
 	defer rows.Close()
@@ -65,30 +84,30 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort str
 	return products, nil
 }
 
-func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastitemid int, count int, sort string) ([]*model.Product, error) {
+func (ps *ProductStoreDB) GetProductsWithCategoryFromStore(category string, lastitemid int, count int, sort string) ([]*model.Product, error) {
 	products := []*model.Product{}
-	var rows pgx.Rows
+	var rows *sql.Rows
 	lastProduct, err := ps.GetProductFromStoreByID(lastitemid)
 	if err != nil {
 		return nil, err
 	}
 	if sort == "priceup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (price, id) > ($2, $3) ORDER BY (price, id) LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (price, id) > ($2, $3) ORDER BY (price, id) LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
 	} else if sort == "pricedown" {
 		if lastProduct.Price == 0 {
 			lastProduct.Price = 1e10
 		}
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (price, id) < ($2, $3) ORDER BY (price, id) DESC LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (price, id) < ($2, $3) ORDER BY (price, id) DESC LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
 	} else if sort == "ratingup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) > ($2, $3) ORDER BY (rating, id) ASC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) > ($2, $3) ORDER BY (rating, id) ASC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
 	} else if sort == "ratingdown" {
 		if lastitemid == 0 {
 			lastitemid = 1e9
 			lastProduct.Rating = 10
 		}
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) < ($2, $3) ORDER BY (rating, id) DESC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) < ($2, $3) ORDER BY (rating, id) DESC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
 	} else {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND id > $2 ORDER BY id LIMIT $3;`, category, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND id > $2 ORDER BY id LIMIT $3;`, category, lastitemid, count)
 	}
 
 	defer rows.Close()
@@ -108,9 +127,9 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 	return products, nil
 }
 
-func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, error) {
+func (ps *ProductStoreDB) GetProductFromStoreByID(itemsID int) (*model.Product, error) {
 	product := model.Product{}
-	rows, err := ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id = $1;`, itemsID)
+	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id = $1;`, itemsID)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -126,10 +145,10 @@ func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, er
 	return &product, nil
 }
 
-func (ps *ProductStore) GetProductsRatingAndCommsCountFromStore(itemsID int) (float64, int, error) {
+func (ps *ProductStoreDB) GetProductsRatingAndCommsCountFromStore(itemsID int) (float64, int, error) {
 	var rating *float64
 	var commsCount *int
-	rows, err := ps.db.Query(context.Background(), `SELECT COUNT(id), AVG(rating) FROM comments WHERE itemid = $1;`, itemsID)
+	rows, err := ps.db.Query(`SELECT COUNT(id), AVG(rating) FROM comments WHERE itemid = $1;`, itemsID)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -147,13 +166,13 @@ func (ps *ProductStore) GetProductsRatingAndCommsCountFromStore(itemsID int) (fl
 	return *rating, *commsCount, nil
 }
 
-func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Product, error) {
+func (ps *ProductStoreDB) GetProductsBySearchFromStore(search string) ([]*model.Product, error) {
 	products := []*model.Product{}
 	searchWords := strings.Split(search, " ")
 	searchWordsUnite := strings.Join(searchWords, "")
 	searchLetters := strings.Split(searchWordsUnite, "")
 	searchString := strings.ToLower(`%` + strings.Join(searchLetters, "%") + `%`)
-	rows, err := ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE LOWER(name) LIKE $1 LIMIT 20;`, searchString)
+	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE LOWER(name) LIKE $1 LIMIT 20;`, searchString)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -171,11 +190,11 @@ func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Pr
 	return products, nil
 }
 
-func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error) {
+func (ps *ProductStoreDB) GetSuggestionsFromStore(search string) ([]string, error) {
 	suggestions := []string{}
 	searchWords := strings.Split(search, " ")
 	searchString := strings.ToLower(`%` + strings.Join(searchWords, " ") + `%`)
-	rows, err := ps.db.Query(context.Background(), `SELECT name FROM products WHERE LOWER(name) LIKE $1 LIMIT 3;`, searchString)
+	rows, err := ps.db.Query(`SELECT name FROM products WHERE LOWER(name) LIKE $1 LIMIT 3;`, searchString)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -193,9 +212,9 @@ func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error)
 	return suggestions, nil
 }
 
-func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
+func (ps *ProductStoreDB) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
-	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
+	rows, err := ps.db.Query(`SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	defer rows.Close()
 	if err != nil {
 		return nil, err
@@ -213,16 +232,16 @@ func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem,
 	return products, nil
 }
 
-func (ps *ProductStore) CreateCart(userID int) error {
-	_, err := ps.db.Exec(context.Background(), `INSERT INTO orders (userID, orderStatus, paymentStatus, addressID, paymentcardID) VALUES ($1, $2, $3, 1, 1);`, userID, "cart", "not started")
+func (ps *ProductStoreDB) CreateCart(userID int) error {
+	_, err := ps.db.Exec(`INSERT INTO orders (userID, orderStatus, paymentStatus, addressID, paymentcardID) VALUES ($1, $2, $3, 1, 1);`, userID, "cart", "not started")
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
-	rows, err := ps.db.Query(context.Background(), `SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
+func (ps *ProductStoreDB) GetCart(userID int) (*model.Order, error) {
+	rows, err := ps.db.Query(`SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
 	if err != nil {
 		return nil, err
 	}
@@ -253,12 +272,12 @@ func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
 	return cart, nil
 }
 
-func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
+func (ps *ProductStoreDB) UpdateCart(userID int, items *[]int) error {
 	cart, err := ps.GetCart(userID)
 	if err != nil {
 		return err
 	}
-	_, err = ps.db.Exec(context.Background(), `DELETE FROM orderItems WHERE orderID = $1;`, cart.ID)
+	_, err = ps.db.Exec(`DELETE FROM orderItems WHERE orderID = $1;`, cart.ID)
 	if err != nil {
 		return err
 	}
@@ -268,7 +287,7 @@ func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
 	return nil
 }
 
-func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
+func (ps *ProductStoreDB) InsertItemIntoCartById(userID int, itemID int) error {
 	cart, err := ps.GetCart(userID)
 	if err != nil {
 		return err
@@ -279,21 +298,21 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 	}
 	for _, prod := range orderItems {
 		if prod.Item.ID == itemID {
-			_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
+			_, err = ps.db.Exec(`UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
 			if err != nil {
 				return err
 			}
 			return nil
 		}
 	}
-	_, err = ps.db.Exec(context.Background(), `INSERT INTO orderItems (itemID, orderID, count) VALUES ($1, $2, $3);`, itemID, cart.ID, 1)
+	_, err = ps.db.Exec(`INSERT INTO orderItems (itemID, orderID, count) VALUES ($1, $2, $3);`, itemID, cart.ID, 1)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
+func (ps *ProductStoreDB) DeleteItemFromCartById(userID int, itemID int) error {
 	cart, err := ps.GetCart(userID)
 	if err != nil {
 		return err
@@ -305,14 +324,14 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 	for _, prod := range orderItems {
 		if prod.Item.ID == itemID {
 			if prod.Count != 1 {
-				_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count-1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
+				_, err = ps.db.Exec(`UPDATE orderItems SET count = count-1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
 				if err != nil {
 					return err
 				}
 				return nil
 			}
 
-			_, err = ps.db.Exec(context.Background(), `DELETE FROM orderItems WHERE itemID = $1 AND orderID = $2;`, itemID, cart.ID)
+			_, err = ps.db.Exec(`DELETE FROM orderItems WHERE itemID = $1 AND orderID = $2;`, itemID, cart.ID)
 			if err != nil {
 				return err
 			}
@@ -323,9 +342,9 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 	return baseErrors.ErrNotFound404
 }
 
-func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.CommentDB, error) {
+func (ps *ProductStoreDB) GetCommentsFromStore(productID int) ([]*model.CommentDB, error) {
 	comments := []*model.CommentDB{}
-	rows, err := ps.db.Query(context.Background(), `SELECT userid, pros, cons, comment, rating FROM comments WHERE itemid = $1;`, productID)
+	rows, err := ps.db.Query(`SELECT userid, pros, cons, comment, rating FROM comments WHERE itemid = $1;`, productID)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -343,20 +362,20 @@ func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.CommentDB,
 	return comments, nil
 }
 
-func (ps *ProductStore) CreateCommentInStore(in *model.CreateComment) error {
-	_, err := ps.db.Exec(context.Background(), `INSERT INTO comments (itemID, userID, pros, cons, comment, rating) VALUES ($1, $2, $3, $4, $5, $6);`, in.ItemID, in.UserID, in.Pros, in.Cons, in.Comment, in.Rating)
+func (ps *ProductStoreDB) CreateCommentInStore(in *model.CreateComment) error {
+	_, err := ps.db.Exec(`INSERT INTO comments (itemID, userID, pros, cons, comment, rating) VALUES ($1, $2, $3, $4, $5, $6);`, in.ItemID, in.UserID, in.Pros, in.Cons, in.Comment, in.Rating)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (ps *ProductStore) UpdateProductRatingInStore(itemID int) error {
+func (ps *ProductStoreDB) UpdateProductRatingInStore(itemID int) error {
 	rating, _, err := ps.GetProductsRatingAndCommsCountFromStore(itemID)
 	if err != nil {
 		return err
 	}
-	_, err = ps.db.Exec(context.Background(), `UPDATE products SET rating = $1 WHERE id = $2;`, rating, itemID)
+	_, err = ps.db.Exec(`UPDATE products SET rating = $1 WHERE id = $2;`, rating, itemID)
 	if err != nil {
 		return err
 	}

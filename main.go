@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"net/http"
 
@@ -23,8 +24,6 @@ import (
 	"serv/domain/model"
 
 	httpSwagger "github.com/swaggo/http-swagger"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	auth "serv/microservices/auth/gen_files"
 	orders "serv/microservices/orders/gen_files"
@@ -130,7 +129,8 @@ func main() {
 	urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
 	//urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	log.Println("conn: ", urlDB)
-	db, err := pgxpool.New(context.Background(), urlDB)
+	//db, err := pgxpool.New(context.Background(), urlDB)
+	db, err := sql.Open("pgx", urlDB)
 	if err != nil {
 		log.Println("could not connect to database")
 	} else {
@@ -169,11 +169,13 @@ func main() {
 	sessManager = auth.NewAuthCheckerClient(grcpConnAuth)
 	ordersManager = orders.NewOrdersWorkerClient(grcpConnOrders)
 
-	userStore := repository.NewUserStore(db)
-	productStore := repository.NewProductStore(db)
+	//userStore := repository.NewUserStore(db)
+	userStore := repository.NewUserStoreDB(db)
+	//productStore := repository.NewProductStore(db)
+	productStore := repository.NewProductStoreDB(db)
 
-	userUsecase := usecase.NewUserUsecase(userStore, &sessManager)
-	productUsecase := usecase.NewProductUsecase(productStore, &ordersManager)
+	userUsecase := usecase.NewUserUsecase(&userStore, &sessManager)
+	productUsecase := usecase.NewProductUsecase(&productStore, &ordersManager)
 
 	userHandler := deliv.NewUserHandler(userUsecase)
 	sessionHandler := deliv.NewSessionHandler(userUsecase)

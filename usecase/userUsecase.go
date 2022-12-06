@@ -15,10 +15,10 @@ import (
 
 type UserUsecase struct {
 	sessManager auth.AuthCheckerClient
-	store       rep.UserStore
+	store       rep.UserStoreInterface
 }
 
-func NewUserUsecase(us *rep.UserStore, sessManager *auth.AuthCheckerClient) *UserUsecase {
+func NewUserUsecase(us *rep.UserStoreInterface, sessManager *auth.AuthCheckerClient) *UserUsecase {
 	return &UserUsecase{
 		sessManager: *sessManager,
 		store:       *us,

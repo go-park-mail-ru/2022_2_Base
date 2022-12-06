@@ -10,10 +10,10 @@ import (
 
 type ProductUsecase struct {
 	ordersManager orders.OrdersWorkerClient
-	store         rep.ProductStore
+	store         rep.ProductStoreInterface
 }
 
-func NewProductUsecase(ps *rep.ProductStore, ordersManager *orders.OrdersWorkerClient) *ProductUsecase {
+func NewProductUsecase(ps *rep.ProductStoreInterface, ordersManager *orders.OrdersWorkerClient) *ProductUsecase {
 	return &ProductUsecase{
 		ordersManager: *ordersManager,
 		store:         *ps,
