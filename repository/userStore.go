@@ -36,6 +36,14 @@ func (us *UserStore) UpdateUser(userID int, in *model.UserProfile) error {
 	return nil
 }
 
+func (us *UserStore) ChangeUserPasswordDB(userID int, newPass string) error {
+	_, err := us.db.Exec(context.Background(), `UPDATE users SET password = $1 WHERE id = $2;`, newPass, userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (us *UserStore) UpdateUsersAddress(adressID int, in *model.Address) error {
 	_, err := us.db.Exec(context.Background(), `UPDATE address SET city = $1, street = $2, house = $3, flat = $4, priority = $5 WHERE id = $6;`, in.City, in.Street, in.House, in.Flat, in.Priority, adressID)
 	if err != nil {

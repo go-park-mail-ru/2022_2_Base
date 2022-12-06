@@ -1,6 +1,8 @@
 package delivery
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -10,6 +12,8 @@ import (
 	"time"
 
 	usecase "serv/usecase"
+
+	"golang.org/x/crypto/argon2"
 )
 
 type SessionHandler struct {
@@ -20,6 +24,18 @@ func NewSessionHandler(uuc *usecase.UserUsecase) *SessionHandler {
 	return &SessionHandler{
 		usecase: *uuc,
 	}
+}
+
+func hashPass(salt []byte, plainPassword string) []byte {
+	hashedPass := argon2.IDKey([]byte(plainPassword), []byte(salt), 1, 64*1024, 4, 32)
+	return append(salt, hashedPass...)
+}
+
+func checkPass(passHash []byte, plainPassword string) bool {
+	//salt := passHash[0:8]
+	salt := []byte("Base2022")
+	userPassHash := hashPass(salt, plainPassword)
+	return bytes.Equal(userPassHash, passHash)
 }
 
 // LogIn godoc
@@ -59,7 +75,15 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
-	if user.Password != req.Password {
+
+	byteUserPass, err := base64.RawStdEncoding.DecodeString(user.Password)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	if !checkPass(byteUserPass, req.Password) {
 		log.Println("get Password ", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
@@ -183,6 +207,11 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
+
+	salt := []byte("Base2022")
+	hashedPass := hashPass(salt, req.Password)
+	b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
+	req.Password = b64Pass
 
 	err = api.usecase.AddUser(&req)
 	if err != nil {

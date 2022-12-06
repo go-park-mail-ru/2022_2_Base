@@ -53,3 +53,8 @@ type Session struct {
 	ID       int    `json:"id"`
 	UserUUID string `json:"useruuid"`
 }
+
+type ChangePassword struct {
+	OldPassword string `json:"oldpassword"`
+	NewPassword string `json:"newpassword"`
+}

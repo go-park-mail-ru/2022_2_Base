@@ -13,7 +13,7 @@ CREATE TABLE users (
     id  SERIAL PRIMARY KEY,
 	email VARCHAR (30) NOT NULL,
     username VARCHAR (30) NOT NULL,
-	password VARCHAR (30) NOT NULL, 
+	password VARCHAR (80) NOT NULL, 
     phone VARCHAR (15), 
     avatar VARCHAR (30)
 );

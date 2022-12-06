@@ -16,6 +16,7 @@ var PathSuggestions = BasePath + "/suggestions"
 
 var PathProfile = "/profile"
 var PathAvatar = "/avatar"
+var PathPassword = "/password"
 var PathMakeComment = "/makecomment"
 
 var PathCart = "/cart"

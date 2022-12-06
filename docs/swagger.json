@@ -15,7 +15,7 @@
         },
         "version": "1.0"
     },
-    "host": "89.208.198.137:8080",
+    "host": "127.0.0.1:8080",
     "basePath": "/api/v1",
     "paths": {
         "/cart": {
@@ -877,6 +877,59 @@
                 }
             }
         },
+        "/user/password": {
+            "post": {
+                "description": "changes user parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "changes user password",
+                "operationId": "changeUserPassword",
+                "parameters": [
+                    {
+                        "description": "ChangePassword params",
+                        "name": "userpassword",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ChangePassword"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/user/profile": {
             "get": {
                 "description": "gets user by username in cookies",
@@ -1009,6 +1062,17 @@
                 },
                 "price": {
                     "type": "number"
+                }
+            }
+        },
+        "model.ChangePassword": {
+            "type": "object",
+            "properties": {
+                "newpassword": {
+                    "type": "string"
+                },
+                "oldpassword": {
+                    "type": "string"
                 }
             }
         },

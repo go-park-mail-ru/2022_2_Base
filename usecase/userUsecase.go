@@ -221,6 +221,10 @@ func (api *UserUsecase) ChangeUserPayments(userID int, userPayments []*model.Pay
 	return nil
 }
 
+func (api *UserUsecase) ChangeUserPassword(userID int, newPass string) error {
+	return api.store.ChangeUserPasswordDB(userID, newPass)
+}
+
 func (api *UserUsecase) SetAvatar(usedID int, file multipart.File) error {
 	//fileName := "./img/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
 	fileName := "/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
@@ -240,7 +244,6 @@ func (api *UserUsecase) SetAvatar(usedID int, file multipart.File) error {
 }
 
 func (api *UserUsecase) SetUsernamesForComments(comms []*model.CommentDB) ([]*model.Comment, error) {
-
 	comments := []*model.Comment{}
 	for _, comm := range comms {
 		usName, err := api.store.GetUsernameByIDFromDB(comm.UserID)
