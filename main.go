@@ -170,9 +170,9 @@ func main() {
 	ordersManager = orders.NewOrdersWorkerClient(grcpConnOrders)
 
 	//userStore := repository.NewUserStore(db)
-	userStore := repository.NewUserStoreDB(db)
+	userStore := repository.NewUserStore(db)
 	//productStore := repository.NewProductStore(db)
-	productStore := repository.NewProductStoreDB(db)
+	productStore := repository.NewProductStore(db)
 
 	userUsecase := usecase.NewUserUsecase(&userStore, &sessManager)
 	productUsecase := usecase.NewProductUsecase(&productStore, &ordersManager)

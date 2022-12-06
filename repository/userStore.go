@@ -24,17 +24,17 @@ type UserStoreInterface interface {
 	GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error)
 }
 
-type UserStoreDB struct {
+type UserStore struct {
 	db *sql.DB
 }
 
-func NewUserStoreDB(db *sql.DB) UserStoreInterface {
-	return &UserStoreDB{
+func NewUserStore(db *sql.DB) UserStoreInterface {
+	return &UserStore{
 		db: db,
 	}
 }
 
-func (us *UserStoreDB) AddUser(in *model.UserDB) error {
+func (us *UserStore) AddUser(in *model.UserDB) error {
 	_, err := us.db.Exec(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
 	if err != nil {
 		return err
@@ -42,7 +42,7 @@ func (us *UserStoreDB) AddUser(in *model.UserDB) error {
 	return nil
 }
 
-func (us *UserStoreDB) UpdateUser(userID int, in *model.UserProfile) error {
+func (us *UserStore) UpdateUser(userID int, in *model.UserProfile) error {
 	_, err := us.db.Exec(`UPDATE users SET email = $1, username = $2, phone = $3, avatar = $4 WHERE id = $5;`, in.Email, in.Username, in.Phone, in.Avatar, userID)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (us *UserStoreDB) UpdateUser(userID int, in *model.UserProfile) error {
 	return nil
 }
 
-func (us *UserStoreDB) ChangeUserPasswordDB(userID int, newPass string) error {
+func (us *UserStore) ChangeUserPasswordDB(userID int, newPass string) error {
 	_, err := us.db.Exec(`UPDATE users SET password = $1 WHERE id = $2;`, newPass, userID)
 	if err != nil {
 		return err
@@ -58,7 +58,7 @@ func (us *UserStoreDB) ChangeUserPasswordDB(userID int, newPass string) error {
 	return nil
 }
 
-func (us *UserStoreDB) UpdateUsersAddress(adressID int, in *model.Address) error {
+func (us *UserStore) UpdateUsersAddress(adressID int, in *model.Address) error {
 	_, err := us.db.Exec(`UPDATE address SET city = $1, street = $2, house = $3, flat = $4, priority = $5 WHERE id = $6;`, in.City, in.Street, in.House, in.Flat, in.Priority, adressID)
 	if err != nil {
 		return err
@@ -66,7 +66,7 @@ func (us *UserStoreDB) UpdateUsersAddress(adressID int, in *model.Address) error
 	return nil
 }
 
-func (us *UserStoreDB) AddUsersAddress(userID int, in *model.Address) error {
+func (us *UserStore) AddUsersAddress(userID int, in *model.Address) error {
 	_, err := us.db.Exec(`INSERT INTO address (userid, city, street, house, flat, priority) VALUES ($1, $2, $3, $4, $5, $6);`, userID, in.City, in.Street, in.House, in.Flat, in.Priority)
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func (us *UserStoreDB) AddUsersAddress(userID int, in *model.Address) error {
 	return nil
 }
 
-func (us *UserStoreDB) DeleteUsersAddress(addressID int) error {
+func (us *UserStore) DeleteUsersAddress(addressID int) error {
 	_, err := us.db.Exec(`UPDATE address SET deleted = true WHERE id = $1;`, addressID)
 	if err != nil {
 		return err
@@ -82,7 +82,7 @@ func (us *UserStoreDB) DeleteUsersAddress(addressID int) error {
 	return nil
 }
 
-func (us *UserStoreDB) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) error {
+func (us *UserStore) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) error {
 	_, err := us.db.Exec(`UPDATE payment SET paymentType = $1, number = $2, expirydate = $3, priority = $4 WHERE id = $5;`, in.PaymentType, in.Number, in.ExpiryDate, in.Priority, paymentID)
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func (us *UserStoreDB) UpdateUsersPayment(paymentID int, in *model.PaymentMethod
 	return nil
 }
 
-func (us *UserStoreDB) AddUsersPayment(userID int, in *model.PaymentMethod) error {
+func (us *UserStore) AddUsersPayment(userID int, in *model.PaymentMethod) error {
 	_, err := us.db.Exec(`INSERT INTO payment (userid, paymentType, number, expirydate, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.PaymentType, in.Number, in.ExpiryDate, in.Priority)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (us *UserStoreDB) AddUsersPayment(userID int, in *model.PaymentMethod) erro
 	return nil
 }
 
-func (us *UserStoreDB) DeleteUsersPayment(paymentID int) error {
+func (us *UserStore) DeleteUsersPayment(paymentID int) error {
 	_, err := us.db.Exec(`UPDATE payment SET deleted = true WHERE id = $1;`, paymentID)
 	if err != nil {
 		return err
@@ -106,7 +106,7 @@ func (us *UserStoreDB) DeleteUsersPayment(paymentID int) error {
 	return nil
 }
 
-func (us *UserStoreDB) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, error) {
+func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, error) {
 	rows, err := us.db.Query(`SELECT * FROM users WHERE email = $1`, userEmail)
 	if err == sql.ErrNoRows {
 		return nil, baseErrors.ErrUnauthorized401
@@ -125,7 +125,7 @@ func (us *UserStoreDB) GetUserByUsernameFromDB(userEmail string) (*model.UserDB,
 	return &user, nil
 }
 
-func (us *UserStoreDB) GetUsernameByIDFromDB(userID int) (string, error) {
+func (us *UserStore) GetUsernameByIDFromDB(userID int) (string, error) {
 	rows, err := us.db.Query(`SELECT username FROM users WHERE id = $1`, userID)
 	if err == sql.ErrNoRows {
 		return "", err
@@ -144,7 +144,7 @@ func (us *UserStoreDB) GetUsernameByIDFromDB(userID int) (string, error) {
 	return username, nil
 }
 
-func (us *UserStoreDB) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error) {
+func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error) {
 	adresses := []*model.Address{}
 	rows, err := us.db.Query(`SELECT address.id, city, street, house, flat, priority FROM address JOIN users ON address.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
 	defer rows.Close()
@@ -163,7 +163,7 @@ func (us *UserStoreDB) GetAddressesByUserIDFromDB(userID int) ([]*model.Address,
 	return adresses, nil
 }
 
-func (us *UserStoreDB) GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error) {
+func (us *UserStore) GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error) {
 	payments := []*model.PaymentMethod{}
 	rows, err := us.db.Query(`SELECT payment.id, paymentType, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
 	defer rows.Close()

@@ -30,17 +30,17 @@ type ProductStoreInterface interface {
 	UpdateProductRatingInStore(itemID int) error
 }
 
-type ProductStoreDB struct {
+type ProductStore struct {
 	db *sql.DB
 }
 
-func NewProductStoreDB(db *sql.DB) ProductStoreInterface {
-	return &ProductStoreDB{
+func NewProductStore(db *sql.DB) ProductStoreInterface {
+	return &ProductStore{
 		db: db,
 	}
 }
 
-func (ps *ProductStoreDB) GetProductsFromStore(lastitemid int, count int, sort string) ([]*model.Product, error) {
+func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort string) ([]*model.Product, error) {
 	products := []*model.Product{}
 	lastProduct, err := ps.GetProductFromStoreByID(lastitemid)
 	if err != nil {
@@ -84,7 +84,7 @@ func (ps *ProductStoreDB) GetProductsFromStore(lastitemid int, count int, sort s
 	return products, nil
 }
 
-func (ps *ProductStoreDB) GetProductsWithCategoryFromStore(category string, lastitemid int, count int, sort string) ([]*model.Product, error) {
+func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastitemid int, count int, sort string) ([]*model.Product, error) {
 	products := []*model.Product{}
 	var rows *sql.Rows
 	lastProduct, err := ps.GetProductFromStoreByID(lastitemid)
@@ -127,7 +127,7 @@ func (ps *ProductStoreDB) GetProductsWithCategoryFromStore(category string, last
 	return products, nil
 }
 
-func (ps *ProductStoreDB) GetProductFromStoreByID(itemsID int) (*model.Product, error) {
+func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, error) {
 	product := model.Product{}
 	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id = $1;`, itemsID)
 	defer rows.Close()
@@ -145,7 +145,7 @@ func (ps *ProductStoreDB) GetProductFromStoreByID(itemsID int) (*model.Product, 
 	return &product, nil
 }
 
-func (ps *ProductStoreDB) GetProductsRatingAndCommsCountFromStore(itemsID int) (float64, int, error) {
+func (ps *ProductStore) GetProductsRatingAndCommsCountFromStore(itemsID int) (float64, int, error) {
 	var rating *float64
 	var commsCount *int
 	rows, err := ps.db.Query(`SELECT COUNT(id), AVG(rating) FROM comments WHERE itemid = $1;`, itemsID)
@@ -166,7 +166,7 @@ func (ps *ProductStoreDB) GetProductsRatingAndCommsCountFromStore(itemsID int) (
 	return *rating, *commsCount, nil
 }
 
-func (ps *ProductStoreDB) GetProductsBySearchFromStore(search string) ([]*model.Product, error) {
+func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Product, error) {
 	products := []*model.Product{}
 	searchWords := strings.Split(search, " ")
 	searchWordsUnite := strings.Join(searchWords, "")
@@ -190,7 +190,7 @@ func (ps *ProductStoreDB) GetProductsBySearchFromStore(search string) ([]*model.
 	return products, nil
 }
 
-func (ps *ProductStoreDB) GetSuggestionsFromStore(search string) ([]string, error) {
+func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error) {
 	suggestions := []string{}
 	searchWords := strings.Split(search, " ")
 	searchString := strings.ToLower(`%` + strings.Join(searchWords, " ") + `%`)
@@ -212,7 +212,7 @@ func (ps *ProductStoreDB) GetSuggestionsFromStore(search string) ([]string, erro
 	return suggestions, nil
 }
 
-func (ps *ProductStoreDB) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
+func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
 	rows, err := ps.db.Query(`SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	defer rows.Close()
@@ -232,7 +232,7 @@ func (ps *ProductStoreDB) GetOrderItemsFromStore(orderID int) ([]*model.OrderIte
 	return products, nil
 }
 
-func (ps *ProductStoreDB) CreateCart(userID int) error {
+func (ps *ProductStore) CreateCart(userID int) error {
 	_, err := ps.db.Exec(`INSERT INTO orders (userID, orderStatus, paymentStatus, addressID, paymentcardID) VALUES ($1, $2, $3, 1, 1);`, userID, "cart", "not started")
 	if err != nil {
 		return err
@@ -240,7 +240,7 @@ func (ps *ProductStoreDB) CreateCart(userID int) error {
 	return nil
 }
 
-func (ps *ProductStoreDB) GetCart(userID int) (*model.Order, error) {
+func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
 	rows, err := ps.db.Query(`SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
 	if err != nil {
 		return nil, err
@@ -272,7 +272,7 @@ func (ps *ProductStoreDB) GetCart(userID int) (*model.Order, error) {
 	return cart, nil
 }
 
-func (ps *ProductStoreDB) UpdateCart(userID int, items *[]int) error {
+func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
 	cart, err := ps.GetCart(userID)
 	if err != nil {
 		return err
@@ -287,7 +287,7 @@ func (ps *ProductStoreDB) UpdateCart(userID int, items *[]int) error {
 	return nil
 }
 
-func (ps *ProductStoreDB) InsertItemIntoCartById(userID int, itemID int) error {
+func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 	cart, err := ps.GetCart(userID)
 	if err != nil {
 		return err
@@ -312,7 +312,7 @@ func (ps *ProductStoreDB) InsertItemIntoCartById(userID int, itemID int) error {
 	return nil
 }
 
-func (ps *ProductStoreDB) DeleteItemFromCartById(userID int, itemID int) error {
+func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 	cart, err := ps.GetCart(userID)
 	if err != nil {
 		return err
@@ -342,7 +342,7 @@ func (ps *ProductStoreDB) DeleteItemFromCartById(userID int, itemID int) error {
 	return baseErrors.ErrNotFound404
 }
 
-func (ps *ProductStoreDB) GetCommentsFromStore(productID int) ([]*model.CommentDB, error) {
+func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.CommentDB, error) {
 	comments := []*model.CommentDB{}
 	rows, err := ps.db.Query(`SELECT userid, pros, cons, comment, rating FROM comments WHERE itemid = $1;`, productID)
 	defer rows.Close()
@@ -362,7 +362,7 @@ func (ps *ProductStoreDB) GetCommentsFromStore(productID int) ([]*model.CommentD
 	return comments, nil
 }
 
-func (ps *ProductStoreDB) CreateCommentInStore(in *model.CreateComment) error {
+func (ps *ProductStore) CreateCommentInStore(in *model.CreateComment) error {
 	_, err := ps.db.Exec(`INSERT INTO comments (itemID, userID, pros, cons, comment, rating) VALUES ($1, $2, $3, $4, $5, $6);`, in.ItemID, in.UserID, in.Pros, in.Cons, in.Comment, in.Rating)
 	if err != nil {
 		return err
@@ -370,7 +370,7 @@ func (ps *ProductStoreDB) CreateCommentInStore(in *model.CreateComment) error {
 	return nil
 }
 
-func (ps *ProductStoreDB) UpdateProductRatingInStore(itemID int) error {
+func (ps *ProductStore) UpdateProductRatingInStore(itemID int) error {
 	rating, _, err := ps.GetProductsRatingAndCommsCountFromStore(itemID)
 	if err != nil {
 		return err
