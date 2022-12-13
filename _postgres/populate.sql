@@ -22,7 +22,7 @@ INSERT INTO products (name, category, nominalPrice, price, imgsrc) VALUES
 ('Монитор Xiaomi Mi 24', 'monitors', 14999, 14999, 'https://img.mvideo.ru/Big/30058309bb.jpg');
 
 INSERT INTO users (email, username, password) VALUES
-('art@art',	'aaa', '12345678');
+('art@art',	'aaa', 'QmFzZTIwMjLCiyMWgeZmxrfD2Wq5LYvkasDYAL3GtKvkim7P1uORBg');
 
 INSERT INTO address (userID, city, street, house, flat, priority) VALUES
 (1, 'default', 'default', 'default', 'default', false);
