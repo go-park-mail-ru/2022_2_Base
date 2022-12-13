@@ -14,7 +14,7 @@ import (
 	//"github.com/pashagolub/pgxmock/v2"
 )
 
-func TestGetProductFromStoreByID(t *testing.T) {
+func TestGetProductFromStoreByIDOLD(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("cant create mock: %s", err)
