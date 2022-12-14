@@ -217,6 +217,7 @@ func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem,
 	rows, err := ps.db.Query(`SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	defer rows.Close()
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	for rows.Next() {
@@ -292,10 +293,12 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
+	log.Println("correct1")
 	orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
 	if err != nil {
 		return err
 	}
+	log.Println("correct2")
 	for _, prod := range orderItems {
 		if prod.Item.ID == itemID {
 			_, err = ps.db.Exec(`UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
