@@ -129,16 +129,6 @@ func TestGetCart(t *testing.T) {
 	}
 
 	cart, err := repo.GetCart(userID)
-	// cart.Items[0].Item.Imgsrc = &avatar
-	// log.Println(cart.Items[0], expect.Items[0])
-	// log.Println(cart.Items[0].Item, expect.Items[0].Item)
-	// log.Println(cart.Items[0].Item.ID, expect.Items[0].Item.ID)
-	// log.Println(cart.Items[0].Item.Name, expect.Items[0].Item.Name)
-	// log.Println(cart.Items[0].Item.Category, expect.Items[0].Item.Category)
-	// log.Println(cart.Items[0].Item.Rating, expect.Items[0].Item.Rating)
-	// log.Println(cart.Items[0].Item.Price, expect.Items[0].Item.Price)
-	// log.Println(cart.Items[0].Item.NominalPrice, expect.Items[0].Item.NominalPrice)
-	// log.Println(cart.Items[0].Item.Imgsrc, expect.Items[0].Item.Imgsrc)
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
 		return
@@ -147,10 +137,7 @@ func TestGetCart(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 		return
 	}
-	// if !reflect.DeepEqual(cart.ID, expect.ID) {
-	// 	t.Errorf("results not match, want %v, have %v", expect, cart)
-	// 	return
-	// }
+
 	assert.EqualValues(t, &expect, cart)
 
 	//query error
@@ -367,6 +354,94 @@ func TestDeleteItemFromCartById(t *testing.T) {
 		WithArgs(itemID2, orderID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	err = repo.DeleteItemFromCartById(userID, itemID2)
+	if err != nil {
+		t.Errorf("unexpected err: %s", err)
+		return
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+		return
+	}
+
+	//query error
+	mock.
+		ExpectQuery("SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate  FROM orders").
+		WithArgs(userID, "cart").
+		WillReturnRows(func() *sqlmock.Rows {
+			rr := sqlmock.NewRows([]string{"id"}).AddRow(1)
+			return rr
+		}())
+
+	err = repo.InsertItemIntoCartById(userID, itemID)
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+		return
+	}
+	if err == nil {
+		t.Errorf("expected error, got nil")
+		return
+	}
+}
+
+func TestUpdateCart(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("cant create mock: %s", err)
+	}
+	defer db.Close()
+	var userID int = 1
+	var orderID int = 1
+	var itemID int = 1
+	itemIDarr := []int{1}
+	expectTime := time.Unix(1, 0)
+	//deletequery
+	mock.
+		ExpectQuery("SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate  FROM orders").
+		WithArgs(userID, "cart").
+		WillReturnRows(func() *sqlmock.Rows {
+			rr := sqlmock.NewRows([]string{"id", "userID", "orderStatus", "paymentStatus", "addressID", "paymentcardID", "creationDate", "deliveryDate"}).AddRow(1, userID, "cart", "not started", 1, 1, &expectTime, &expectTime)
+			return rr
+		}())
+	mock.
+		ExpectQuery("SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
+		WithArgs(orderID).
+		WillReturnRows(func() *sqlmock.Rows {
+			rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
+			return rr
+		}())
+
+	mock.
+		ExpectExec("DELETE").
+		WithArgs(orderID).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	mock.
+		ExpectQuery("SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate  FROM orders").
+		WithArgs(userID, "cart").
+		WillReturnRows(func() *sqlmock.Rows {
+			rr := sqlmock.NewRows([]string{"id", "userID", "orderStatus", "paymentStatus", "addressID", "paymentcardID", "creationDate", "deliveryDate"}).AddRow(1, userID, "cart", "not started", 1, 1, &expectTime, &expectTime)
+			return rr
+		}())
+	mock.
+		ExpectQuery("SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
+		WithArgs(orderID).
+		WillReturnRows(func() *sqlmock.Rows {
+			rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
+			return rr
+		}())
+	mock.
+		ExpectQuery("SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
+		WithArgs(orderID).
+		WillReturnRows(func() *sqlmock.Rows {
+			rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
+			return rr
+		}())
+
+	repo := &ProductStore{
+		db: db,
+	}
+	err = repo.UpdateCart(userID, &itemIDarr)
+
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
 		return

@@ -293,12 +293,12 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
-	log.Println("correct1")
+	//log.Println("correct1")
 	orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
 	if err != nil {
 		return err
 	}
-	log.Println("correct2")
+	//log.Println("correct2")
 	for _, prod := range orderItems {
 		if prod.Item.ID == itemID {
 			_, err = ps.db.Exec(`UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
