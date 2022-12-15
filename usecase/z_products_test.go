@@ -1,7 +1,9 @@
 package usecase
 
 import (
+	"context"
 	"serv/domain/model"
+	orders "serv/microservices/orders/gen_files"
 	"testing"
 
 	baseErrors "serv/domain/errors"
@@ -114,17 +116,10 @@ func TestGetCart(t *testing.T) {
 	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager)
 	testCart := new(model.Order)
 	err := faker.FakeData(testCart)
-	//testProductsSlice := testProducts[:]
-	//err = faker.FakeData(testProducts)
-	//testProductsSlice = testProducts[:]
-	//search := testProductsSlice[0].Name
 	assert.NoError(t, err)
-
-	//var userID int = 1
 
 	//exist cart
 	prodStoreMock.EXPECT().GetCart(testCart.UserID).Return(testCart, nil)
-	//prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProductsSlice[0].ID).Return(testProductsSlice[0].Rating, *testProductsSlice[0].CommentsCount, nil)
 	cart, err := prodUsecase.GetCart(testCart.UserID)
 	assert.NoError(t, err)
 	assert.Equal(t, testCart, cart)
@@ -133,7 +128,6 @@ func TestGetCart(t *testing.T) {
 	prodStoreMock.EXPECT().GetCart(testCart.UserID).Return(nil, nil)
 	prodStoreMock.EXPECT().CreateCart(testCart.UserID).Return(nil)
 	prodStoreMock.EXPECT().GetCart(testCart.UserID).Return(testCart, nil)
-	//prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProductsSlice[0].ID).Return(testProductsSlice[0].Rating, *testProductsSlice[0].CommentsCount, nil)
 	cart, err = prodUsecase.GetCart(testCart.UserID)
 	assert.NoError(t, err)
 	assert.Equal(t, testCart, cart)
@@ -142,5 +136,206 @@ func TestGetCart(t *testing.T) {
 	prodStoreMock.EXPECT().GetCart(testCart.UserID).Return(nil, baseErrors.ErrServerError500)
 	_, err = prodUsecase.GetCart(testCart.UserID)
 	assert.Equal(t, baseErrors.ErrServerError500, err)
+}
 
+func TestUpdateOrder(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
+	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
+
+	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager)
+	testCart := new(model.Order)
+	err := faker.FakeData(testCart)
+	assert.NoError(t, err)
+	testItemsIDs := new([5]int)
+	err = faker.FakeData(testItemsIDs)
+	assert.NoError(t, err)
+	testItemsIDsSlice := testItemsIDs[:]
+
+	//UpdateOrder
+	prodStoreMock.EXPECT().UpdateCart(testCart.UserID, &testItemsIDsSlice).Return(nil)
+	err = prodUsecase.UpdateOrder(testCart.UserID, &testItemsIDsSlice)
+	assert.NoError(t, err)
+
+	//error
+	prodStoreMock.EXPECT().UpdateCart(testCart.UserID, &testItemsIDsSlice).Return(baseErrors.ErrServerError500)
+	err = prodUsecase.UpdateOrder(testCart.UserID, &testItemsIDsSlice)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+
+	//AddToOrder
+	prodStoreMock.EXPECT().InsertItemIntoCartById(testCart.UserID, testItemsIDsSlice[0]).Return(nil)
+	err = prodUsecase.AddToOrder(testCart.UserID, testItemsIDsSlice[0])
+	assert.NoError(t, err)
+
+	//error
+	prodStoreMock.EXPECT().InsertItemIntoCartById(testCart.UserID, testItemsIDsSlice[0]).Return(baseErrors.ErrServerError500)
+	err = prodUsecase.AddToOrder(testCart.UserID, testItemsIDsSlice[0])
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+
+	//DeleteFromOrder
+	prodStoreMock.EXPECT().DeleteItemFromCartById(testCart.UserID, testItemsIDsSlice[0]).Return(nil)
+	err = prodUsecase.DeleteFromOrder(testCart.UserID, testItemsIDsSlice[0])
+	assert.NoError(t, err)
+
+	//error
+	prodStoreMock.EXPECT().DeleteItemFromCartById(testCart.UserID, testItemsIDsSlice[0]).Return(baseErrors.ErrServerError500)
+	err = prodUsecase.DeleteFromOrder(testCart.UserID, testItemsIDsSlice[0])
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+}
+
+func TestMakeOrder(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
+	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
+
+	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager)
+	testCart := new(model.Order)
+	err := faker.FakeData(testCart)
+	assert.NoError(t, err)
+	testOrder := new(model.MakeOrder)
+	err = faker.FakeData(testOrder)
+	assert.NoError(t, err)
+
+	testCart.UserID = testOrder.UserID
+
+	//ok
+	prodStoreMock.EXPECT().GetCart(testOrder.UserID).Return(testCart, nil)
+
+	remainedItemsIDs := []int{}
+	boughtItemsIDs := []int{}
+	boughtItemsIDsINT32 := []int32{}
+	for _, orderItem := range testCart.Items {
+		flag := true
+		flag2 := false
+		for _, id := range testOrder.Items {
+			if orderItem.Item.ID == id {
+				flag = false
+				flag2 = true
+			}
+		}
+		if flag {
+			for i := 0; i < orderItem.Count; i++ {
+				remainedItemsIDs = append(remainedItemsIDs, orderItem.Item.ID)
+			}
+		}
+		if flag2 {
+			for i := 0; i < orderItem.Count; i++ {
+				boughtItemsIDs = append(boughtItemsIDs, orderItem.Item.ID)
+				boughtItemsIDsINT32 = append(boughtItemsIDsINT32, int32(orderItem.Item.ID))
+			}
+		}
+	}
+
+	prodStoreMock.EXPECT().UpdateCart(testOrder.UserID, &boughtItemsIDs).Return(nil)
+	ordersManager.EXPECT().MakeOrder(context.Background(),
+		&orders.MakeOrderType{
+			UserID:        int32(testOrder.UserID),
+			Items:         boughtItemsIDsINT32,
+			AddressID:     int32(testOrder.AddressID),
+			PaymentcardID: int32(testOrder.PaymentcardID),
+			DeliveryDate:  testOrder.DeliveryDate.Unix(),
+		}).Return(nil, nil)
+	prodStoreMock.EXPECT().CreateCart(testOrder.UserID).Return(nil)
+	prodStoreMock.EXPECT().UpdateCart(testOrder.UserID, &remainedItemsIDs).Return(nil)
+
+	err = prodUsecase.MakeOrder(testOrder)
+	assert.NoError(t, err)
+
+	//error
+	prodStoreMock.EXPECT().GetCart(testOrder.UserID).Return(nil, baseErrors.ErrServerError500)
+	err = prodUsecase.MakeOrder(testOrder)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+}
+
+func TestGetOrders(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
+	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
+
+	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager)
+	testOrders := new(orders.OrdersResponse)
+	err := faker.FakeData(testOrders)
+	assert.NoError(t, err)
+
+	var userID int = int(testOrders.Orders[0].UserID)
+	//ok
+	ordersManager.EXPECT().GetOrders(
+		context.Background(),
+		&orders.UserID{
+			UserID: int32(userID),
+		}).Return(testOrders, nil)
+	orders3, err := prodUsecase.GetOrders(userID)
+	assert.NoError(t, err)
+	assert.Equal(t, testOrders, orders3)
+
+	//error
+	ordersManager.EXPECT().GetOrders(
+		context.Background(),
+		&orders.UserID{
+			UserID: int32(userID),
+		}).Return(nil, baseErrors.ErrServerError500)
+
+	_, err = prodUsecase.GetOrders(userID)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+}
+
+func TestGetComments(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
+	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
+	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager)
+
+	testComms := new([5]*model.CommentDB)
+	err := faker.FakeData(testComms)
+	assert.NoError(t, err)
+	testCommsSlice := testComms[:]
+
+	var itemID int = testComms[0].ItemID
+	//ok
+	prodStoreMock.EXPECT().GetCommentsFromStore(itemID).Return(testCommsSlice, nil)
+	comms, err := prodUsecase.GetComments(itemID)
+	assert.NoError(t, err)
+	assert.Equal(t, testCommsSlice, comms)
+
+	//error
+	prodStoreMock.EXPECT().GetCommentsFromStore(itemID).Return(nil, baseErrors.ErrServerError500)
+	_, err = prodUsecase.GetComments(itemID)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+}
+
+func TestCreateComment(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
+	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
+	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager)
+
+	testComm := new(model.CreateComment)
+	err := faker.FakeData(testComm)
+	assert.NoError(t, err)
+
+	//ok
+	prodStoreMock.EXPECT().CreateCommentInStore(testComm).Return(nil)
+	prodStoreMock.EXPECT().UpdateProductRatingInStore(testComm.ItemID).Return(nil)
+	err = prodUsecase.CreateComment(testComm)
+	assert.NoError(t, err)
+
+	//error
+	prodStoreMock.EXPECT().CreateCommentInStore(testComm).Return(baseErrors.ErrServerError500)
+	err = prodUsecase.CreateComment(testComm)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
 }
