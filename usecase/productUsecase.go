@@ -29,9 +29,9 @@ type ProductUsecase struct {
 	store         rep.ProductStoreInterface
 }
 
-func NewProductUsecase(ps rep.ProductStoreInterface, ordersManager *orders.OrdersWorkerClient) ProductUsecaseInterface {
+func NewProductUsecase(ps rep.ProductStoreInterface, ordersManager orders.OrdersWorkerClient) ProductUsecaseInterface {
 	return &ProductUsecase{
-		ordersManager: *ordersManager,
+		ordersManager: ordersManager,
 		store:         ps,
 	}
 }

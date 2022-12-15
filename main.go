@@ -175,7 +175,7 @@ func main() {
 	productStore := repository.NewProductStore(db)
 
 	userUsecase := usecase.NewUserUsecase(&userStore, &sessManager)
-	productUsecase := usecase.NewProductUsecase(productStore, &ordersManager)
+	productUsecase := usecase.NewProductUsecase(productStore, ordersManager)
 
 	userHandler := deliv.NewUserHandler(&userUsecase)
 	sessionHandler := deliv.NewSessionHandler(&userUsecase)

@@ -1,17 +1,15 @@
 package usecase
 
 import (
-	"log"
 	"serv/domain/model"
 	"testing"
+
+	baseErrors "serv/domain/errors"
 
 	"github.com/bxcodec/faker/v3"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 
-	orders "serv/microservices/orders/gen_files"
 	mocks "serv/mocks"
 )
 
@@ -20,60 +18,110 @@ func TestGetProducts(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	grcpConnOrders, err := grpc.Dial(
-		":8083",
-		//"localhost:8083",
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if err != nil {
-		log.Println("cant connect to grpc orders")
-	} else {
-		log.Println("connected to grpc orders service")
-	}
-	defer grcpConnOrders.Close()
+	// grcpConnOrders, err := grpc.Dial(
+	// 	":8083",
+	// 	//"localhost:8083",
+	// 	grpc.WithTransportCredentials(insecure.NewCredentials()),
+	// )
+	// if err != nil {
+	// 	log.Println("cant connect to grpc orders")
+	// } else {
+	// 	log.Println("connected to grpc orders service")
+	// }
+	// defer grcpConnOrders.Close()
+	// prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
+	// ordersManager := orders.NewOrdersWorkerClient(grcpConnOrders)
 	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
-	ordersManager := orders.NewOrdersWorkerClient(grcpConnOrders)
-	prodUsecase := NewProductUsecase(prodStoreMock, &ordersManager)
-
+	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
+	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager)
 	mockLastItemID := 0
 	mockCount := 1
 	mockSort := ""
 	testProducts := new([3]*model.Product)
-	err = faker.FakeData(testProducts)
+	err := faker.FakeData(testProducts)
 	testProductsSlice := testProducts[:]
-
 	assert.NoError(t, err)
-	//mockArticleRepo.AssertExpectations(t)
-
 	prodStoreMock.EXPECT().GetProductsFromStore(mockLastItemID, mockCount, mockSort).Return(testProductsSlice, nil)
 	for _, testProd := range testProductsSlice {
-		log.Println(testProd.Rating, *testProd.CommentsCount)
 		prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProd.ID).Return(testProd.Rating, *testProd.CommentsCount, nil)
 	}
-	//prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(mockLastItemID, mockCount, mockSort).Return(0, 0, nil)
 	products, err := prodUsecase.GetProducts(mockLastItemID, mockCount, mockSort)
-	//resBID, err := boardUseCase.CreateBoard(testBoard)
 	assert.NoError(t, err)
 	assert.Equal(t, testProductsSlice, products)
+	// error
+	prodStoreMock.EXPECT().GetProductsFromStore(mockLastItemID, mockCount, mockSort).Return(nil, baseErrors.ErrServerError500)
+	_, err = prodUsecase.GetProducts(mockLastItemID, mockCount, mockSort)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
 
-	// mockArticleRepo := new(mocks.ArticleRepository)
-	// mockArticle := domain.Article{
-	// 	Title:   "Hello",
-	// 	Content: "Content",
+	//GetProductsWithCategory
+	err = faker.FakeData(testProducts)
+	testProductsSlice = testProducts[:]
+	for _, testProd := range testProductsSlice {
+		testProd.Category = "phones"
+	}
+	assert.NoError(t, err)
+	prodStoreMock.EXPECT().GetProductsWithCategoryFromStore("phones", mockLastItemID, mockCount, mockSort).Return(testProductsSlice, nil)
+	for _, testProd := range testProductsSlice {
+		prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProd.ID).Return(testProd.Rating, *testProd.CommentsCount, nil)
+	}
+	products, err = prodUsecase.GetProductsWithCategory("phones", mockLastItemID, mockCount, mockSort)
+	assert.NoError(t, err)
+	assert.Equal(t, testProductsSlice, products)
+	// error
+	prodStoreMock.EXPECT().GetProductsWithCategoryFromStore("phones", mockLastItemID, mockCount, mockSort).Return(nil, baseErrors.ErrServerError500)
+	_, err = prodUsecase.GetProductsWithCategory("phones", mockLastItemID, mockCount, mockSort)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+}
+
+func TestGetProductsByIDAndBySearch(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// grcpConnOrders, err := grpc.Dial(
+	// 	":8083",
+	// 	grpc.WithTransportCredentials(insecure.NewCredentials()),
+	// )
+	// if err != nil {
+	// 	log.Println("cant connect to grpc orders")
+	// } else {
+	// 	log.Println("connected to grpc orders service")
 	// }
+	// defer grcpConnOrders.Close()
+	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
+	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
+	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager)
+	testProducts := new([3]*model.Product)
+	err := faker.FakeData(testProducts)
+	testProductsSlice := testProducts[:]
+	err = faker.FakeData(testProducts)
+	testProductsSlice = testProducts[:]
+	search := testProductsSlice[0].Name
+	assert.NoError(t, err)
 
-	// t.Run("success", func(t *testing.T) {
-	// 	mockArticleRepo.On("GetByID", mock.Anything, mock.AnythingOfType("int64")).Return(mockArticle, nil).Once()
+	//by id
+	prodStoreMock.EXPECT().GetProductFromStoreByID(testProductsSlice[0].ID).Return(testProductsSlice[0], nil)
+	prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProductsSlice[0].ID).Return(testProductsSlice[0].Rating, *testProductsSlice[0].CommentsCount, nil)
 
-	// 	mockArticleRepo.On("Delete", mock.Anything, mock.AnythingOfType("int64")).Return(nil).Once()
+	product, err := prodUsecase.GetProductByID(testProductsSlice[0].ID)
+	assert.NoError(t, err)
+	assert.Equal(t, testProductsSlice[0], product)
 
-	// 	mockAuthorrepo := new(mocks.AuthorRepository)
-	// 	u := ucase.NewArticleUsecase(mockArticleRepo, mockAuthorrepo, time.Second*2)
+	// error
+	prodStoreMock.EXPECT().GetProductFromStoreByID(testProductsSlice[0].ID).Return(nil, baseErrors.ErrServerError500)
+	_, err = prodUsecase.GetProductByID(testProductsSlice[0].ID)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
 
-	// 	err := u.Delete(context.TODO(), mockArticle.ID)
+	//by searh
+	prodStoreMock.EXPECT().GetProductsBySearchFromStore(search).Return([]*model.Product{testProductsSlice[0]}, nil)
+	prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProductsSlice[0].ID).Return(testProductsSlice[0].Rating, *testProductsSlice[0].CommentsCount, nil)
 
-	// 	assert.NoError(t, err)
-	// 	mockArticleRepo.AssertExpectations(t)
-	// 	mockAuthorrepo.AssertExpectations(t)
-	// })
+	products, err := prodUsecase.GetProductsBySearch(search)
+	assert.NoError(t, err)
+	assert.Equal(t, []*model.Product{testProductsSlice[0]}, products)
+
+	// error
+	prodStoreMock.EXPECT().GetProductsBySearchFromStore(search).Return(nil, baseErrors.ErrServerError500)
+	_, err = prodUsecase.GetProductsBySearch(search)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
 }
