@@ -13,12 +13,29 @@ import (
 	"strconv"
 )
 
+type UserUsecaseInterface interface {
+	SetSession(userEmail string) (*auth.SessionID, error)
+	CheckSession(sessID string) (string, error)
+	ChangeEmail(sessID string, newEmail string) error
+	DeleteSession(sessID string) error
+	AddUser(params *model.UserCreateParams) error
+	GetUserByUsername(email string) (model.UserDB, error)
+	GetAddressesByUserID(userID int) ([]*model.Address, error)
+	GetPaymentMethodByUserID(userID int) ([]*model.PaymentMethod, error)
+	ChangeUser(oldUserData *model.UserProfile, params *model.UserProfile) error
+	ChangeUserAddresses(userID int, userAddresses []*model.Address, queryAddresses []*model.Address) error
+	ChangeUserPayments(userID int, userPayments []*model.PaymentMethod, queryPayments []*model.PaymentMethod) error
+	ChangeUserPassword(userID int, newPass string) error
+	SetAvatar(usedID int, file multipart.File) error
+	SetUsernamesForComments(comms []*model.CommentDB) ([]*model.Comment, error)
+}
+
 type UserUsecase struct {
 	sessManager auth.AuthCheckerClient
 	store       rep.UserStoreInterface
 }
 
-func NewUserUsecase(us *rep.UserStoreInterface, sessManager *auth.AuthCheckerClient) *UserUsecase {
+func NewUserUsecase(us *rep.UserStoreInterface, sessManager *auth.AuthCheckerClient) UserUsecaseInterface {
 	return &UserUsecase{
 		sessManager: *sessManager,
 		store:       *us,

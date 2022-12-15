@@ -3,6 +3,7 @@ module serv
 go 1.18
 
 require (
+	github.com/golang/mock v1.4.4
 	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
 	golang.org/x/crypto v0.0.0-20220919173607-35f4265a4bc0
@@ -23,7 +24,6 @@ require (
 	github.com/jackc/pgproto3/v2 v2.3.1 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.12.0 // indirect
-	github.com/jackc/puddle/v2 v2.1.2 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
@@ -31,9 +31,7 @@ require (
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
-	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/net v0.2.0 // indirect
-	golang.org/x/sync v0.0.0-20220923202941-7f9b1623fab7 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	google.golang.org/genproto v0.0.0-20200825200019-8632dd797987 // indirect
 )
@@ -41,6 +39,7 @@ require (
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/KyleBanks/depth v1.2.1 // indirect
+	github.com/bxcodec/faker/v3 v3.8.1
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/go-openapi/spec v0.20.7 // indirect

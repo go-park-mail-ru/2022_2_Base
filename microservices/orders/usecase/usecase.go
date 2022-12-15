@@ -9,10 +9,10 @@ import (
 )
 
 type OrderUsecase struct {
-	store orderst.OrderStore
+	store orderst.OrderStoreInterface
 }
 
-func NewOrderUsecase(os *orderst.OrderStore) *OrderUsecase {
+func NewOrderUsecase(os *orderst.OrderStoreInterface) *OrderUsecase {
 	return &OrderUsecase{
 		store: *os,
 	}

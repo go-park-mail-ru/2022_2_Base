@@ -14,10 +14,10 @@ import (
 )
 
 type ProductHandler struct {
-	usecase usecase.ProductUsecase
+	usecase usecase.ProductUsecaseInterface
 }
 
-func NewProductHandler(puc *usecase.ProductUsecase) *ProductHandler {
+func NewProductHandler(puc *usecase.ProductUsecaseInterface) *ProductHandler {
 	return &ProductHandler{
 		usecase: *puc,
 	}

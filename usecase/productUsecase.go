@@ -8,15 +8,31 @@ import (
 	rep "serv/repository"
 )
 
+type ProductUsecaseInterface interface {
+	GetProducts(lastitemid int, count int, sort string) ([]*model.Product, error)
+	GetProductsWithCategory(cat string, lastitemid int, count int, sort string) ([]*model.Product, error)
+	GetProductByID(id int) (*model.Product, error)
+	GetProductsBySearch(search string) ([]*model.Product, error)
+	GetSuggestions(search string) ([]string, error)
+	GetCart(userID int) (*model.Order, error)
+	UpdateOrder(userID int, items *[]int) error
+	AddToOrder(userID int, itemID int) error
+	DeleteFromOrder(userID int, itemID int) error
+	MakeOrder(in *model.MakeOrder) error
+	GetOrders(userID int) (*orders.OrdersResponse, error)
+	GetComments(productID int) ([]*model.CommentDB, error)
+	CreateComment(in *model.CreateComment) error
+}
+
 type ProductUsecase struct {
 	ordersManager orders.OrdersWorkerClient
 	store         rep.ProductStoreInterface
 }
 
-func NewProductUsecase(ps *rep.ProductStoreInterface, ordersManager *orders.OrdersWorkerClient) *ProductUsecase {
+func NewProductUsecase(ps rep.ProductStoreInterface, ordersManager *orders.OrdersWorkerClient) ProductUsecaseInterface {
 	return &ProductUsecase{
 		ordersManager: *ordersManager,
-		store:         *ps,
+		store:         ps,
 	}
 }
 

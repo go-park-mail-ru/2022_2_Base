@@ -49,7 +49,7 @@ func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 }
 
 type authenticationMiddleware struct {
-	userUsecase usecase.UserUsecase
+	userUsecase usecase.UserUsecaseInterface
 }
 
 func WithUser(ctx context.Context, user *model.UserProfile) context.Context {
@@ -175,11 +175,11 @@ func main() {
 	productStore := repository.NewProductStore(db)
 
 	userUsecase := usecase.NewUserUsecase(&userStore, &sessManager)
-	productUsecase := usecase.NewProductUsecase(&productStore, &ordersManager)
+	productUsecase := usecase.NewProductUsecase(productStore, &ordersManager)
 
-	userHandler := deliv.NewUserHandler(userUsecase)
-	sessionHandler := deliv.NewSessionHandler(userUsecase)
-	productHandler := deliv.NewProductHandler(productUsecase)
+	userHandler := deliv.NewUserHandler(&userUsecase)
+	sessionHandler := deliv.NewSessionHandler(&userUsecase)
+	productHandler := deliv.NewProductHandler(&productUsecase)
 
 	orderHandler := deliv.NewOrderHandler(userHandler, productHandler)
 
@@ -219,7 +219,7 @@ func main() {
 	myRouter.Use(instrumentation.Middleware)
 	myRouter.Path("/metrics").Handler(promhttp.Handler())
 
-	amw := authenticationMiddleware{*userUsecase}
+	amw := authenticationMiddleware{userUsecase}
 	userRouter.Use(amw.checkAuthMiddleware)
 	cartRouter.Use(amw.checkAuthMiddleware)
 

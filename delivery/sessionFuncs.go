@@ -17,10 +17,10 @@ import (
 )
 
 type SessionHandler struct {
-	usecase usecase.UserUsecase
+	usecase usecase.UserUsecaseInterface
 }
 
-func NewSessionHandler(uuc *usecase.UserUsecase) *SessionHandler {
+func NewSessionHandler(uuc *usecase.UserUsecaseInterface) *SessionHandler {
 	return &SessionHandler{
 		usecase: *uuc,
 	}
