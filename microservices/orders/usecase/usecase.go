@@ -20,7 +20,7 @@ func NewOrderUsecase(os *orderst.OrderStoreInterface) *OrderUsecase {
 
 func (om *OrderUsecase) MakeOrder(ctx context.Context, in *orders.MakeOrderType) error {
 	log.Println("call MakeOrder usecase")
-	return om.store.MakeOrder(ctx, in)
+	return om.store.MakeOrder(in)
 }
 
 func (api *OrderUsecase) GetOrders(userID int) ([]*model.Order, error) {

@@ -3,6 +3,7 @@ package orders
 import (
 	"reflect"
 	"serv/domain/model"
+	orders "serv/microservices/orders/gen_files"
 	"testing"
 	"time"
 
@@ -234,6 +235,37 @@ func TestGetOrdersPaymentFromStore(t *testing.T) {
 	}
 	if err == nil {
 		t.Errorf("expected error, got nil")
+		return
+	}
+}
+
+func TestMakeOrder(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("cant create mock: %s", err)
+	}
+	defer db.Close()
+	//var userEmail string = "a@a"
+	//var userName string = "art"
+	//var userPass string = "12345678"
+	in := orders.MakeOrderType{AddressID: 1, PaymentcardID: 1, DeliveryDate: 1, UserID: 1}
+	delivDate := time.Unix(in.DeliveryDate, 0)
+	mock.
+		ExpectExec("UPDATE").
+		WithArgs("created", "not started", in.AddressID, in.PaymentcardID, time.Now().Format("2006.01.02 15:04:05"), delivDate.Format("2006.01.02 15:04:05"), in.UserID, "cart").
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	repo := &OrderStore{
+		db: db,
+	}
+	//expectTime := time.Unix(1, 0)
+
+	err = repo.MakeOrder(&in)
+	if err != nil {
+		t.Errorf("unexpected err: %s", err)
+		return
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
 		return
 	}
 }

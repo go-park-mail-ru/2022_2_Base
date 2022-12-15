@@ -18,19 +18,6 @@ func TestGetProducts(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	// grcpConnOrders, err := grpc.Dial(
-	// 	":8083",
-	// 	//"localhost:8083",
-	// 	grpc.WithTransportCredentials(insecure.NewCredentials()),
-	// )
-	// if err != nil {
-	// 	log.Println("cant connect to grpc orders")
-	// } else {
-	// 	log.Println("connected to grpc orders service")
-	// }
-	// defer grcpConnOrders.Close()
-	// prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
-	// ordersManager := orders.NewOrdersWorkerClient(grcpConnOrders)
 	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
 	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
 	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager)
@@ -78,16 +65,6 @@ func TestGetProductsByIDAndBySearch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	// grcpConnOrders, err := grpc.Dial(
-	// 	":8083",
-	// 	grpc.WithTransportCredentials(insecure.NewCredentials()),
-	// )
-	// if err != nil {
-	// 	log.Println("cant connect to grpc orders")
-	// } else {
-	// 	log.Println("connected to grpc orders service")
-	// }
-	// defer grcpConnOrders.Close()
 	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
 	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
 	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager)
@@ -124,4 +101,46 @@ func TestGetProductsByIDAndBySearch(t *testing.T) {
 	prodStoreMock.EXPECT().GetProductsBySearchFromStore(search).Return(nil, baseErrors.ErrServerError500)
 	_, err = prodUsecase.GetProductsBySearch(search)
 	assert.Equal(t, baseErrors.ErrServerError500, err)
+}
+
+func TestGetCart(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
+	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
+
+	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager)
+	testCart := new(model.Order)
+	err := faker.FakeData(testCart)
+	//testProductsSlice := testProducts[:]
+	//err = faker.FakeData(testProducts)
+	//testProductsSlice = testProducts[:]
+	//search := testProductsSlice[0].Name
+	assert.NoError(t, err)
+
+	//var userID int = 1
+
+	//exist cart
+	prodStoreMock.EXPECT().GetCart(testCart.UserID).Return(testCart, nil)
+	//prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProductsSlice[0].ID).Return(testProductsSlice[0].Rating, *testProductsSlice[0].CommentsCount, nil)
+	cart, err := prodUsecase.GetCart(testCart.UserID)
+	assert.NoError(t, err)
+	assert.Equal(t, testCart, cart)
+
+	//new cart
+	prodStoreMock.EXPECT().GetCart(testCart.UserID).Return(nil, nil)
+	prodStoreMock.EXPECT().CreateCart(testCart.UserID).Return(nil)
+	prodStoreMock.EXPECT().GetCart(testCart.UserID).Return(testCart, nil)
+	//prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProductsSlice[0].ID).Return(testProductsSlice[0].Rating, *testProductsSlice[0].CommentsCount, nil)
+	cart, err = prodUsecase.GetCart(testCart.UserID)
+	assert.NoError(t, err)
+	assert.Equal(t, testCart, cart)
+
+	//error
+	prodStoreMock.EXPECT().GetCart(testCart.UserID).Return(nil, baseErrors.ErrServerError500)
+	_, err = prodUsecase.GetCart(testCart.UserID)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+
 }
