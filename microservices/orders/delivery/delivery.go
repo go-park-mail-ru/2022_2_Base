@@ -44,7 +44,10 @@ func (om *OrderManager) GetOrders(ctx context.Context, userID *orders.UserID) (*
 		orderResponse.CreationDate = order.CreationDate.Unix()
 		orderResponse.DeliveryDate = order.DeliveryDate.Unix()
 		for _, prod := range order.Items {
-			orderResponse.Items = append(orderResponse.Items, &orders.CartProduct{ID: int32(prod.Item.ID), Name: prod.Item.Name, Count: int32(prod.Count), Price: prod.Item.Price, DiscountPrice: prod.Item.DiscountPrice, Imgsrc: prod.Item.Imgsrc})
+			if prod.Item.NominalPrice == prod.Item.Price {
+				prod.Item.Price = 0
+			}
+			orderResponse.Items = append(orderResponse.Items, &orders.CartProduct{ID: int32(prod.Item.ID), Name: prod.Item.Name, Count: int32(prod.Count), Price: prod.Item.Price, NominalPrice: prod.Item.NominalPrice, Imgsrc: prod.Item.Imgsrc})
 		}
 
 		address, err := om.usecase.GetOrdersAddress(order.AddressID)

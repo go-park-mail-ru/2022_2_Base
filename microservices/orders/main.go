@@ -1,7 +1,7 @@
 package main
 
 import (
-	"context"
+	"database/sql"
 	"log"
 	"net"
 	"net/http"
@@ -11,7 +11,6 @@ import (
 	orderst "serv/microservices/orders/repository"
 	orderuc "serv/microservices/orders/usecase"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 
@@ -23,10 +22,10 @@ func main() {
 	if err != nil {
 		log.Println("cant listen port", err)
 	}
-	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
+
 	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	log.Println("conn: ", urlDB)
-	db, err := pgxpool.New(context.Background(), urlDB)
+	db, err := sql.Open("pgx", urlDB)
 	if err != nil {
 		log.Println("could not connect to database")
 	} else {

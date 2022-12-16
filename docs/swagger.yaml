@@ -15,6 +15,28 @@ definitions:
       street:
         type: string
     type: object
+  model.CartProduct:
+    properties:
+      count:
+        type: integer
+      id:
+        type: integer
+      imgsrc:
+        type: string
+      lowprice:
+        type: number
+      name:
+        type: string
+      price:
+        type: number
+    type: object
+  model.ChangePassword:
+    properties:
+      newpassword:
+        type: string
+      oldpassword:
+        type: string
+    type: object
   model.Comment:
     properties:
       comment:
@@ -93,6 +115,29 @@ definitions:
         type: integer
       item:
         $ref: '#/definitions/model.Product'
+    type: object
+  model.OrderModelGetOrders:
+    properties:
+      address:
+        $ref: '#/definitions/model.Address'
+      card:
+        $ref: '#/definitions/model.PaymentMethod'
+      creationDate:
+        type: string
+      deliveryDate:
+        type: string
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/model.CartProduct'
+        type: array
+      orderstatus:
+        type: string
+      paymentstatus:
+        type: string
+      userid:
+        type: integer
     type: object
   model.PaymentMethod:
     properties:
@@ -386,7 +431,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Order'
+            $ref: '#/definitions/model.OrderModelGetOrders'
         "400":
           description: Bad request - Problem with the request
           schema:
@@ -436,6 +481,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
         "500":
           description: Internal Server Error - Request is valid but operation failed
             at server side
@@ -528,6 +577,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
         "500":
           description: Internal Server Error - Request is valid but operation failed
             at server side
@@ -555,6 +608,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
         "500":
           description: Internal Server Error - Request is valid but operation failed
             at server side
@@ -785,6 +842,42 @@ paths:
       summary: creates product's comment by user
       tags:
       - Comments
+  /user/password:
+    post:
+      consumes:
+      - application/json
+      description: changes user parameters
+      operationId: changeUserPassword
+      parameters:
+      - description: ChangePassword params
+        in: body
+        name: userpassword
+        required: true
+        schema:
+          $ref: '#/definitions/model.ChangePassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: changes user password
+      tags:
+      - User
   /user/profile:
     get:
       consumes:

@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type AuthCheckerClient interface {
 	Create(ctx context.Context, in *Session, opts ...grpc.CallOption) (*SessionID, error)
 	Check(ctx context.Context, in *SessionID, opts ...grpc.CallOption) (*Session, error)
+	ChangeEmail(ctx context.Context, in *NewLogin, opts ...grpc.CallOption) (*Nothing, error)
 	Delete(ctx context.Context, in *SessionID, opts ...grpc.CallOption) (*Nothing, error)
 }
 
@@ -53,6 +54,15 @@ func (c *authCheckerClient) Check(ctx context.Context, in *SessionID, opts ...gr
 	return out, nil
 }
 
+func (c *authCheckerClient) ChangeEmail(ctx context.Context, in *NewLogin, opts ...grpc.CallOption) (*Nothing, error) {
+	out := new(Nothing)
+	err := c.cc.Invoke(ctx, "/auth.AuthChecker/ChangeEmail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authCheckerClient) Delete(ctx context.Context, in *SessionID, opts ...grpc.CallOption) (*Nothing, error) {
 	out := new(Nothing)
 	err := c.cc.Invoke(ctx, "/auth.AuthChecker/Delete", in, out, opts...)
@@ -68,6 +78,7 @@ func (c *authCheckerClient) Delete(ctx context.Context, in *SessionID, opts ...g
 type AuthCheckerServer interface {
 	Create(context.Context, *Session) (*SessionID, error)
 	Check(context.Context, *SessionID) (*Session, error)
+	ChangeEmail(context.Context, *NewLogin) (*Nothing, error)
 	Delete(context.Context, *SessionID) (*Nothing, error)
 	mustEmbedUnimplementedAuthCheckerServer()
 }
@@ -81,6 +92,9 @@ func (UnimplementedAuthCheckerServer) Create(context.Context, *Session) (*Sessio
 }
 func (UnimplementedAuthCheckerServer) Check(context.Context, *SessionID) (*Session, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Check not implemented")
+}
+func (UnimplementedAuthCheckerServer) ChangeEmail(context.Context, *NewLogin) (*Nothing, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeEmail not implemented")
 }
 func (UnimplementedAuthCheckerServer) Delete(context.Context, *SessionID) (*Nothing, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
@@ -134,6 +148,24 @@ func _AuthChecker_Check_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthChecker_ChangeEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NewLogin)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthCheckerServer).ChangeEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/auth.AuthChecker/ChangeEmail",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthCheckerServer).ChangeEmail(ctx, req.(*NewLogin))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthChecker_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SessionID)
 	if err := dec(in); err != nil {
@@ -166,6 +198,10 @@ var AuthChecker_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Check",
 			Handler:    _AuthChecker_Check_Handler,
+		},
+		{
+			MethodName: "ChangeEmail",
+			Handler:    _AuthChecker_ChangeEmail_Handler,
 		},
 		{
 			MethodName: "Delete",

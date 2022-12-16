@@ -84,10 +84,13 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		}
 		prod.Item.Name = sanitizer.Sanitize(prod.Item.Name)
 		prod.Item.Category = sanitizer.Sanitize(prod.Item.Category)
+		if prod.Item.NominalPrice == prod.Item.Price {
+			prod.Item.Price = 0
+		}
 	}
 	prodCart := model.Cart{ID: cart.ID, UserID: cart.UserID}
 	for _, prod := range cart.Items {
-		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, DiscountPrice: prod.Item.DiscountPrice, Imgsrc: prod.Item.Imgsrc})
+		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, NominalPrice: prod.Item.NominalPrice, Imgsrc: prod.Item.Imgsrc})
 	}
 	json.NewEncoder(w).Encode(prodCart)
 }
@@ -287,7 +290,7 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 // @Tags Order
-// @Success 200 {object} model.Order
+// @Success 200 {object} model.OrderModelGetOrders
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
@@ -322,7 +325,10 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 				*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
 			}
 			prod.Name = sanitizer.Sanitize(prod.Name)
-			newOrder.Items = append(newOrder.Items, &model.CartProduct{ID: int(prod.ID), Name: prod.Name, Count: int(prod.Count), Price: prod.Price, DiscountPrice: prod.DiscountPrice, Imgsrc: prod.Imgsrc})
+			if prod.NominalPrice == prod.Price {
+				prod.Price = 0
+			}
+			newOrder.Items = append(newOrder.Items, &model.CartProduct{ID: int(prod.ID), Name: prod.Name, Count: int(prod.Count), Price: prod.Price, NominalPrice: prod.NominalPrice, Imgsrc: prod.Imgsrc})
 		}
 		t1 := time.Unix(order.CreationDate, 0)
 		newOrder.CreationDate = &t1

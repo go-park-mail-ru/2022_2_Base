@@ -16,6 +16,7 @@ var PathSuggestions = BasePath + "/suggestions"
 
 var PathProfile = "/profile"
 var PathAvatar = "/avatar"
+var PathPassword = "/password"
 var PathMakeComment = "/makecomment"
 
 var PathCart = "/cart"
@@ -27,7 +28,7 @@ var PathGetOrders = "/orders"
 var Headers = map[string]string{
 	"Access-Control-Allow-Origin":      "http://89.208.198.137:8081",
 	"Access-Control-Allow-Credentials": "true",
-	"Access-Control-Allow-Headers":     "Origin, Content-Type, accept",
+	"Access-Control-Allow-Headers":     "Origin, Content-Type, accept, csrf",
 	"Access-Control-Allow-Methods":     "GET, POST, DELETE, OPTIONS",
 	"Content-Type":                     "application/json",
 }

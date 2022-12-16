@@ -4,8 +4,8 @@ CREATE TABLE products (
 	name VARCHAR (80) NOT NULL,
     category VARCHAR (50),
     price FLOAT NOT NULL,
-    discountPrice FLOAT,
-    rating Float,
+    nominalPrice FLOAT NOT NULL,
+    rating Float DEFAULT 0,
 	imgsrc VARCHAR (50)
 );
 
@@ -13,7 +13,7 @@ CREATE TABLE users (
     id  SERIAL PRIMARY KEY,
 	email VARCHAR (30) NOT NULL,
     username VARCHAR (30) NOT NULL,
-	password VARCHAR (30) NOT NULL, 
+	password VARCHAR (80) NOT NULL, 
     phone VARCHAR (15), 
     avatar VARCHAR (30)
 );
@@ -68,3 +68,94 @@ CREATE TABLE comments (
     comment VARCHAR(300) NOT NULL,
     rating Float
 );
+
+
+CREATE TABLE properties (
+    id  SERIAL PRIMARY KEY,
+    category VARCHAR (80),
+    propname1 VARCHAR(80), 
+    propname2 VARCHAR(80),
+    propname3 VARCHAR(80),
+    propname4 VARCHAR(80),
+    propname5 VARCHAR(80),
+    propname6 VARCHAR(80)
+);
+
+CREATE TABLE monitors (
+    id  SERIAL PRIMARY KEY,
+    itemID INT REFERENCES products (id) ON DELETE CASCADE,
+    propdesc1 VARCHAR(150), 
+    propdesc2 VARCHAR(150),
+    propdesc3 VARCHAR(150),
+    propdesc4 VARCHAR(150),
+    propdesc5 VARCHAR(150),
+    propdesc6 VARCHAR(150)
+);
+
+CREATE TABLE phones (
+    id  SERIAL PRIMARY KEY,
+    itemID INT REFERENCES products (id) ON DELETE CASCADE,
+    propdesc1 VARCHAR(150), 
+    propdesc2 VARCHAR(150),
+    propdesc3 VARCHAR(150),
+    propdesc4 VARCHAR(150),
+    propdesc5 VARCHAR(150),
+    propdesc6 VARCHAR(150)
+);
+
+CREATE TABLE computers (
+    id  SERIAL PRIMARY KEY,
+    itemID INT REFERENCES products (id) ON DELETE CASCADE,
+    propdesc1 VARCHAR(150), 
+    propdesc2 VARCHAR(150),
+    propdesc3 VARCHAR(150),
+    propdesc4 VARCHAR(150),
+    propdesc5 VARCHAR(150),
+    propdesc6 VARCHAR(150)
+);
+
+CREATE TABLE tvs (
+    id  SERIAL PRIMARY KEY,
+    itemID INT REFERENCES products (id) ON DELETE CASCADE,
+    propdesc1 VARCHAR(150), 
+    propdesc2 VARCHAR(150),
+    propdesc3 VARCHAR(150),
+    propdesc4 VARCHAR(150),
+    propdesc5 VARCHAR(150),
+    propdesc6 VARCHAR(150)
+);
+
+CREATE TABLE watches (
+    id  SERIAL PRIMARY KEY,
+    itemID INT REFERENCES products (id) ON DELETE CASCADE,
+    propdesc1 VARCHAR(150), 
+    propdesc2 VARCHAR(150),
+    propdesc3 VARCHAR(150),
+    propdesc4 VARCHAR(150),
+    propdesc5 VARCHAR(150),
+    propdesc6 VARCHAR(150)
+);
+
+CREATE TABLE tablets (
+    id  SERIAL PRIMARY KEY,
+    itemID INT REFERENCES products (id) ON DELETE CASCADE,
+    propdesc1 VARCHAR(150), 
+    propdesc2 VARCHAR(150),
+    propdesc3 VARCHAR(150),
+    propdesc4 VARCHAR(150),
+    propdesc5 VARCHAR(150),
+    propdesc6 VARCHAR(150)
+);
+
+CREATE TABLE accessories (
+    id  SERIAL PRIMARY KEY,
+    itemID INT REFERENCES products (id) ON DELETE CASCADE,
+    category VARCHAR (50),
+    propdesc1 VARCHAR(150), 
+    propdesc2 VARCHAR(150),
+    propdesc3 VARCHAR(150),
+    propdesc4 VARCHAR(150),
+    propdesc5 VARCHAR(150),
+    propdesc6 VARCHAR(150)
+);
+

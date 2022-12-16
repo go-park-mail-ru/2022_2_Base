@@ -2,15 +2,26 @@ package model
 
 import "time"
 
+// type Product struct {
+// 	ID            int      `json:"id"`
+// 	Name          string   `json:"name"`
+// 	Category      string   `json:"category"`
+// 	Price         float64  `json:"price"`
+// 	DiscountPrice *float64 `json:"lowprice,omitempty"`
+// 	Rating        float64  `json:"rating"`
+// 	Imgsrc        *string  `json:"imgsrc,omitempty"`
+// 	CommentsCount *int     `json:"commentscount,omitempty"`
+// }
+
 type Product struct {
-	ID            int      `json:"id"`
-	Name          string   `json:"name"`
-	Category      string   `json:"category"`
-	Price         float64  `json:"price"`
-	DiscountPrice *float64 `json:"lowprice,omitempty"`
-	Rating        float64  `json:"rating"`
-	Imgsrc        *string  `json:"imgsrc,omitempty"`
-	CommentsCount *int     `json:"commentscount,omitempty"`
+	ID            int     `json:"id"`
+	Name          string  `json:"name"`
+	Category      string  `json:"category"`
+	Price         float64 `json:"lowprice,omitempty"`
+	NominalPrice  float64 `json:"price"`
+	Rating        float64 `json:"rating"`
+	Imgsrc        *string `json:"imgsrc,omitempty"`
+	CommentsCount *int    `json:"commentscount,omitempty"`
 }
 
 type ProductCart struct {
@@ -39,12 +50,12 @@ type Order struct {
 }
 
 type CartProduct struct {
-	ID            int      `json:"id"`
-	Name          string   `json:"name"`
-	Count         int      `json:"count"`
-	Price         float64  `json:"price"`
-	DiscountPrice *float64 `json:"lowprice,omitempty"`
-	Imgsrc        *string  `json:"imgsrc,omitempty"`
+	ID           int     `json:"id"`
+	Name         string  `json:"name"`
+	Count        int     `json:"count"`
+	Price        float64 `json:"lowprice,omitempty"`
+	NominalPrice float64 `json:"price"`
+	Imgsrc       *string `json:"imgsrc,omitempty"`
 }
 
 type Cart struct {

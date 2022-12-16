@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
@@ -25,8 +26,6 @@ import (
 
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	auth "serv/microservices/auth/gen_files"
 	orders "serv/microservices/orders/gen_files"
 
@@ -36,6 +35,7 @@ import (
 func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println(r.RequestURI, r.Method)
+
 		for header := range conf.Headers {
 			w.Header().Set(header, conf.Headers[header])
 		}
@@ -44,7 +44,7 @@ func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 }
 
 type authenticationMiddleware struct {
-	userUsecase usecase.UserUsecase
+	userUsecase usecase.UserUsecaseInterface
 }
 
 func WithUser(ctx context.Context, user *model.UserProfile) context.Context {
@@ -62,6 +62,16 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 		usName, err := amw.userUsecase.CheckSession(session.Value)
 		if err != nil {
 			log.Println("no session2")
+			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+			return
+		}
+
+		hashTok := deliv.HashToken{Secret: []byte("Base")}
+		token := r.Header.Get("csrf")
+		curSession := model.Session{ID: 0, UserUUID: session.Value}
+		flag, err := hashTok.CheckCSRFToken(&curSession, token)
+		if err != nil || !flag {
+			log.Println("no csrf token")
 			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 			return
 		}
@@ -111,10 +121,9 @@ var (
 
 func main() {
 	myRouter := mux.NewRouter()
-	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
 	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	log.Println("conn: ", urlDB)
-	db, err := pgxpool.New(context.Background(), urlDB)
+	db, err := sql.Open("pgx", urlDB)
 	if err != nil {
 		log.Println("could not connect to database")
 	} else {
@@ -154,8 +163,8 @@ func main() {
 	userStore := repository.NewUserStore(db)
 	productStore := repository.NewProductStore(db)
 
-	userUsecase := usecase.NewUserUsecase(userStore, &sessManager)
-	productUsecase := usecase.NewProductUsecase(productStore, &ordersManager)
+	userUsecase := usecase.NewUserUsecase(userStore, sessManager)
+	productUsecase := usecase.NewProductUsecase(productStore, ordersManager)
 
 	userHandler := deliv.NewUserHandler(userUsecase)
 	sessionHandler := deliv.NewSessionHandler(userUsecase)
@@ -180,6 +189,7 @@ func main() {
 	userRouter.HandleFunc(conf.PathProfile, userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathProfile, userHandler.ChangeProfile).Methods(http.MethodPost, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathAvatar, userHandler.SetAvatar).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc(conf.PathPassword, userHandler.ChangePassword).Methods(http.MethodPost, http.MethodOptions)
 
 	myRouter.HandleFunc(conf.PathComments, orderHandler.GetComments).Methods(http.MethodGet, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathMakeComment, orderHandler.CreateComment).Methods(http.MethodPost, http.MethodOptions)
@@ -198,7 +208,7 @@ func main() {
 	myRouter.Use(instrumentation.Middleware)
 	myRouter.Path("/metrics").Handler(promhttp.Handler())
 
-	amw := authenticationMiddleware{*userUsecase}
+	amw := authenticationMiddleware{userUsecase}
 	userRouter.Use(amw.checkAuthMiddleware)
 	cartRouter.Use(amw.checkAuthMiddleware)
 

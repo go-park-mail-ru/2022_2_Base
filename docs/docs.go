@@ -301,7 +301,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Order"
+                            "$ref": "#/definitions/model.OrderModelGetOrders"
                         }
                     },
                     "400": {
@@ -373,6 +373,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
                         }
                     },
                     "500": {
@@ -510,6 +516,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.Product"
                         }
                     },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error - Request is valid but operation failed at server side",
                         "schema": {
@@ -598,6 +610,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
                         }
                     },
                     "500": {
@@ -884,6 +902,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/password": {
+            "post": {
+                "description": "changes user parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "changes user password",
+                "operationId": "changeUserPassword",
+                "parameters": [
+                    {
+                        "description": "ChangePassword params",
+                        "name": "userpassword",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ChangePassword"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/user/profile": {
             "get": {
                 "description": "gets user by username in cookies",
@@ -992,6 +1063,40 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "street": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.CartProduct": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "imgsrc": {
+                    "type": "string"
+                },
+                "lowprice": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                }
+            }
+        },
+        "model.ChangePassword": {
+            "type": "object",
+            "properties": {
+                "newpassword": {
+                    "type": "string"
+                },
+                "oldpassword": {
                     "type": "string"
                 }
             }
@@ -1114,6 +1219,41 @@ const docTemplate = `{
                 },
                 "item": {
                     "$ref": "#/definitions/model.Product"
+                }
+            }
+        },
+        "model.OrderModelGetOrders": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/model.Address"
+                },
+                "card": {
+                    "$ref": "#/definitions/model.PaymentMethod"
+                },
+                "creationDate": {
+                    "type": "string"
+                },
+                "deliveryDate": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.CartProduct"
+                    }
+                },
+                "orderstatus": {
+                    "type": "string"
+                },
+                "paymentstatus": {
+                    "type": "string"
+                },
+                "userid": {
+                    "type": "integer"
                 }
             }
         },

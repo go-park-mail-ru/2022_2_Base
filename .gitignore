@@ -5,3 +5,6 @@ commands_for_db.txt
 oldtables.txt
 img/avatars/*
 docker.sh
+*.out
+*.tmp
+_oldtests/

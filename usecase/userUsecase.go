@@ -13,15 +13,32 @@ import (
 	"strconv"
 )
 
-type UserUsecase struct {
-	sessManager auth.AuthCheckerClient
-	store       rep.UserStore
+type UserUsecaseInterface interface {
+	SetSession(userEmail string) (*auth.SessionID, error)
+	CheckSession(sessID string) (string, error)
+	ChangeEmail(sessID string, newEmail string) error
+	DeleteSession(sessID string) error
+	AddUser(params *model.UserCreateParams) error
+	GetUserByUsername(email string) (model.UserDB, error)
+	GetAddressesByUserID(userID int) ([]*model.Address, error)
+	GetPaymentMethodByUserID(userID int) ([]*model.PaymentMethod, error)
+	ChangeUser(oldUserData *model.UserProfile, params *model.UserProfile) error
+	ChangeUserAddresses(userID int, userAddresses []*model.Address, queryAddresses []*model.Address) error
+	ChangeUserPayments(userID int, userPayments []*model.PaymentMethod, queryPayments []*model.PaymentMethod) error
+	ChangeUserPassword(userID int, newPass string) error
+	SetAvatar(usedID int, file multipart.File) error
+	SetUsernamesForComments(comms []*model.CommentDB) ([]*model.Comment, error)
 }
 
-func NewUserUsecase(us *rep.UserStore, sessManager *auth.AuthCheckerClient) *UserUsecase {
+type UserUsecase struct {
+	sessManager auth.AuthCheckerClient
+	store       rep.UserStoreInterface
+}
+
+func NewUserUsecase(us rep.UserStoreInterface, sessManager auth.AuthCheckerClient) UserUsecaseInterface {
 	return &UserUsecase{
-		sessManager: *sessManager,
-		store:       *us,
+		sessManager: sessManager,
+		store:       us,
 	}
 }
 
@@ -43,6 +60,19 @@ func (uh *UserUsecase) CheckSession(sessID string) (string, error) {
 		return "", err
 	}
 	return sess.Login, nil
+}
+
+func (uh *UserUsecase) ChangeEmail(sessID string, newEmail string) error {
+	ans, err := uh.sessManager.ChangeEmail(
+		context.Background(),
+		&auth.NewLogin{
+			ID:    sessID,
+			Login: newEmail,
+		})
+	if err != nil || !ans.IsSuccessful {
+		return err
+	}
+	return nil
 }
 
 func (uh *UserUsecase) DeleteSession(sessID string) error {
@@ -208,6 +238,10 @@ func (api *UserUsecase) ChangeUserPayments(userID int, userPayments []*model.Pay
 	return nil
 }
 
+func (api *UserUsecase) ChangeUserPassword(userID int, newPass string) error {
+	return api.store.ChangeUserPasswordDB(userID, newPass)
+}
+
 func (api *UserUsecase) SetAvatar(usedID int, file multipart.File) error {
 	//fileName := "./img/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
 	fileName := "/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
@@ -227,7 +261,6 @@ func (api *UserUsecase) SetAvatar(usedID int, file multipart.File) error {
 }
 
 func (api *UserUsecase) SetUsernamesForComments(comms []*model.CommentDB) ([]*model.Comment, error) {
-
 	comments := []*model.Comment{}
 	for _, comm := range comms {
 		usName, err := api.store.GetUsernameByIDFromDB(comm.UserID)

@@ -14,12 +14,12 @@ import (
 )
 
 type ProductHandler struct {
-	usecase usecase.ProductUsecase
+	usecase usecase.ProductUsecaseInterface
 }
 
-func NewProductHandler(puc *usecase.ProductUsecase) *ProductHandler {
+func NewProductHandler(puc usecase.ProductUsecaseInterface) *ProductHandler {
 	return &ProductHandler{
-		usecase: *puc,
+		usecase: puc,
 	}
 }
 
@@ -34,6 +34,7 @@ func NewProductHandler(puc *usecase.ProductUsecase) *ProductHandler {
 // @Param   count         query     string  true  "count"
 // @Param   sort         query     string  false  "sort"
 // @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /products [get]
 func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +69,9 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 		}
 		prod.Name = sanitizer.Sanitize(prod.Name)
 		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
 	}
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
 }
@@ -84,6 +88,7 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 // @Param   count         query     string  true  "count"
 // @Param   sort         query     string  false  "sort"
 // @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /category/{category} [get]
 func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.Request) {
@@ -122,6 +127,9 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 		}
 		prod.Name = sanitizer.Sanitize(prod.Name)
 		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
 	}
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
 }
@@ -135,6 +143,7 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 // @Tags Products
 // @Param id path string true "Id of product"
 // @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /products/{id} [get]
 func (api *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) {
@@ -145,12 +154,13 @@ func (api *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request
 	s := strings.Split(r.URL.Path, "/")
 	idS := s[len(s)-1]
 	id, err := strconv.Atoi(idS)
-	product, err := api.usecase.GetProductByID(id)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
+
+	product, err := api.usecase.GetProductByID(id)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -161,7 +171,9 @@ func (api *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request
 	}
 	product.Name = sanitizer.Sanitize(product.Name)
 	product.Category = sanitizer.Sanitize(product.Category)
-
+	if product.NominalPrice == product.Price {
+		product.Price = 0
+	}
 	json.NewEncoder(w).Encode(&model.Response{Body: product})
 }
 
@@ -203,6 +215,9 @@ func (api *ProductHandler) GetProductsBySearch(w http.ResponseWriter, r *http.Re
 		}
 		prod.Name = sanitizer.Sanitize(prod.Name)
 		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
 	}
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
 }
