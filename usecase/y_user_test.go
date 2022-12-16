@@ -155,9 +155,8 @@ func TestAdresses(t *testing.T) {
 	err = faker.FakeData(testAddr)
 	assert.NoError(t, err)
 	testAddrSlice := testAddr[:]
-	//ok change
-	//userStoreMock.EXPECT().GetAddressesByUserIDFromDB(testUser.ID).Return(testUser.Address, nil)
 
+	//ok change
 	for _, addr := range testAddrSlice {
 		if addr == nil {
 			continue
@@ -166,20 +165,12 @@ func TestAdresses(t *testing.T) {
 		for _, addrFromDB := range testUser.Address {
 			if addr.ID == addrFromDB.ID {
 				userStoreMock.EXPECT().UpdateUsersAddress(addr.ID, addr).Return(nil)
-				//err := api.store.UpdateUsersAddress(addr.ID, addr)
-				// if err != nil {
-				// 	return err
-				// }
 				flag = false
 				break
 			}
 		}
 		if flag {
 			userStoreMock.EXPECT().AddUsersAddress(testUser.ID, addr).Return(nil)
-			//err := api.store.AddUsersAddress(userID, addr)
-			// if err != nil {
-			// 	return err
-			// }
 		}
 	}
 	for _, addrFromDB := range testUser.Address {
@@ -195,14 +186,168 @@ func TestAdresses(t *testing.T) {
 		}
 		if flag {
 			userStoreMock.EXPECT().DeleteUsersAddress(addrFromDB.ID).Return(nil)
-			//err := api.store.DeleteUsersAddress(addrFromDB.ID)
-			// if err != nil {
-			// 	return err
-			// }
 		}
 	}
 
 	err = userUsecase.ChangeUserAddresses(testUser.ID, testUser.Address, testAddrSlice)
 	assert.NoError(t, err)
-	assert.Equal(t, adresses, testUser.Address)
+	//assert.Equal(t, adresses, testUser.Address)
+}
+
+func TestPayments(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userStoreMock := mocks.NewMockUserStoreInterface(ctrl)
+	sessManager := mocks.NewMockAuthCheckerClient(ctrl)
+	userUsecase := NewUserUsecase(userStoreMock, sessManager)
+
+	testUser := new(model.UserProfile)
+	err := faker.FakeData(testUser)
+	assert.NoError(t, err)
+
+	//ok get
+	userStoreMock.EXPECT().GetPaymentMethodByUserIDFromDB(testUser.ID).Return(testUser.PaymentMethods, nil)
+	payms, err := userUsecase.GetPaymentMethodByUserID(testUser.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, payms, testUser.PaymentMethods)
+
+	//err get
+	userStoreMock.EXPECT().GetPaymentMethodByUserIDFromDB(testUser.ID).Return(nil, baseErrors.ErrServerError500)
+	_, err = userUsecase.GetPaymentMethodByUserID(testUser.ID)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+
+	testPayms := new([4]*model.PaymentMethod)
+	err = faker.FakeData(testPayms)
+	assert.NoError(t, err)
+	testPaymSlice := testPayms[:]
+
+	//ok change
+	for _, paym := range testPaymSlice {
+		if paym == nil {
+			continue
+		}
+		flag := true
+		for _, paymFromDB := range testUser.PaymentMethods {
+			if paym.ID == paymFromDB.ID {
+				userStoreMock.EXPECT().UpdateUsersPayment(paym.ID, paym).Return(nil)
+				flag = false
+				break
+			}
+		}
+		if flag {
+			userStoreMock.EXPECT().AddUsersPayment(testUser.ID, paym).Return(nil)
+		}
+	}
+	for _, paymFromDB := range testUser.PaymentMethods {
+		flag := true
+		for _, paym := range testPaymSlice {
+			if paym == nil {
+				continue
+			}
+			if paym.ID == paymFromDB.ID {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			userStoreMock.EXPECT().DeleteUsersPayment(paymFromDB.ID).Return(nil)
+		}
+	}
+
+	err = userUsecase.ChangeUserPayments(testUser.ID, testUser.PaymentMethods, testPaymSlice)
+	assert.NoError(t, err)
+}
+
+func TestChangeUser(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userStoreMock := mocks.NewMockUserStoreInterface(ctrl)
+	sessManager := mocks.NewMockAuthCheckerClient(ctrl)
+	userUsecase := NewUserUsecase(userStoreMock, sessManager)
+
+	oldUser := new(model.UserProfile)
+	err := faker.FakeData(oldUser)
+	assert.NoError(t, err)
+
+	testUser := new(model.UserProfile)
+	err = faker.FakeData(testUser)
+	assert.NoError(t, err)
+	testUser.ID = oldUser.ID
+
+	//ok change
+	if len(testUser.Address) >= 0 {
+		for _, addr := range testUser.Address {
+			if addr == nil {
+				continue
+			}
+			flag := true
+			for _, addrFromDB := range oldUser.Address {
+				if addr.ID == addrFromDB.ID {
+					userStoreMock.EXPECT().UpdateUsersAddress(addr.ID, addr).Return(nil)
+					flag = false
+					break
+				}
+			}
+			if flag {
+				userStoreMock.EXPECT().AddUsersAddress(testUser.ID, addr).Return(nil)
+			}
+		}
+		for _, addrFromDB := range oldUser.Address {
+			flag := true
+			for _, addr := range testUser.Address {
+				if addr == nil {
+					continue
+				}
+				if addr.ID == addrFromDB.ID {
+					flag = false
+					break
+				}
+			}
+			if flag {
+				userStoreMock.EXPECT().DeleteUsersAddress(addrFromDB.ID).Return(nil)
+			}
+		}
+	}
+
+	if len(testUser.PaymentMethods) >= 0 {
+		for _, paym := range testUser.PaymentMethods {
+			if paym == nil {
+				continue
+			}
+			flag := true
+			for _, paymFromDB := range oldUser.PaymentMethods {
+				if paym.ID == paymFromDB.ID {
+					userStoreMock.EXPECT().UpdateUsersPayment(paym.ID, paym).Return(nil)
+					flag = false
+					break
+				}
+			}
+			if flag {
+				userStoreMock.EXPECT().AddUsersPayment(testUser.ID, paym).Return(nil)
+			}
+		}
+		for _, paymFromDB := range oldUser.PaymentMethods {
+			flag := true
+			for _, paym := range testUser.PaymentMethods {
+				if paym == nil {
+					continue
+				}
+				if paym.ID == paymFromDB.ID {
+					flag = false
+					break
+				}
+			}
+			if flag {
+				userStoreMock.EXPECT().DeleteUsersPayment(paymFromDB.ID).Return(nil)
+			}
+		}
+	}
+	testUser2 := &model.UserProfile{Email: testUser.Email, Username: testUser.Username, Phone: testUser.Phone, Avatar: testUser.Avatar, Address: oldUser.Address, PaymentMethods: oldUser.PaymentMethods}
+	userStoreMock.EXPECT().UpdateUser(oldUser.ID, testUser2).Return(nil)
+	err = userUsecase.ChangeUser(oldUser, testUser)
+	assert.NoError(t, err)
 }

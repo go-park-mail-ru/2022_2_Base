@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetHomePage(t *testing.T) {
+func TestGetHomePage2(t *testing.T) {
 	t.Run("tests", func(t *testing.T) {
 		req, err := http.NewRequest("GET", conf.PathMain, nil)
 		if err != nil {

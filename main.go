@@ -179,7 +179,7 @@ func main() {
 
 	userHandler := deliv.NewUserHandler(&userUsecase)
 	sessionHandler := deliv.NewSessionHandler(&userUsecase)
-	productHandler := deliv.NewProductHandler(&productUsecase)
+	productHandler := deliv.NewProductHandler(productUsecase)
 
 	orderHandler := deliv.NewOrderHandler(userHandler, productHandler)
 
