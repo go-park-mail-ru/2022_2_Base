@@ -8,6 +8,13 @@ import (
 	orderst "serv/microservices/orders/repository"
 )
 
+// type OrderUsecaseInterface interface {
+// 	MakeOrder(ctx context.Context, in *orders.MakeOrderType) error
+// 	GetOrders(userID int) ([]*model.Order, error)
+// 	GetOrdersAddress(addressID int) (model.Address, error)
+// 	GetOrdersPayment(paymentID int) (model.PaymentMethod, error)
+// }
+
 type OrderUsecase struct {
 	store orderst.OrderStoreInterface
 }
@@ -24,6 +31,7 @@ func (om *OrderUsecase) MakeOrder(ctx context.Context, in *orders.MakeOrderType)
 }
 
 func (api *OrderUsecase) GetOrders(userID int) ([]*model.Order, error) {
+	log.Println("call GetOrders usecase")
 	orders, err := api.store.GetOrdersFromStore(userID)
 	if err != nil {
 		return nil, err

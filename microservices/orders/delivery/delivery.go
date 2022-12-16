@@ -13,9 +13,9 @@ type OrderManager struct {
 	usecase orderuc.OrderUsecase
 }
 
-func NewOrdersManager(ouc *orderuc.OrderUsecase) *OrderManager {
+func NewOrdersManager(ouc orderuc.OrderUsecase) *OrderManager {
 	return &OrderManager{
-		usecase: *ouc,
+		usecase: ouc,
 	}
 }
 

@@ -8,10 +8,6 @@ import (
 	"strings"
 )
 
-// type ProductStor interface {
-//     db
-// }
-
 type ProductStoreInterface interface {
 	GetProductsFromStore(lastitemid int, count int, sort string) ([]*model.Product, error)
 	GetProductsWithCategoryFromStore(category string, lastitemid int, count int, sort string) ([]*model.Product, error)
