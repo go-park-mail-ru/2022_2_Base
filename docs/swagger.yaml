@@ -229,7 +229,7 @@ definitions:
       username:
         type: string
     type: object
-host: 127.0.0.1:8080
+host: 89.208.198.137:8080
 info:
   contact:
     email: support@swagger.io
@@ -481,6 +481,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
         "500":
           description: Internal Server Error - Request is valid but operation failed
             at server side
@@ -573,6 +577,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
         "500":
           description: Internal Server Error - Request is valid but operation failed
             at server side
@@ -600,6 +608,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
         "500":
           description: Internal Server Error - Request is valid but operation failed
             at server side

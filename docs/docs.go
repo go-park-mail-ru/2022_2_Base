@@ -375,6 +375,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.Product"
                         }
                     },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error - Request is valid but operation failed at server side",
                         "schema": {
@@ -510,6 +516,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.Product"
                         }
                     },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error - Request is valid but operation failed at server side",
                         "schema": {
@@ -598,6 +610,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
                         }
                     },
                     "500": {
@@ -1384,7 +1402,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "127.0.0.1:8080",
+	Host:             "89.208.198.137:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Reozon API",
