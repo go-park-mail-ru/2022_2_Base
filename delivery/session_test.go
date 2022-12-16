@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/bxcodec/faker/v3"
 	"github.com/stretchr/testify/assert"
@@ -225,3 +226,152 @@ func TestSignUp(t *testing.T) {
 	userHandler.SignUp(rr, req)
 	assert.Equal(t, 401, rr.Code)
 }
+
+func TestGetSession(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+
+	testUser := model.UserCreateParams{Email: "art@art", Username: "art", Password: "12345678"}
+	testUserDB := new(model.UserDB)
+	err := faker.FakeData(testUserDB)
+	assert.NoError(t, err)
+	testUserDB.Email = testUser.Email
+	salt := []byte("Base2022")
+	hashedPass := hashPass(salt, testUser.Password)
+	b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
+	testUserDB.Password = b64Pass
+	testsessID := new(auth.SessionID)
+	err = faker.FakeData(testsessID)
+	assert.NoError(t, err)
+	testsess := new(auth.Session)
+	err = faker.FakeData(testsess)
+	assert.NoError(t, err)
+
+	//ok
+	//userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*testUserDB, nil)
+	//userUsecaseMock.EXPECT().SetSession(testUser.Email).Return(testsessID, nil)
+	//url := conf.PathLogin
+	//data, _ := json.Marshal(testUser)
+	//req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	//rr := httptest.NewRecorder()
+	userHandler := NewSessionHandler(userUsecaseMock)
+	//userHandler.Login(rr, req)
+	//assert.Equal(t, 201, rr.Code)
+
+	userUsecaseMock.EXPECT().CheckSession(testsessID.ID).Return("zz", nil)
+	url := conf.PathSessions
+	req, err := http.NewRequest("GET", url, nil)
+	cookie := &http.Cookie{
+		Name:     "session_id",
+		Value:    testsessID.ID,
+		Expires:  time.Now().Add(10 * time.Hour),
+		HttpOnly: true,
+		Secure:   true,
+	}
+	req.AddCookie(cookie)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	userHandler.GetSession(rr, req)
+	assert.Equal(t, 200, rr.Code)
+
+	// //err 401 no cookies
+	// userUsecaseMock.EXPECT().CheckSession(testsessID.ID).Return("zz", nil)
+	// url = conf.PathSessions
+	// req, err = http.NewRequest("GET", url, nil)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	// rr = httptest.NewRecorder()
+	// userHandler.GetSession(rr, req)
+	// assert.Equal(t, 401, rr.Code)
+
+	// userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{}, nil)
+	// userUsecaseMock.EXPECT().AddUser(&testUser2).Return(nil)
+	// userUsecaseMock.EXPECT().SetSession(testUser.Email).Return(testsessID, nil)
+	// url := conf.PathLogin
+	// data, _ := json.Marshal(testUser)
+	// req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	// rr := httptest.NewRecorder()
+	// userHandler := NewSessionHandler(userUsecaseMock)
+	// userHandler.SignUp(rr, req)
+	// assert.Equal(t, 201, rr.Code)
+
+}
+
+// func TestLogout(t *testing.T) {
+// 	t.Parallel()
+// 	ctrl := gomock.NewController(t)
+// 	defer ctrl.Finish()
+
+// 	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+
+// 	testUser := model.UserCreateParams{Email: "art@art", Username: "art", Password: "12345678"}
+// 	// testUser2 := model.UserCreateParams{Email: "art@art", Username: "art"}
+// 	// salt := []byte("Base2022")
+// 	// hashedPass := hashPass(salt, testUser.Password)
+// 	// b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
+// 	testUserDB := new(model.UserDB)
+// 	err := faker.FakeData(testUserDB)
+// 	assert.NoError(t, err)
+// 	testUserDB.Email = testUser.Email
+// 	salt := []byte("Base2022")
+// 	hashedPass := hashPass(salt, testUser.Password)
+// 	b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
+// 	testUserDB.Password = b64Pass
+// 	// testUser2.Password = b64Pass
+// 	testsessID := new(auth.SessionID)
+// 	err = faker.FakeData(testsessID)
+// 	assert.NoError(t, err)
+// 	testsess := new(auth.Session)
+// 	err = faker.FakeData(testsess)
+// 	assert.NoError(t, err)
+
+// 	//ok
+// 	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*testUserDB, nil)
+// 	userUsecaseMock.EXPECT().SetSession(testUser.Email).Return(testsessID, nil)
+// 	url := conf.PathLogin
+// 	data, _ := json.Marshal(testUser)
+// 	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	rr := httptest.NewRecorder()
+// 	userHandler := NewSessionHandler(userUsecaseMock)
+// 	userHandler.Login(rr, req)
+// 	assert.Equal(t, 201, rr.Code)
+
+// 	userUsecaseMock.EXPECT().CheckSession().Return(testsessID, nil)
+// 	url = conf.PathLogOut
+// 	req, err = http.NewRequest("DELETE", url, nil)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	rr = httptest.NewRecorder()
+// 	userHandler.Logout(rr, req)
+
+// 	// userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{}, nil)
+// 	// userUsecaseMock.EXPECT().AddUser(&testUser2).Return(nil)
+// 	// userUsecaseMock.EXPECT().SetSession(testUser.Email).Return(testsessID, nil)
+// 	// url := conf.PathLogin
+// 	// data, _ := json.Marshal(testUser)
+// 	// req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
+// 	// if err != nil {
+// 	// 	t.Fatal(err)
+// 	// }
+// 	// rr := httptest.NewRecorder()
+// 	// userHandler := NewSessionHandler(userUsecaseMock)
+// 	// userHandler.SignUp(rr, req)
+// 	// assert.Equal(t, 201, rr.Code)
+
+// }
