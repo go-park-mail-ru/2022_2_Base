@@ -34,6 +34,7 @@ func NewProductHandler(puc usecase.ProductUsecaseInterface) *ProductHandler {
 // @Param   count         query     string  true  "count"
 // @Param   sort         query     string  false  "sort"
 // @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /products [get]
 func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +88,7 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 // @Param   count         query     string  true  "count"
 // @Param   sort         query     string  false  "sort"
 // @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /category/{category} [get]
 func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.Request) {
@@ -141,6 +143,7 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 // @Tags Products
 // @Param id path string true "Id of product"
 // @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /products/{id} [get]
 func (api *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) {
@@ -151,12 +154,13 @@ func (api *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request
 	s := strings.Split(r.URL.Path, "/")
 	idS := s[len(s)-1]
 	id, err := strconv.Atoi(idS)
-	product, err := api.usecase.GetProductByID(id)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
+
+	product, err := api.usecase.GetProductByID(id)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)

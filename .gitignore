@@ -7,3 +7,4 @@ img/avatars/*
 docker.sh
 *.out
 *.tmp
+_oldtests/

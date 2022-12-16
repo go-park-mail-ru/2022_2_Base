@@ -178,7 +178,7 @@ func main() {
 	productUsecase := usecase.NewProductUsecase(productStore, ordersManager)
 
 	userHandler := deliv.NewUserHandler(&userUsecase)
-	sessionHandler := deliv.NewSessionHandler(&userUsecase)
+	sessionHandler := deliv.NewSessionHandler(userUsecase)
 	productHandler := deliv.NewProductHandler(productUsecase)
 
 	orderHandler := deliv.NewOrderHandler(userHandler, productHandler)

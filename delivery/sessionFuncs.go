@@ -20,9 +20,9 @@ type SessionHandler struct {
 	usecase usecase.UserUsecaseInterface
 }
 
-func NewSessionHandler(uuc *usecase.UserUsecaseInterface) *SessionHandler {
+func NewSessionHandler(uuc usecase.UserUsecaseInterface) *SessionHandler {
 	return &SessionHandler{
-		usecase: *uuc,
+		usecase: uuc,
 	}
 }
 
