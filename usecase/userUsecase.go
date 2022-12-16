@@ -35,10 +35,10 @@ type UserUsecase struct {
 	store       rep.UserStoreInterface
 }
 
-func NewUserUsecase(us *rep.UserStoreInterface, sessManager *auth.AuthCheckerClient) UserUsecaseInterface {
+func NewUserUsecase(us rep.UserStoreInterface, sessManager auth.AuthCheckerClient) UserUsecaseInterface {
 	return &UserUsecase{
-		sessManager: *sessManager,
-		store:       *us,
+		sessManager: sessManager,
+		store:       us,
 	}
 }
 
