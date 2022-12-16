@@ -22,12 +22,6 @@ type OrderStore struct {
 	db *sql.DB
 }
 
-// func NewOrderStore(db *pgxpool.Pool) *OrderStore {
-// 	return &OrderStore{
-// 		db: db,
-// 	}
-// }
-
 func NewOrderStore(db *sql.DB) OrderStoreInterface {
 	return &OrderStore{
 		db: db,

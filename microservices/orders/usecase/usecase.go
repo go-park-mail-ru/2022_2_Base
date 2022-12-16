@@ -12,9 +12,9 @@ type OrderUsecase struct {
 	store orderst.OrderStoreInterface
 }
 
-func NewOrderUsecase(os *orderst.OrderStoreInterface) *OrderUsecase {
+func NewOrderUsecase(os orderst.OrderStoreInterface) *OrderUsecase {
 	return &OrderUsecase{
-		store: *os,
+		store: os,
 	}
 }
 
