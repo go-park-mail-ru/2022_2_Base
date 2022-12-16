@@ -7,7 +7,7 @@ import (
 	orders "serv/microservices/orders/gen_files"
 	"time"
 
-	_ "github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 type OrderStoreInterface interface {
@@ -39,14 +39,16 @@ func (os *OrderStore) MakeOrder(in *orders.MakeOrderType) error {
 }
 
 func (os *OrderStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
+	log.Println("call orders store")
 	orders := []*model.Order{}
+
 	rows, err := os.db.Query(`SELECT id, userid, orderstatus, paymentstatus, addressid, paymentcardid, creationdate, deliverydate FROM orders WHERE userid = $1 AND orderstatus <> 'cart';`, userID)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
-
+	log.Println("wwwww")
 	for rows.Next() {
 		dat := model.Order{}
 		err := rows.Scan(&dat.ID, &dat.UserID, &dat.OrderStatus, &dat.PaymentStatus, &dat.AddressID, &dat.PaymentcardID, &dat.CreationDate, &dat.DeliveryDate)
@@ -54,6 +56,9 @@ func (os *OrderStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
 			return nil, err
 		}
 		orders = append(orders, &dat)
+	}
+	if orders == nil {
+		log.Println("empty")
 	}
 	for _, order := range orders {
 		orderItems, err := os.GetOrderItemsFromStore(order.ID)

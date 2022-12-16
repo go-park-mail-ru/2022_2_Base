@@ -27,7 +27,7 @@ func main() {
 	log.Println("conn: ", urlDB)
 	db, err := sql.Open("pgx", urlDB)
 	if err != nil {
-		log.Println("could not connect to database")
+		log.Println("could not connect to database: ", err)
 	} else {
 		log.Println("database is reachable")
 	}
@@ -37,7 +37,7 @@ func main() {
 
 	orderUsecase := orderuc.NewOrderUsecase(orderStore)
 
-	ordersManager := orderdl.NewOrdersManager(orderUsecase)
+	ordersManager := orderdl.NewOrdersManager(*orderUsecase)
 
 	server := grpc.NewServer(
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
