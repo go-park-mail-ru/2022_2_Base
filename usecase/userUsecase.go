@@ -129,13 +129,13 @@ func (api *UserUsecase) ChangeUser(oldUserData *model.UserProfile, params *model
 	if params.Avatar != "" {
 		newUser.Avatar = params.Avatar
 	}
-	if len(params.Address) >= 0 {
+	if params.Address != nil {
 		err := api.ChangeUserAddresses(oldUserData.ID, oldUserData.Address, params.Address)
 		if err != nil {
 			return err
 		}
 	}
-	if len(params.PaymentMethods) >= 0 {
+	if params.PaymentMethods != nil {
 		err := api.ChangeUserPayments(oldUserData.ID, oldUserData.PaymentMethods, params.PaymentMethods)
 		if err != nil {
 			return err
@@ -243,8 +243,8 @@ func (api *UserUsecase) ChangeUserPassword(userID int, newPass string) error {
 }
 
 func (api *UserUsecase) SetAvatar(usedID int, file multipart.File) error {
-	//fileName := "./img/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
-	fileName := "/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
+	fileName := "./img/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
+	//fileName := "/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
 	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
 		log.Println("error create/open file")
