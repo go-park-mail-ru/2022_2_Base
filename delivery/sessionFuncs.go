@@ -104,9 +104,10 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Secure:   true,
 	}
 
-	curSession := model.Session{ID: user.ID, UserUUID: sess.ID}
+	curSession := model.Session{ID: 0, UserUUID: sess.ID}
 	hashTok := HashToken{Secret: []byte("Base")}
 	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(10*time.Hour).Unix())
+
 	if err != nil {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -236,7 +237,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		Secure:   true,
 	}
 
-	curSession := model.Session{ID: user.ID, UserUUID: sess.ID}
+	curSession := model.Session{ID: 0, UserUUID: sess.ID}
 	hashTok := HashToken{Secret: []byte("Base")}
 	token, err := hashTok.CreateCSRFToken(&curSession, time.Now().Add(10*time.Hour).Unix())
 	if err != nil {
