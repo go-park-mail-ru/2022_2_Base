@@ -66,15 +66,15 @@ func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http
 			return
 		}
 
-		// hashTok := deliv.HashToken{Secret: []byte("Base")}
-		// token := r.Header.Get("csrf")
-		// curSession := model.Session{ID: 0, UserUUID: session.Value}
-		// flag, err := hashTok.CheckCSRFToken(&curSession, token)
-		// if err != nil || !flag {
-		// 	log.Println("no csrf token")
-		// 	deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		// 	return
-		// }
+		hashTok := deliv.HashToken{Secret: []byte("Base")}
+		token := r.Header.Get("csrf")
+		curSession := model.Session{ID: 0, UserUUID: session.Value}
+		flag, err := hashTok.CheckCSRFToken(&curSession, token)
+		if err != nil || !flag {
+			log.Println("no csrf token")
+			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+			return
+		}
 
 		user, err := amw.userUsecase.GetUserByUsername(usName)
 		if err != nil {
