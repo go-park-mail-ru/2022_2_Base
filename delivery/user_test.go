@@ -2,6 +2,8 @@ package delivery
 
 import (
 	"net/http"
+	"net/http/httptest"
+
 	//"net/http/httptest"
 	"testing"
 	"time"
@@ -12,23 +14,29 @@ import (
 	"github.com/golang/mock/gomock"
 
 	conf "serv/config"
+	"serv/domain/model"
 	auth "serv/microservices/auth/gen_files"
+	mocks "serv/mocks"
 	//mocks "serv/mocks"
 	//"github.com/mailru/easyjson/jwriter"
 )
+
+// type authenticationMiddlewareType struct {
+// 	userUsecase mocks.MockUserUsecaseInterface
+// }
 
 func TestGetUser(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	//userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
-	//authenticationMiddleware := mocks.NewMockUserUsecaseInterface(ctrl)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+	//authMiddleware := mocks.NewMockAuthenticationMiddlewareInterface(ctrl)
 
 	//testUser := model.UserCreateParams{Email: "art@art", Username: "art", Password: "12345678"}
-	// testUserProfile := new(model.UserProfile)
-	// err := faker.FakeData(testUserProfile)
-	// assert.NoError(t, err)
+	testUserProfile := new(model.UserProfile)
+	err := faker.FakeData(testUserProfile)
+	assert.NoError(t, err)
 	// testUserDB := new(model.UserDB)
 	// err = faker.FakeData(testUserDB)
 	// assert.NoError(t, err)
@@ -39,7 +47,7 @@ func TestGetUser(t *testing.T) {
 	// b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
 	// testUserDB.Password = b64Pass
 	testsessID := new(auth.SessionID)
-	err := faker.FakeData(testsessID)
+	err = faker.FakeData(testsessID)
 	assert.NoError(t, err)
 
 	//ok
@@ -51,6 +59,8 @@ func TestGetUser(t *testing.T) {
 	//userUsecaseMock.EXPECT().GetUserByUsername(testUserProfile.Email).Return(*testUserDB, nil)
 	//userUsecaseMock.EXPECT().GetAddressesByUserID(testUserDB.ID).Return(testUserProfile.Address, nil)
 	//userUsecaseMock.EXPECT().GetPaymentMethodByUserID(testUserDB.ID).Return(testUserProfile.PaymentMethods, nil)
+	userHandler := NewUserHandler(userUsecaseMock)
+
 	url := "/api/v1/user" + conf.PathProfile
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -64,15 +74,24 @@ func TestGetUser(t *testing.T) {
 		Secure:   true,
 	}
 	req.AddCookie(cookie)
-	//rr := httptest.NewRecorder()
-	//userHandler := NewUserHandler(userUsecaseMock)
-	//userHandler.GetUser(rr, req)
+	rr := httptest.NewRecorder()
+
+	//authMiddleware.EXPECT().CheckAuthMiddleware(myRouter).Return(myRouter)
+
+	userHandler.GetUser(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	//router.ServeHTTP(w, req)
 	// myRouter := mux.NewRouter()
-	// amw := authenticationMiddleware{userUsecaseMock}
-	// myRouter.Use(amw.checkAuthMiddleware)
-	// myRouter.ServeHTTP(rr, req)
-	// assert.Equal(t, http.StatusOK, rr.Code)
+	// // amw := authenticationMiddlewareType{*userUsecaseMock}
+	// myRouter.Use(authMiddleware.CheckAuthMiddleware)
+	// myRouter.HandleFunc(url, userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
+
+	// authMiddleware.EXPECT().CheckAuthMiddleware(myRouter).Return(myRouter)
+
+	// //next.ServeHTTP(w, r.WithContext(WithUser(r.Context(), &userData)))
+
+	// //myRouter.ServeHTTP(rr, req)
+	// myRouter.ServeHTTP(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, http.StatusOK, rr.Code)
 	//expectedstr, err := json.Marshal(&model.Response{Body: testProducts})
 	//assert.Equal(t, rr.Body.String(), string(expectedstr)+"\n")
 
