@@ -251,13 +251,13 @@ func (ps *ProductStore) UpdatePricesOrderItemsInStore(userID int, category strin
 		}
 		switch category {
 		case "all":
-			_, err = ps.db.Exec(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(item.Item.NominalPrice*float64(100-discount)/100, item.Item.Price), orderID, item.Item.ID)
+			_, err = ps.db.Exec(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(math.Ceil(item.Item.NominalPrice*float64(100-discount)/100), item.Item.Price), orderID, item.Item.ID)
 			if err != nil {
 				return err
 			}
 		default:
 			if item.Item.Category == category {
-				_, err = ps.db.Exec(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(item.Item.NominalPrice*float64(100-discount)/100, item.Item.Price), orderID, item.Item.ID)
+				_, err = ps.db.Exec(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(math.Ceil(item.Item.NominalPrice*float64(100-discount)/100), item.Item.Price), orderID, item.Item.ID)
 				if err != nil {
 					return err
 				}

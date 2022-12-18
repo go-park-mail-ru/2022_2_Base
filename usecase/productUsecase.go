@@ -188,6 +188,7 @@ func (api *ProductUsecase) SetPromocode(userID int, promocode string) error {
 		if err != nil {
 			return err
 		}
+		return api.store.SetPromocodeDB(userID, promocode)
 	}
 	if len(promocode) < 8 {
 		return baseErrors.ErrForbidden403
