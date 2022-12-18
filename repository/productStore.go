@@ -235,8 +235,6 @@ func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem,
 }
 
 func (ps *ProductStore) UpdatePricesOrderItemsInStore(userID int, category string, discount int) error {
-	//products := []*model.OrderItem{}
-
 	cart, err := ps.GetCart(userID)
 	if err != nil {
 		return err
@@ -246,71 +244,38 @@ func (ps *ProductStore) UpdatePricesOrderItemsInStore(userID int, category strin
 	if err != nil {
 		return err
 	}
-	//log.Println("xxx")
-	//var rows *sql.Rows
-
-	//defer rows.Close()
 	for _, item := range orderItems {
 		_, err = ps.db.Exec(`UPDATE orderItems SET price = (SELECT nominalprice FROM products WHERE id = $1) WHERE orderID = $2 AND itemID = $3;`, item.Item.ID, orderID, item.Item.ID)
-		//defer rows.Close()
 		if err != nil {
 			return err
 		}
-		//log.Println(item.Item.ID, item.Item.Price, item.Item.NominalPrice)
-		//log.Println("1q1q")
 		switch category {
 		case "all":
 			_, err = ps.db.Exec(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(item.Item.NominalPrice*float64(100-discount)/100, item.Item.Price), orderID, item.Item.ID)
-			//defer rows.Close()
 			if err != nil {
 				return err
 			}
 		default:
 			if item.Item.Category == category {
 				_, err = ps.db.Exec(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(item.Item.NominalPrice*float64(100-discount)/100, item.Item.Price), orderID, item.Item.ID)
-				//defer rows.Close()
 				if err != nil {
 					return err
 				}
 			}
 		}
 	}
-	//log.Println("zzrererz")
-	// rows, err := ps.db.Query(`SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
-	// defer rows.Close()
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return nil, err
-	// }
-	// for rows.Next() {
-	// 	var count int
-	// 	dat := model.Product{}
-	// 	err := rows.Scan(&count, &dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.NominalPrice, &dat.Rating, &dat.Imgsrc)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	orderItem := model.OrderItem{Count: count, Item: &dat}
-	// 	products = append(products, &orderItem)
-	// }
+
 	return nil
 }
 
 func (ps *ProductStore) CheckPromocodeUsage(userID int, promocode string) error {
-	//products := []*model.OrderItem{}
-	// cart, err := ps.GetCart(userID)
-	// if err != nil {
-	// 	return err
-	// }
-	//comments := []*model.CommentDB{}
 	rows, err := ps.db.Query(`SELECT id, userid, promocode FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, promocode)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return err
 	}
-	//log.Println("got comments from db")
 	for rows.Next() {
-		//dat := model.CommentDB{}
 		var id int
 		var usid int
 		var prom string
@@ -321,7 +286,6 @@ func (ps *ProductStore) CheckPromocodeUsage(userID int, promocode string) error 
 		if id != 0 {
 			return baseErrors.ErrConflict409
 		}
-
 	}
 	return nil
 }
@@ -342,7 +306,6 @@ func (ps *ProductStore) SetPromocodeDB(userID int, promocode string) error {
 			return err
 		}
 	}
-
 	_, err = ps.db.Exec(`UPDATE orders SET promocode = $1 WHERE id = $2;`, promocode, cart.ID)
 	if err != nil {
 		return err
@@ -510,11 +473,7 @@ func (ps *ProductStore) GetRecommendationProductsFromStore(itemID int) ([]*model
 	if err != nil {
 		return nil, err
 	}
-	//accessories := []*model.Product{}
-	//categoryproducts := []*model.Product{}
-
 	var rows *sql.Rows
-
 	lastitemid := 1e9
 	lastProductRating := 10
 	categoryproductsCount := 10
@@ -534,7 +493,6 @@ func (ps *ProductStore) GetRecommendationProductsFromStore(itemID int) ([]*model
 		if err != nil {
 			return nil, err
 		}
-		//categoryproducts = append(categoryproducts, &dat)
 		products = append(products, &dat)
 	}
 	// accessories for product
@@ -550,7 +508,6 @@ func (ps *ProductStore) GetRecommendationProductsFromStore(itemID int) ([]*model
 		if err != nil {
 			return nil, err
 		}
-		//accessories = append(accessories, &dat)
 		products = append(products, &dat)
 	}
 	return products, nil

@@ -136,14 +136,10 @@ func (api *ProductUsecase) UpdateOrder(userID int, items *[]int) error {
 	return api.store.UpdateCart(userID, items)
 }
 
-// func ParsePromocode(promocode string) error {
-// 	runeSlice := []rune(promocode)
-// }
 func (api *ProductUsecase) RecalculatePrices(userID int, promocode string) error {
 	runeSlice := []rune(promocode)
 	byteSlice := []byte(promocode)
 	typeP := byteSlice[0]
-	//var err error
 	discount := int(runeSlice[1]-'0')*10 + int(runeSlice[2]-'0')
 	log.Println(string(typeP), discount)
 
@@ -151,8 +147,6 @@ func (api *ProductUsecase) RecalculatePrices(userID int, promocode string) error
 	if err != nil {
 		return err
 	}
-	log.Println("]]]]]]]]]]]")
-	//strconv.QuoteRune(typeP)
 	switch string(typeP) {
 	case "A":
 		err = api.store.UpdatePricesOrderItemsInStore(userID, "all", discount)
@@ -202,9 +196,6 @@ func (api *ProductUsecase) SetPromocode(userID int, promocode string) error {
 	if err != nil {
 		return err
 	}
-	// salt := []byte("Base2022")
-	// hashedPass := hashPass(salt, req.NewPassword)
-	// b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
 	h := hmac.New(sha256.New, []byte("Base2022"))
 	data := fmt.Sprintf("%d", userID)
 	h.Write([]byte(data))
@@ -213,7 +204,6 @@ func (api *ProductUsecase) SetPromocode(userID int, promocode string) error {
 	if hashedStr[:5] != promocode[3:] {
 		return baseErrors.ErrUnauthorized401
 	}
-	//err = UpdatePricesOrderItemsInStore(userID, promocode)
 	if err != nil {
 		return err
 	}
@@ -229,15 +219,9 @@ func (api *ProductUsecase) AddToOrder(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
-	//log.Println("yyy")
 	if cart.Promocode != nil {
-		//log.Println("pr", *cart.Promocode)
 		return api.RecalculatePrices(userID, *cart.Promocode)
-		// if err != nil {
-		// 	return err
-		// }
 	}
-	//log.Println("www")
 	return nil
 }
 

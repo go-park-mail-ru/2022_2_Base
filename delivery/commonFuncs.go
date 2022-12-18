@@ -25,7 +25,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 127.0.0.1:8080
+// @host 89.208.198.137:8080
 // @BasePath  /api/v1
 
 type OrderHandler struct {
@@ -89,21 +89,13 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	prodCart := model.Cart{ID: cart.ID, UserID: cart.UserID}
-	//log.Println(cart.Promocode, *cart.Promocode)
 	if cart.Promocode != nil {
 		prodCart.Promocode = *cart.Promocode
-		//log.Println("z", prodCart.Promocode)
-		//prodCart.Promocode = sanitizer.Sanitize(prodCart.Promocode)
 	}
-	//log.Println("z", prodCart.Promocode)
-	//prodCart.Promocode = "sssssssss"
 	for _, prod := range cart.Items {
 		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, NominalPrice: prod.Item.NominalPrice, Imgsrc: prod.Item.Imgsrc})
 	}
-	//log.Println(prodCart)
-	//json.NewEncoder(w).Encode(prodCart)
 	json.NewEncoder(w).Encode(prodCart)
-	//json.NewEncoder(w).Encode(model.Cart{ID: cart.ID, UserID: cart.UserID, Name: "sdsd"})
 }
 
 // UpdateCart godoc
