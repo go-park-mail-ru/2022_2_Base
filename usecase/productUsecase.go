@@ -33,6 +33,7 @@ type ProductUsecaseInterface interface {
 	CreateComment(in *model.CreateComment) error
 	GetRecommendationProducts(itemID int) ([]*model.Product, error)
 	SetPromocode(userID int, promocode string) error
+	RecalculatePrices(userID int, promocode string) error
 }
 
 type ProductUsecase struct {
@@ -142,14 +143,20 @@ func (api *ProductUsecase) RecalculatePrices(userID int, promocode string) error
 	runeSlice := []rune(promocode)
 	byteSlice := []byte(promocode)
 	typeP := byteSlice[0]
-	var err error = nil
+	//var err error
 	discount := int(runeSlice[1]-'0')*10 + int(runeSlice[2]-'0')
 	log.Println(string(typeP), discount)
-	log.Println(typeP, discount)
+
+	err := api.store.UpdatePricesOrderItemsInStore(userID, "clear", 0)
+	if err != nil {
+		return err
+	}
+	log.Println("]]]]]]]]]]]")
 	//strconv.QuoteRune(typeP)
 	switch string(typeP) {
 	case "A":
 		err = api.store.UpdatePricesOrderItemsInStore(userID, "all", discount)
+		log.Println("123535")
 	case "C":
 		err = api.store.UpdatePricesOrderItemsInStore(userID, "computers", discount)
 	case "M":
@@ -166,8 +173,9 @@ func (api *ProductUsecase) RecalculatePrices(userID int, promocode string) error
 		err = api.store.UpdatePricesOrderItemsInStore(userID, "accessories", discount)
 	default:
 		err = nil
-	}
 
+	}
+	log.Println("sdsddsd")
 	return err
 }
 
@@ -217,14 +225,20 @@ func (api *ProductUsecase) AddToOrder(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
-	if cart.Promocode != nil {
-		err = api.RecalculatePrices(userID, *cart.Promocode)
-		if err != nil {
-			return err
-		}
+	err = api.store.InsertItemIntoCartById(userID, itemID)
+	if err != nil {
+		return err
 	}
-	log.Println("www")
-	return api.store.InsertItemIntoCartById(userID, itemID)
+	//log.Println("yyy")
+	if cart.Promocode != nil {
+		//log.Println("pr", *cart.Promocode)
+		return api.RecalculatePrices(userID, *cart.Promocode)
+		// if err != nil {
+		// 	return err
+		// }
+	}
+	//log.Println("www")
+	return nil
 }
 
 func (api *ProductUsecase) DeleteFromOrder(userID int, itemID int) error {
@@ -264,6 +278,12 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) error {
 	err = api.store.UpdateCart(in.UserID, &boughtItemsIDs)
 	if err != nil {
 		return err
+	}
+	if cart.Promocode != nil {
+		err = api.RecalculatePrices(in.UserID, *cart.Promocode)
+		if err != nil {
+			return err
+		}
 	}
 
 	_, err = api.ordersManager.MakeOrder(

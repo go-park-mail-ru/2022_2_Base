@@ -246,23 +246,36 @@ func (ps *ProductStore) UpdatePricesOrderItemsInStore(userID int, category strin
 	if err != nil {
 		return err
 	}
-	//log.Println("www")
-	var rows *sql.Rows
-	defer rows.Close()
+	//log.Println("xxx")
+	//var rows *sql.Rows
+
+	//defer rows.Close()
 	for _, item := range orderItems {
+		_, err = ps.db.Exec(`UPDATE orderItems SET price = (SELECT nominalprice FROM products WHERE id = $1) WHERE orderID = $2 AND itemID = $3;`, item.Item.ID, orderID, item.Item.ID)
+		//defer rows.Close()
+		if err != nil {
+			return err
+		}
+		//log.Println(item.Item.ID, item.Item.Price, item.Item.NominalPrice)
+		//log.Println("1q1q")
 		switch category {
-		case "clear":
-			//newPrice :=
-			rows, err = ps.db.Query(`UPDATE orderItems SET price = (SELECT nominalprice FROM products WHERE id = $1) WHERE orderID = $2 AND itemID = $3;`, item.Item.ID, orderID, item.Item.ID)
 		case "all":
-			rows, err = ps.db.Query(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(item.Item.NominalPrice*float64(100-discount)/100, item.Item.Price), orderID, item.Item.ID)
+			_, err = ps.db.Exec(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(item.Item.NominalPrice*float64(100-discount)/100, item.Item.Price), orderID, item.Item.ID)
+			//defer rows.Close()
+			if err != nil {
+				return err
+			}
 		default:
 			if item.Item.Category == category {
-				rows, err = ps.db.Query(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(item.Item.NominalPrice*float64(100-discount)/100, item.Item.Price), orderID, item.Item.ID)
+				_, err = ps.db.Exec(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(item.Item.NominalPrice*float64(100-discount)/100, item.Item.Price), orderID, item.Item.ID)
+				//defer rows.Close()
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
-	//log.Println("zzz")
+	//log.Println("zzrererz")
 	// rows, err := ps.db.Query(`SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	// defer rows.Close()
 	// if err != nil {
