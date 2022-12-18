@@ -43,14 +43,6 @@ func TestGetUser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// cookie := &http.Cookie{
-	// 	Name:     "session_id",
-	// 	Value:    testsessID.ID,
-	// 	Expires:  time.Now().Add(10 * time.Hour),
-	// 	HttpOnly: true,
-	// 	Secure:   true,
-	// }
-	// req.AddCookie(cookie)
 	rr := httptest.NewRecorder()
 	userHandler.GetUser(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, http.StatusOK, rr.Code)
@@ -119,6 +111,24 @@ func TestChangeProfile(t *testing.T) {
 
 	userHandler.ChangeProfile(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, 401, rr.Code)
+
+	//err 500 no user
+	data, _ = json.Marshal(testQueryUserProfile)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cookie = &http.Cookie{
+		Name:     "session_id",
+		Value:    testsessID.ID,
+		Expires:  time.Now().Add(10 * time.Hour),
+		HttpOnly: true,
+		Secure:   true,
+	}
+	req.AddCookie(cookie)
+	rr = httptest.NewRecorder()
+	userHandler.ChangeProfile(rr, req)
+	assert.Equal(t, 500, rr.Code)
 
 	//err 500 db
 	userUsecaseMock.EXPECT().ChangeUser(testUserProfile, testQueryUserProfile).Return(baseErrors.ErrServerError500)
@@ -200,14 +210,6 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cookie := &http.Cookie{
-		Name:     "session_id",
-		Value:    testsessID.ID,
-		Expires:  time.Now().Add(10 * time.Hour),
-		HttpOnly: true,
-		Secure:   true,
-	}
-	req.AddCookie(cookie)
 	rr := httptest.NewRecorder()
 
 	userHandler.ChangePassword(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
@@ -220,11 +222,20 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.AddCookie(cookie)
 	rr = httptest.NewRecorder()
 
 	userHandler.ChangePassword(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, 401, rr.Code)
+
+	//err 500 no user
+	data, _ = json.Marshal(testQueryChangePasswordErr)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	userHandler.ChangePassword(rr, req)
+	assert.Equal(t, 500, rr.Code)
 
 	//err 500 db
 	userUsecaseMock.EXPECT().GetUserByUsername(testUserProfile.Email).Return(testUserDB, baseErrors.ErrServerError500)
@@ -233,7 +244,6 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.AddCookie(cookie)
 	rr = httptest.NewRecorder()
 
 	userHandler.ChangePassword(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
@@ -247,7 +257,6 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.AddCookie(cookie)
 	rr = httptest.NewRecorder()
 
 	userHandler.ChangePassword(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
@@ -261,7 +270,6 @@ func TestChangePassword(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.AddCookie(cookie)
 	rr = httptest.NewRecorder()
 
 	userHandler.ChangePassword(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))

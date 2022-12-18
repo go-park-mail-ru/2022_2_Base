@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,14 +14,13 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	conf "serv/config"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
-	auth "serv/microservices/auth/gen_files"
+	orders "serv/microservices/orders/gen_files"
 	mocks "serv/mocks"
 )
 
-func TestGetCart(t *testing.T) {
+func TestGetOrders(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -34,45 +34,165 @@ func TestGetCart(t *testing.T) {
 	testUserProfile := new(model.UserProfile)
 	err := faker.FakeData(testUserProfile)
 	assert.NoError(t, err)
-	testsessID := new(auth.SessionID)
-	err = faker.FakeData(testsessID)
-	assert.NoError(t, err)
-	testCart := new(model.Order)
-	err = faker.FakeData(testCart)
+	testOrders := new(orders.OrdersResponse)
+	err = faker.FakeData(testOrders)
 	assert.NoError(t, err)
 
 	//ok
-	productUsecaseMock.EXPECT().GetCart(testUserProfile.ID).Return(testCart, nil)
-	url := "/api/v1/cart"
+	productUsecaseMock.EXPECT().GetOrders(testUserProfile.ID).Return(testOrders, nil)
+	url := "/api/v1/" + "cart/orders"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	orderHandler.GetCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	orderHandler.GetOrders(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, http.StatusOK, rr.Code)
 
-	//err 500 no user
+	//err 500 microservice
+	productUsecaseMock.EXPECT().GetOrders(testUserProfile.ID).Return(nil, baseErrors.ErrServerError500)
 	req, err = http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr = httptest.NewRecorder()
-	orderHandler.GetCart(rr, req)
+	orderHandler.GetOrders(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 500, rr.Code)
+}
+
+func TestMakeOrder(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userHandler := NewUserHandler(userUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock)
+	orderHandler := NewOrderHandler(userHandler, productHandler)
+
+	testUserProfile := new(model.UserProfile)
+	err := faker.FakeData(testUserProfile)
+	assert.NoError(t, err)
+	testOrder := new(model.MakeOrder)
+	err = faker.FakeData(testOrder)
+	assert.NoError(t, err)
+	testOrder.UserID = testUserProfile.ID
+
+	//ok
+	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(nil)
+	url := "/api/v1/" + "cart/makeorder"
+	data, _ := json.Marshal(testOrder)
+	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	//err 400 query err
+	data, _ = json.Marshal("sfdsd")
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 400, rr.Code)
+
+	//err 500 no user
+	data, _ = json.Marshal(testOrder)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.MakeOrder(rr, req)
 	assert.Equal(t, 500, rr.Code)
 
 	//err 500 db
-	productUsecaseMock.EXPECT().GetCart(testUserProfile.ID).Return(nil, baseErrors.ErrServerError500)
+	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(baseErrors.ErrServerError500)
+	data, _ = json.Marshal(testOrder)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 500, rr.Code)
+
+	//err 401 db
+	testOrder.UserID = testUserProfile.ID + 1
+	data, _ = json.Marshal(testOrder)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.CreateComment(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 401, rr.Code)
+}
+
+func TestGetComments(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userHandler := NewUserHandler(userUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock)
+	orderHandler := NewOrderHandler(userHandler, productHandler)
+
+	testUserProfile := new(model.UserProfile)
+	err := faker.FakeData(testUserProfile)
+	assert.NoError(t, err)
+	testCommentsDB := new([5]*model.CommentDB)
+	err = faker.FakeData(testCommentsDB)
+	assert.NoError(t, err)
+	testCommentsDBSlice := testCommentsDB[:]
+	testComments := new([5]*model.Comment)
+	err = faker.FakeData(testComments)
+	assert.NoError(t, err)
+	testCommentsSlice := testComments[:]
+	mockItemID := 1
+
+	//ok
+	productUsecaseMock.EXPECT().GetComments(mockItemID).Return(testCommentsDBSlice, nil)
+	userUsecaseMock.EXPECT().SetUsernamesForComments(testCommentsDBSlice).Return(testCommentsSlice, nil)
+	url := "/api/v1/" + "products/comments/" + fmt.Sprint(mockItemID)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	orderHandler.GetComments(rr, req)
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	//err 500 db
+	productUsecaseMock.EXPECT().GetComments(mockItemID).Return(nil, baseErrors.ErrServerError500)
 	req, err = http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr = httptest.NewRecorder()
-	orderHandler.GetCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	orderHandler.GetComments(rr, req)
+	assert.Equal(t, 500, rr.Code)
+
+	//err 500 db
+	productUsecaseMock.EXPECT().GetComments(mockItemID).Return(testCommentsDBSlice, nil)
+	userUsecaseMock.EXPECT().SetUsernamesForComments(testCommentsDBSlice).Return(nil, baseErrors.ErrServerError500)
+	req, err = http.NewRequest("GET", url, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.GetComments(rr, req)
 	assert.Equal(t, 500, rr.Code)
 }
 
-func TestUpdateCart(t *testing.T) {
+func TestCreateComment(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -86,21 +206,21 @@ func TestUpdateCart(t *testing.T) {
 	testUserProfile := new(model.UserProfile)
 	err := faker.FakeData(testUserProfile)
 	assert.NoError(t, err)
-	testCart := new(model.ProductCart)
-	err = faker.FakeData(testCart)
+	testComment := new(model.CreateComment)
+	err = faker.FakeData(testComment)
 	assert.NoError(t, err)
+	testComment.UserID = testUserProfile.ID
 
 	//ok
-	productUsecaseMock.EXPECT().UpdateOrder(testUserProfile.ID, &testCart.Items).Return(nil)
-
-	url := "/api/v1/cart"
-	data, _ := json.Marshal(testCart)
+	productUsecaseMock.EXPECT().CreateComment(testComment).Return(nil)
+	url := "/api/v1/user" + "/makecomment"
+	data, _ := json.Marshal(testComment)
 	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	orderHandler.UpdateCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	orderHandler.CreateComment(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, http.StatusOK, rr.Code)
 
 	//err 400 query err
@@ -110,162 +230,38 @@ func TestUpdateCart(t *testing.T) {
 		t.Fatal(err)
 	}
 	rr = httptest.NewRecorder()
-	orderHandler.UpdateCart(rr, req)
+	orderHandler.CreateComment(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, 400, rr.Code)
 
 	//err 500 no user
-	data, _ = json.Marshal(testCart)
+	data, _ = json.Marshal(testComment)
 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr = httptest.NewRecorder()
-	orderHandler.UpdateCart(rr, req)
+	orderHandler.CreateComment(rr, req)
 	assert.Equal(t, 500, rr.Code)
 
 	//err 500 db
-	productUsecaseMock.EXPECT().UpdateOrder(testUserProfile.ID, &testCart.Items).Return(baseErrors.ErrServerError500)
-	data, _ = json.Marshal(testCart)
+	productUsecaseMock.EXPECT().CreateComment(testComment).Return(baseErrors.ErrServerError500)
+	data, _ = json.Marshal(testComment)
 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr = httptest.NewRecorder()
-	orderHandler.UpdateCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-	assert.Equal(t, 500, rr.Code)
-}
-
-func TestAddItemToCart(t *testing.T) {
-	t.Parallel()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
-	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
-	userHandler := NewUserHandler(userUsecaseMock)
-	productHandler := NewProductHandler(productUsecaseMock)
-	orderHandler := NewOrderHandler(userHandler, productHandler)
-
-	testUserProfile := new(model.UserProfile)
-	err := faker.FakeData(testUserProfile)
-	assert.NoError(t, err)
-	testItem := new(model.ProductCartItem)
-	err = faker.FakeData(testItem)
-	assert.NoError(t, err)
-
-	//ok
-	productUsecaseMock.EXPECT().AddToOrder(testUserProfile.ID, testItem.ItemID).Return(nil)
-	url := "/api/v1/cart" + conf.PathAddItemToCart
-	data, _ := json.Marshal(testItem)
-	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr := httptest.NewRecorder()
-	orderHandler.AddItemToCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-	assert.Equal(t, http.StatusOK, rr.Code)
-
-	//err 400 query err
-	data, _ = json.Marshal("sfdsd")
-	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr = httptest.NewRecorder()
-	orderHandler.AddItemToCart(rr, req)
-	assert.Equal(t, 400, rr.Code)
-
-	//err 500 no user
-	data, _ = json.Marshal(testItem)
-	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr = httptest.NewRecorder()
-	orderHandler.AddItemToCart(rr, req)
+	orderHandler.CreateComment(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, 500, rr.Code)
 
-	//err 500 db
-	productUsecaseMock.EXPECT().AddToOrder(testUserProfile.ID, testItem.ItemID).Return(baseErrors.ErrServerError500)
-	data, _ = json.Marshal(testItem)
+	//err 401 db
+	testComment.UserID = testUserProfile.ID + 1
+	data, _ = json.Marshal(testComment)
 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr = httptest.NewRecorder()
-	orderHandler.AddItemToCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-	assert.Equal(t, 500, rr.Code)
-}
-
-func TestDeleteItemFromCart(t *testing.T) {
-	t.Parallel()
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
-	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
-	userHandler := NewUserHandler(userUsecaseMock)
-	productHandler := NewProductHandler(productUsecaseMock)
-	orderHandler := NewOrderHandler(userHandler, productHandler)
-
-	testUserProfile := new(model.UserProfile)
-	err := faker.FakeData(testUserProfile)
-	assert.NoError(t, err)
-	testItem := new(model.ProductCartItem)
-	err = faker.FakeData(testItem)
-	assert.NoError(t, err)
-
-	//ok
-	productUsecaseMock.EXPECT().DeleteFromOrder(testUserProfile.ID, testItem.ItemID).Return(nil)
-	url := "/api/v1/cart" + conf.PathDeleteItemFromCart
-	data, _ := json.Marshal(testItem)
-	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr := httptest.NewRecorder()
-	orderHandler.DeleteItemFromCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-	assert.Equal(t, http.StatusOK, rr.Code)
-
-	//err 400 query err
-	data, _ = json.Marshal("sfdsd")
-	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr = httptest.NewRecorder()
-	orderHandler.DeleteItemFromCart(rr, req)
-	assert.Equal(t, 400, rr.Code)
-
-	//err 500 no user
-	data, _ = json.Marshal(testItem)
-	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr = httptest.NewRecorder()
-	orderHandler.DeleteItemFromCart(rr, req)
-	assert.Equal(t, 500, rr.Code)
-
-	//err 500 db
-	productUsecaseMock.EXPECT().DeleteFromOrder(testUserProfile.ID, testItem.ItemID).Return(baseErrors.ErrServerError500)
-	data, _ = json.Marshal(testItem)
-	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr = httptest.NewRecorder()
-	orderHandler.DeleteItemFromCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-	assert.Equal(t, 500, rr.Code)
-
-	//err 404 db
-	productUsecaseMock.EXPECT().DeleteFromOrder(testUserProfile.ID, testItem.ItemID).Return(baseErrors.ErrNotFound404)
-	data, _ = json.Marshal(testItem)
-	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-	if err != nil {
-		t.Fatal(err)
-	}
-	rr = httptest.NewRecorder()
-	orderHandler.DeleteItemFromCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-	assert.Equal(t, 404, rr.Code)
+	orderHandler.CreateComment(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 401, rr.Code)
 }
