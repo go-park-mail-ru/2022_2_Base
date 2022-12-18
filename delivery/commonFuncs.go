@@ -191,7 +191,7 @@ func (api *OrderHandler) SetPromocode(w http.ResponseWriter, r *http.Request) {
 	}
 	if err == baseErrors.ErrUnauthorized401 {
 		log.Println("wrong promocode")
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		ReturnErrorJSON(w, baseErrors.ErrForbidden403, 403)
 		return
 	}
 	if err != nil {
