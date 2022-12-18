@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"log"
 	"net/http"
@@ -21,8 +20,6 @@ import (
 	usecase "serv/usecase"
 
 	conf "serv/config"
-	baseErrors "serv/domain/errors"
-	"serv/domain/model"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 
@@ -36,79 +33,16 @@ func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println(r.RequestURI, r.Method)
 
+		//for local tests
+		origin := r.Header.Get("Origin")
+		if origin == "http://89.208.198.137:8081" || origin == "http://127.0.0.1:8081" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		}
+
 		for header := range conf.Headers {
 			w.Header().Set(header, conf.Headers[header])
 		}
 		next.ServeHTTP(w, r)
-	})
-}
-
-type authenticationMiddleware struct {
-	userUsecase usecase.UserUsecaseInterface
-}
-
-func WithUser(ctx context.Context, user *model.UserProfile) context.Context {
-	return context.WithValue(ctx, "userdata", user)
-}
-
-func (amw *authenticationMiddleware) checkAuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, err := r.Cookie("session_id")
-		if err == http.ErrNoCookie {
-			log.Println("no session")
-			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-			return
-		}
-		usName, err := amw.userUsecase.CheckSession(session.Value)
-		if err != nil {
-			log.Println("no session2")
-			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-			return
-		}
-
-		hashTok := deliv.HashToken{Secret: []byte("Base")}
-		token := r.Header.Get("csrf")
-		curSession := model.Session{ID: 0, UserUUID: session.Value}
-		flag, err := hashTok.CheckCSRFToken(&curSession, token)
-		if err != nil || !flag {
-			log.Println("no csrf token")
-			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-			return
-		}
-
-		user, err := amw.userUsecase.GetUserByUsername(usName)
-		if err != nil {
-			log.Println("err get user ", err)
-			deliv.ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-			return
-		}
-		addresses, err := amw.userUsecase.GetAddressesByUserID(user.ID)
-		if err != nil {
-			log.Println("err get adresses ", err)
-			deliv.ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-			return
-		}
-		payments, err := amw.userUsecase.GetPaymentMethodByUserID(user.ID)
-		if err != nil {
-			log.Println("err get payments ", err)
-			deliv.ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-			return
-		}
-
-		if user.Email == "" {
-			log.Println("err get Email ", err)
-			deliv.ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-			return
-		}
-
-		userData := model.UserProfile{ID: user.ID, Email: user.Email, Username: user.Username, Address: addresses, PaymentMethods: payments}
-		if user.Phone != nil {
-			userData.Phone = *user.Phone
-		}
-		if user.Avatar != nil {
-			userData.Avatar = *user.Avatar
-		}
-		next.ServeHTTP(w, r.WithContext(WithUser(r.Context(), &userData)))
 	})
 }
 
@@ -208,9 +142,10 @@ func main() {
 	myRouter.Use(instrumentation.Middleware)
 	myRouter.Path("/metrics").Handler(promhttp.Handler())
 
-	amw := authenticationMiddleware{userUsecase}
-	userRouter.Use(amw.checkAuthMiddleware)
-	cartRouter.Use(amw.checkAuthMiddleware)
+	amw := deliv.NewAuthMiddleware(userUsecase)
+
+	userRouter.Use(amw.CheckAuthMiddleware)
+	cartRouter.Use(amw.CheckAuthMiddleware)
 
 	http.ListenAndServe(conf.Port, myRouter)
 }

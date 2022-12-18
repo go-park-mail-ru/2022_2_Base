@@ -40,7 +40,7 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if user := r.Context().Value("userdata").(*model.UserProfile); user == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -91,24 +91,24 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
 	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
 
-	err = api.usecase.ChangeUser(oldUserData, &req)
-	if err != nil {
-		log.Println(err)
-		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-		return
-	}
-
 	session, err := r.Cookie("session_id")
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
+	err = api.usecase.ChangeUser(oldUserData, &req)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
 
@@ -140,7 +140,7 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -200,7 +200,7 @@ func (api *UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return

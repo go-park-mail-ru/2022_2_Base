@@ -63,7 +63,7 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -122,7 +122,7 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -166,7 +166,7 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -211,7 +211,7 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -260,7 +260,7 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -300,7 +300,7 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
@@ -421,7 +421,7 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
