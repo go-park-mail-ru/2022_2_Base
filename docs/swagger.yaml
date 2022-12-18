@@ -229,7 +229,7 @@ definitions:
       username:
         type: string
     type: object
-host: 89.208.198.137:8080
+host: 127.0.0.1:8080
 info:
   contact:
     email: support@swagger.io
@@ -655,6 +655,37 @@ paths:
       summary: gets product's comments
       tags:
       - Comments
+  /recommendations/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Gets recommendations for product by id
+      operationId: getRecommendations
+      parameters:
+      - description: Id of product
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets recommendations for product
+      tags:
+      - Products
   /search:
     post:
       consumes:

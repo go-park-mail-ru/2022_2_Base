@@ -15,7 +15,7 @@
         },
         "version": "1.0"
     },
-    "host": "89.208.198.137:8080",
+    "host": "127.0.0.1:8080",
     "basePath": "/api/v1",
     "paths": {
         "/cart": {
@@ -589,6 +589,51 @@
                 ],
                 "summary": "Gets product by id",
                 "operationId": "getProductByID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of product",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/recommendations/{id}": {
+            "get": {
+                "description": "Gets recommendations for product by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets recommendations for product",
+                "operationId": "getRecommendations",
                 "parameters": [
                     {
                         "type": "string",

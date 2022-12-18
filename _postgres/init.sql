@@ -1,7 +1,7 @@
 
 CREATE TABLE products (
     id  SERIAL PRIMARY KEY,
-	name VARCHAR (80) NOT NULL,
+	name VARCHAR (110) NOT NULL,
     category VARCHAR (50),
     price FLOAT NOT NULL,
     nominalPrice FLOAT NOT NULL,

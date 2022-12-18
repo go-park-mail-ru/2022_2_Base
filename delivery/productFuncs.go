@@ -259,3 +259,48 @@ func (api *ProductHandler) GetSuggestions(w http.ResponseWriter, r *http.Request
 	}
 	json.NewEncoder(w).Encode(&model.Response{Body: suggestions})
 }
+
+// GetRecommendations godoc
+// @Summary Gets recommendations for product
+// @Description  Gets recommendations for product by id
+// @ID getRecommendations
+// @Accept  json
+// @Produce  json
+// @Tags Products
+// @Param id path string true "Id of product"
+// @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /recommendations/{id} [get]
+func (api *ProductHandler) GetRecommendations(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	s := strings.Split(r.URL.Path, "/")
+	idS := s[len(s)-1]
+	id, err := strconv.Atoi(idS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	products, err := api.usecase.GetRecommendationProducts(id)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	for _, prod := range products {
+		if prod.Imgsrc != nil {
+			*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
+		}
+		prod.Name = sanitizer.Sanitize(prod.Name)
+		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
+	}
+	json.NewEncoder(w).Encode(&model.Response{Body: products})
+}

@@ -24,6 +24,7 @@ type ProductStoreInterface interface {
 	GetCommentsFromStore(productID int) ([]*model.CommentDB, error)
 	CreateCommentInStore(in *model.CreateComment) error
 	UpdateProductRatingInStore(itemID int) error
+	GetRecommendationProductsFromStore(itemID int) ([]*model.Product, error)
 }
 
 type ProductStore struct {
@@ -379,4 +380,56 @@ func (ps *ProductStore) UpdateProductRatingInStore(itemID int) error {
 		return err
 	}
 	return nil
+}
+
+func (ps *ProductStore) GetRecommendationProductsFromStore(itemID int) ([]*model.Product, error) {
+	products := []*model.Product{}
+	product, err := ps.GetProductFromStoreByID(itemID)
+	if err != nil {
+		return nil, err
+	}
+	//accessories := []*model.Product{}
+	//categoryproducts := []*model.Product{}
+
+	var rows *sql.Rows
+
+	lastitemid := 1e9
+	lastProductRating := 10
+	categoryproductsCount := 10
+	accessoriesCount := 20
+
+	// products from same category
+	rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) < ($2, $3) ORDER BY (rating, id) DESC LIMIT $4;`, product.Category, lastProductRating, lastitemid, categoryproductsCount)
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return nil, err
+	}
+	log.Println("got products from db 1")
+	for rows.Next() {
+		dat := model.Product{}
+		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.NominalPrice, &dat.Rating, &dat.Imgsrc)
+		if err != nil {
+			return nil, err
+		}
+		//categoryproducts = append(categoryproducts, &dat)
+		products = append(products, &dat)
+	}
+	// accessories for product
+	rows, err = ps.db.Query(`SELECT products.id, name, products.category, price, nominalprice, rating, imgsrc FROM products JOIN accessories ON products.id=accessories.itemID WHERE accessories.category = $1 ORDER BY (rating, products.id) DESC LIMIT $2;`, product.Category, accessoriesCount)
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return nil, err
+	}
+	log.Println("got products from db 2")
+	for rows.Next() {
+		dat := model.Product{}
+		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.NominalPrice, &dat.Rating, &dat.Imgsrc)
+		if err != nil {
+			return nil, err
+		}
+		//accessories = append(accessories, &dat)
+		products = append(products, &dat)
+	}
+	return products, nil
 }

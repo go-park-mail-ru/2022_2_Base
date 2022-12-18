@@ -13,6 +13,7 @@ var PathCategory = BasePath + "/category/{category}"
 var PathComments = BasePath + "/products/comments/{id}"
 var PathSeacrh = BasePath + "/search"
 var PathSuggestions = BasePath + "/suggestions"
+var PathRecommendations = BasePath + "/recommendations/{id}"
 
 var PathProfile = "/profile"
 var PathAvatar = "/avatar"

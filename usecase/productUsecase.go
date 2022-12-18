@@ -3,9 +3,11 @@ package usecase
 import (
 	"context"
 	"math"
+	"math/rand"
 	"serv/domain/model"
 	orders "serv/microservices/orders/gen_files"
 	rep "serv/repository"
+	"time"
 )
 
 type ProductUsecaseInterface interface {
@@ -22,6 +24,7 @@ type ProductUsecaseInterface interface {
 	GetOrders(userID int) (*orders.OrdersResponse, error)
 	GetComments(productID int) ([]*model.CommentDB, error)
 	CreateComment(in *model.CreateComment) error
+	GetRecommendationProducts(itemID int) ([]*model.Product, error)
 }
 
 type ProductUsecase struct {
@@ -214,4 +217,25 @@ func (api *ProductUsecase) CreateComment(in *model.CreateComment) error {
 		return err
 	}
 	return api.store.UpdateProductRatingInStore(in.ItemID)
+}
+
+func (api *ProductUsecase) GetRecommendationProducts(itemID int) ([]*model.Product, error) {
+	products, err := api.store.GetRecommendationProductsFromStore(itemID)
+	if err != nil {
+		return nil, err
+	}
+	// shuffle
+	//a := []int{1, 2, 3, 4, 5, 6, 7, 8}
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(products), func(i, j int) { products[i], products[j] = products[j], products[i] })
+
+	for _, product := range products {
+		rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.Rating = math.Round(rating*100) / 100
+		product.CommentsCount = &commsCount
+	}
+	return products, nil
 }
