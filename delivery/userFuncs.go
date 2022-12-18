@@ -98,17 +98,17 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
 
-	err = api.usecase.ChangeUser(oldUserData, &req)
-	if err != nil {
-		log.Println(err)
-		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-		return
-	}
-
 	session, err := r.Cookie("session_id")
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
+	err = api.usecase.ChangeUser(oldUserData, &req)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
 
