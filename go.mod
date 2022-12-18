@@ -48,7 +48,7 @@ require (
 	github.com/jackc/pgx/v4 v4.17.2
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/lib/pq v1.10.7 // indirect
-	github.com/mailru/easyjson v0.7.7
+	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.21
 	github.com/prometheus/client_golang v1.14.0
 	github.com/stretchr/testify v1.8.0

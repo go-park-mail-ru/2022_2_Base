@@ -53,7 +53,7 @@ func ReturnErrorJSON(w http.ResponseWriter, err error, errCode int) {
 // @Accept  json
 // @Produce  json
 // @Tags Order
-// @Success 200 {object} model.Order
+// @Success 200 {object} model.Cart
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
@@ -89,13 +89,21 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	prodCart := model.Cart{ID: cart.ID, UserID: cart.UserID}
+	//log.Println(cart.Promocode, *cart.Promocode)
 	if cart.Promocode != nil {
 		prodCart.Promocode = *cart.Promocode
+		//log.Println("z", prodCart.Promocode)
+		//prodCart.Promocode = sanitizer.Sanitize(prodCart.Promocode)
 	}
+	//log.Println("z", prodCart.Promocode)
+	//prodCart.Promocode = "sssssssss"
 	for _, prod := range cart.Items {
 		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, NominalPrice: prod.Item.NominalPrice, Imgsrc: prod.Item.Imgsrc})
 	}
+	//log.Println(prodCart)
+	//json.NewEncoder(w).Encode(prodCart)
 	json.NewEncoder(w).Encode(prodCart)
+	//json.NewEncoder(w).Encode(model.Cart{ID: cart.ID, UserID: cart.UserID, Name: "sdsd"})
 }
 
 // UpdateCart godoc
@@ -153,6 +161,8 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} model.Response "OK"
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 403 {object} model.Error "Forbidden"
+// @Failure 409 {object} model.Error "Conflict - UserDB already exists"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
 // @Router /cart/setpromocode [post]
 func (api *OrderHandler) SetPromocode(w http.ResponseWriter, r *http.Request) {
@@ -177,6 +187,16 @@ func (api *OrderHandler) SetPromocode(w http.ResponseWriter, r *http.Request) {
 	UserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	err = api.prHandler.usecase.SetPromocode(UserData.ID, req.Promocode)
+	if err == baseErrors.ErrConflict409 {
+		log.Println("promocode is already used ")
+		ReturnErrorJSON(w, baseErrors.ErrConflict409, 409)
+		return
+	}
+	if err == baseErrors.ErrForbidden403 {
+		log.Println("promocode is invalid ")
+		ReturnErrorJSON(w, baseErrors.ErrForbidden403, 403)
+		return
+	}
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)

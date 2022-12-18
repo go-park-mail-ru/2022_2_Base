@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"log"
+	"math"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	"strings"
@@ -235,6 +236,7 @@ func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem,
 
 func (ps *ProductStore) UpdatePricesOrderItemsInStore(userID int, category string, discount int) error {
 	//products := []*model.OrderItem{}
+
 	cart, err := ps.GetCart(userID)
 	if err != nil {
 		return err
@@ -244,22 +246,23 @@ func (ps *ProductStore) UpdatePricesOrderItemsInStore(userID int, category strin
 	if err != nil {
 		return err
 	}
+	//log.Println("www")
 	var rows *sql.Rows
 	defer rows.Close()
 	for _, item := range orderItems {
 		switch category {
-		case "clean":
+		case "clear":
 			//newPrice :=
 			rows, err = ps.db.Query(`UPDATE orderItems SET price = (SELECT nominalprice FROM products WHERE id = $1) WHERE orderID = $2 AND itemID = $3;`, item.Item.ID, orderID, item.Item.ID)
 		case "all":
-			rows, err = ps.db.Query(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, item.Item.Price*float64(discount)/100, orderID, item.Item.ID)
+			rows, err = ps.db.Query(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(item.Item.NominalPrice*float64(100-discount)/100, item.Item.Price), orderID, item.Item.ID)
 		default:
 			if item.Item.Category == category {
-				rows, err = ps.db.Query(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, item.Item.Price*float64(discount)/100, orderID, item.Item.ID)
+				rows, err = ps.db.Query(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(item.Item.NominalPrice*float64(100-discount)/100, item.Item.Price), orderID, item.Item.ID)
 			}
 		}
 	}
-
+	//log.Println("zzz")
 	// rows, err := ps.db.Query(`SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	// defer rows.Close()
 	// if err != nil {
@@ -286,7 +289,7 @@ func (ps *ProductStore) CheckPromocodeUsage(userID int, promocode string) error 
 	// 	return err
 	// }
 	//comments := []*model.CommentDB{}
-	rows, err := ps.db.Query(`SELECT id, userid, promocode FROM usedpromocodes WHERE userid = $1;`, userID)
+	rows, err := ps.db.Query(`SELECT id, userid, promocode FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, promocode)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -411,7 +414,7 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 	if err != nil {
 		return nil
 	}
-	_, err = ps.db.Exec(`INSERT INTO orderItems (itemID, orderID, price, count) VALUES ($1, $2, $3);`, itemID, cart.ID, product.Price, 1)
+	_, err = ps.db.Exec(`INSERT INTO orderItems (itemID, orderID, price, count) VALUES ($1, $2, $3, $4);`, itemID, cart.ID, product.Price, 1)
 	if err != nil {
 		return err
 	}

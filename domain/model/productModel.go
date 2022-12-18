@@ -47,7 +47,7 @@ type Order struct {
 	PaymentcardID int          `json:"card"`
 	CreationDate  *time.Time   `json:"creationDate"`
 	DeliveryDate  *time.Time   `json:"deliveryDate"`
-	Promocode     *string      `json:"promocode,omitempty"`
+	Promocode     *string      `json:"promo,omitempty"`
 }
 
 type CartProduct struct {

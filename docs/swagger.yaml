@@ -15,6 +15,21 @@ definitions:
       street:
         type: string
     type: object
+  model.Cart:
+    properties:
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/model.CartProduct'
+        type: array
+      name:
+        type: string
+      promocode:
+        type: string
+      userid:
+        type: integer
+    type: object
   model.CartProduct:
     properties:
       count:
@@ -86,36 +101,6 @@ definitions:
       userid:
         type: integer
     type: object
-  model.Order:
-    properties:
-      address:
-        type: integer
-      card:
-        type: integer
-      creationDate:
-        type: string
-      deliveryDate:
-        type: string
-      id:
-        type: integer
-      items:
-        items:
-          $ref: '#/definitions/model.OrderItem'
-        type: array
-      orderstatus:
-        type: string
-      paymentstatus:
-        type: string
-      userid:
-        type: integer
-    type: object
-  model.OrderItem:
-    properties:
-      count:
-        type: integer
-      item:
-        $ref: '#/definitions/model.Product'
-    type: object
   model.OrderModelGetOrders:
     properties:
       address:
@@ -135,6 +120,8 @@ definitions:
       orderstatus:
         type: string
       paymentstatus:
+        type: string
+      promocode:
         type: string
       userid:
         type: integer
@@ -182,6 +169,11 @@ definitions:
     properties:
       itemid:
         type: integer
+    type: object
+  model.Promocode:
+    properties:
+      promocode:
+        type: string
     type: object
   model.Response:
     properties:
@@ -255,7 +247,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Order'
+            $ref: '#/definitions/model.Cart'
         "400":
           description: Bad request - Problem with the request
           schema:
@@ -446,6 +438,50 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: gets user's orders
+      tags:
+      - Order
+  /cart/setpromocode:
+    post:
+      consumes:
+      - application/json
+      description: Sets promocode for cart
+      operationId: SetPromocode
+      parameters:
+      - description: Promocode
+        in: body
+        name: promo
+        required: true
+        schema:
+          $ref: '#/definitions/model.Promocode'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.Error'
+        "409":
+          description: Conflict - UserDB already exists
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Sets promocode for cart
       tags:
       - Order
   /category/{category}:

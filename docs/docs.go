@@ -43,7 +43,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Order"
+                            "$ref": "#/definitions/model.Cart"
                         }
                     },
                     "400": {
@@ -312,6 +312,71 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/cart/setpromocode": {
+            "post": {
+                "description": "Sets promocode for cart",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Sets promocode for cart",
+                "operationId": "SetPromocode",
+                "parameters": [
+                    {
+                        "description": "Promocode",
+                        "name": "promo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Promocode"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - UserDB already exists",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -1112,6 +1177,29 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Cart": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.CartProduct"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "promocode": {
+                    "type": "string"
+                },
+                "userid": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.CartProduct": {
             "type": "object",
             "properties": {
@@ -1221,52 +1309,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Order": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "integer"
-                },
-                "card": {
-                    "type": "integer"
-                },
-                "creationDate": {
-                    "type": "string"
-                },
-                "deliveryDate": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.OrderItem"
-                    }
-                },
-                "orderstatus": {
-                    "type": "string"
-                },
-                "paymentstatus": {
-                    "type": "string"
-                },
-                "userid": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.OrderItem": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "type": "integer"
-                },
-                "item": {
-                    "$ref": "#/definitions/model.Product"
-                }
-            }
-        },
         "model.OrderModelGetOrders": {
             "type": "object",
             "properties": {
@@ -1295,6 +1337,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "paymentstatus": {
+                    "type": "string"
+                },
+                "promocode": {
                     "type": "string"
                 },
                 "userid": {
@@ -1367,6 +1412,14 @@ const docTemplate = `{
             "properties": {
                 "itemid": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.Promocode": {
+            "type": "object",
+            "properties": {
+                "promocode": {
+                    "type": "string"
                 }
             }
         },

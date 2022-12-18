@@ -25,6 +25,7 @@ var PathAddItemToCart = "/insertintocart"
 var PathDeleteItemFromCart = "/deletefromcart"
 var PathMakeOrder = "/makeorder"
 var PathGetOrders = "/orders"
+var PathPromo = "/setpromocode"
 
 var Headers = map[string]string{
 	//"Access-Control-Allow-Origin":      "http://89.208.198.137:8081",

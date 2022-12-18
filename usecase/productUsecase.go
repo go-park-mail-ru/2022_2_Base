@@ -14,7 +14,6 @@ import (
 	"serv/domain/model"
 	orders "serv/microservices/orders/gen_files"
 	rep "serv/repository"
-	"strconv"
 	"time"
 )
 
@@ -139,21 +138,16 @@ func (api *ProductUsecase) UpdateOrder(userID int, items *[]int) error {
 // func ParsePromocode(promocode string) error {
 // 	runeSlice := []rune(promocode)
 // }
-
-func (api *ProductUsecase) SetPromocode(userID int, promocode string) error {
-	err := api.store.CheckPromocodeUsage(userID, promocode)
-	if err != nil {
-		return err
-	}
-	for _, specialPromo := range conf.Promos {
-		if specialPromo == promocode {
-			return api.store.SetPromocodeDB(userID, promocode)
-		}
-	}
+func (api *ProductUsecase) RecalculatePrices(userID int, promocode string) error {
 	runeSlice := []rune(promocode)
-	typeP := runeSlice[0]
+	byteSlice := []byte(promocode)
+	typeP := byteSlice[0]
+	var err error = nil
 	discount := int(runeSlice[1]-'0')*10 + int(runeSlice[2]-'0')
-	switch strconv.QuoteRune(typeP) {
+	log.Println(string(typeP), discount)
+	log.Println(typeP, discount)
+	//strconv.QuoteRune(typeP)
+	switch string(typeP) {
 	case "A":
 		err = api.store.UpdatePricesOrderItemsInStore(userID, "all", discount)
 	case "C":
@@ -170,9 +164,36 @@ func (api *ProductUsecase) SetPromocode(userID int, promocode string) error {
 		err = api.store.UpdatePricesOrderItemsInStore(userID, "tablets", discount)
 	case "X":
 		err = api.store.UpdatePricesOrderItemsInStore(userID, "accessories", discount)
-
+	default:
+		err = nil
 	}
 
+	return err
+}
+
+func (api *ProductUsecase) SetPromocode(userID int, promocode string) error {
+	err := api.store.CheckPromocodeUsage(userID, promocode)
+	if err != nil {
+		return err
+	}
+	for _, specialPromo := range conf.Promos {
+		if specialPromo == promocode {
+			return api.store.SetPromocodeDB(userID, promocode)
+		}
+	}
+	if promocode == "" {
+		err = api.store.UpdatePricesOrderItemsInStore(userID, "clear", 0)
+		if err != nil {
+			return err
+		}
+	}
+	if len(promocode) < 8 {
+		return baseErrors.ErrForbidden403
+	}
+	err = api.RecalculatePrices(userID, promocode)
+	if err != nil {
+		return err
+	}
 	// salt := []byte("Base2022")
 	// hashedPass := hashPass(salt, req.NewPassword)
 	// b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
@@ -192,6 +213,17 @@ func (api *ProductUsecase) SetPromocode(userID int, promocode string) error {
 }
 
 func (api *ProductUsecase) AddToOrder(userID int, itemID int) error {
+	cart, err := api.store.GetCart(userID)
+	if err != nil {
+		return err
+	}
+	if cart.Promocode != nil {
+		err = api.RecalculatePrices(userID, *cart.Promocode)
+		if err != nil {
+			return err
+		}
+	}
+	log.Println("www")
 	return api.store.InsertItemIntoCartById(userID, itemID)
 }
 
