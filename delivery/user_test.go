@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"strings"
 
-	//"net/http/httptest"
 	"testing"
 	"time"
 
@@ -21,13 +20,7 @@ import (
 	"serv/domain/model"
 	auth "serv/microservices/auth/gen_files"
 	mocks "serv/mocks"
-	//mocks "serv/mocks"
-	//"github.com/mailru/easyjson/jwriter"
 )
-
-// type authenticationMiddlewareType struct {
-// 	userUsecase mocks.MockUserUsecaseInterface
-// }
 
 func TestGetUser(t *testing.T) {
 	t.Parallel()
@@ -35,69 +28,41 @@ func TestGetUser(t *testing.T) {
 	defer ctrl.Finish()
 
 	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
-	//authMiddleware := mocks.NewMockAuthenticationMiddlewareInterface(ctrl)
+	userHandler := NewUserHandler(userUsecaseMock)
 
-	//testUser := model.UserCreateParams{Email: "art@art", Username: "art", Password: "12345678"}
 	testUserProfile := new(model.UserProfile)
 	err := faker.FakeData(testUserProfile)
 	assert.NoError(t, err)
-	// testUserDB := new(model.UserDB)
-	// err = faker.FakeData(testUserDB)
-	// assert.NoError(t, err)
-	// testUserDB.ID = testUserProfile.ID
-	// testUserDB.Email = testUserProfile.Email
-	// salt := []byte("Base2022")
-	// hashedPass := hashPass(salt, "12345678")
-	// b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
-	// testUserDB.Password = b64Pass
 	testsessID := new(auth.SessionID)
 	err = faker.FakeData(testsessID)
 	assert.NoError(t, err)
 
 	//ok
-	//userUsecaseMock.EXPECT().CheckSession(testsessID.ID).Return("zz", nil)
-	//url := conf.PathSessions
-	//req, err := http.NewRequest("GET", url, nil)
-
-	//userUsecaseMock.EXPECT().CheckSession(testsessID.ID).Return("zz", nil)
-	//userUsecaseMock.EXPECT().GetUserByUsername(testUserProfile.Email).Return(*testUserDB, nil)
-	//userUsecaseMock.EXPECT().GetAddressesByUserID(testUserDB.ID).Return(testUserProfile.Address, nil)
-	//userUsecaseMock.EXPECT().GetPaymentMethodByUserID(testUserDB.ID).Return(testUserProfile.PaymentMethods, nil)
-	userHandler := NewUserHandler(userUsecaseMock)
-
 	url := "/api/v1/user" + conf.PathProfile
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	cookie := &http.Cookie{
-		Name:     "session_id",
-		Value:    testsessID.ID,
-		Expires:  time.Now().Add(10 * time.Hour),
-		HttpOnly: true,
-		Secure:   true,
-	}
-	req.AddCookie(cookie)
+	// cookie := &http.Cookie{
+	// 	Name:     "session_id",
+	// 	Value:    testsessID.ID,
+	// 	Expires:  time.Now().Add(10 * time.Hour),
+	// 	HttpOnly: true,
+	// 	Secure:   true,
+	// }
+	// req.AddCookie(cookie)
 	rr := httptest.NewRecorder()
-
-	//authMiddleware.EXPECT().CheckAuthMiddleware(myRouter).Return(myRouter)
-
 	userHandler.GetUser(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-	//router.ServeHTTP(w, req)
-	// myRouter := mux.NewRouter()
-	// // amw := authenticationMiddlewareType{*userUsecaseMock}
-	// myRouter.Use(authMiddleware.CheckAuthMiddleware)
-	// myRouter.HandleFunc(url, userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
-
-	// authMiddleware.EXPECT().CheckAuthMiddleware(myRouter).Return(myRouter)
-
-	// //next.ServeHTTP(w, r.WithContext(WithUser(r.Context(), &userData)))
-
-	// //myRouter.ServeHTTP(rr, req)
-	// myRouter.ServeHTTP(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, http.StatusOK, rr.Code)
-	//expectedstr, err := json.Marshal(&model.Response{Body: testProducts})
-	//assert.Equal(t, rr.Body.String(), string(expectedstr)+"\n")
+
+	//err 500 no user
+	req, err = http.NewRequest("GET", url, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	userHandler.GetUser(rr, req)
+	assert.Equal(t, 500, rr.Code)
 }
 
 func TestChangeProfile(t *testing.T) {
@@ -210,18 +175,6 @@ func TestChangePassword(t *testing.T) {
 	testUserProfile := new(model.UserProfile)
 	err := faker.FakeData(testUserProfile)
 	assert.NoError(t, err)
-	//testQueryChangePassword := new(model.ChangePassword)
-	//err = faker.FakeData(testQueryChangePassword)
-	//assert.NoError(t, err)
-	//testQueryUserProfile.ID = testUserProfile.ID
-	//testQueryUserProfile.Address = nil
-	//testQueryUserProfile.PaymentMethods = nil
-	// testUserDB := new(model.UserDB)
-	// err = faker.FakeData(testUserDB)
-	// assert.NoError(t, err)
-	// testUserDB.ID = testUserProfile.ID
-	// testUserDB.Email = testUserProfile.Email
-
 	testsessID := new(auth.SessionID)
 	err = faker.FakeData(testsessID)
 	assert.NoError(t, err)
@@ -314,3 +267,86 @@ func TestChangePassword(t *testing.T) {
 	userHandler.ChangePassword(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, 500, rr.Code)
 }
+
+// func TestSetAvatar(t *testing.T) {
+// 	t.Parallel()
+// 	ctrl := gomock.NewController(t)
+// 	defer ctrl.Finish()
+
+// 	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+// 	userHandler := NewUserHandler(userUsecaseMock)
+
+// 	testUserProfile := new(model.UserProfile)
+// 	err := faker.FakeData(testUserProfile)
+// 	assert.NoError(t, err)
+// 	// testQueryUserProfile := new(model.UserProfile)
+// 	// err = faker.FakeData(testQueryUserProfile)
+// 	// assert.NoError(t, err)
+// 	// testQueryUserProfile.ID = testUserProfile.ID
+// 	// testQueryUserProfile.Address = nil
+// 	// testQueryUserProfile.PaymentMethods = nil
+// 	fileName := "/img/avatar" + strconv.FormatUint(uint64(testUserProfile.ID), 10) + ".jpg"
+// 	testNewUserProfile := &model.UserProfile{Avatar: fileName}
+// 	testAvatar := new(multipart.File)
+// 	err = faker.FakeData(testAvatar)
+// 	log.Println(testNewUserProfile)
+// 	assert.NoError(t, err)
+// 	testsessID := new(auth.SessionID)
+// 	err = faker.FakeData(testsessID)
+// 	assert.NoError(t, err)
+
+// 	// //ok
+// 	// userUsecaseMock.EXPECT().SetAvatar(testUserProfile.ID, testAvatar).Return(nil)
+// 	// userUsecaseMock.EXPECT().ChangeUser(testUserProfile, testNewUserProfile).Return(nil)
+
+// 	// url := "/api/v1/user" + conf.PathAvatar
+// 	// data, _ := json.Marshal(testAvatar)
+// 	// req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
+// 	// if err != nil {
+// 	// 	t.Fatal(err)
+// 	// }
+// 	// cookie := &http.Cookie{
+// 	// 	Name:     "session_id",
+// 	// 	Value:    testsessID.ID,
+// 	// 	Expires:  time.Now().Add(10 * time.Hour),
+// 	// 	HttpOnly: true,
+// 	// 	Secure:   true,
+// 	// }
+// 	// req.AddCookie(cookie)
+// 	// rr := httptest.NewRecorder()
+
+// 	// userHandler.SetAvatar(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+// 	// assert.Equal(t, http.StatusOK, rr.Code)
+
+// 	//err 500
+// 	url := "/api/v1/user" + conf.PathAvatar
+// 	//data, _ := json.Marshal(testAvatar)
+// 	data := testAvatar
+// 	req, err := http.NewRequest("POST", url, *data)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	cookie := &http.Cookie{
+// 		Name:     "session_id",
+// 		Value:    testsessID.ID,
+// 		Expires:  time.Now().Add(10 * time.Hour),
+// 		HttpOnly: true,
+// 		Secure:   true,
+// 	}
+// 	req.AddCookie(cookie)
+// 	rr := httptest.NewRecorder()
+
+// 	userHandler.SetAvatar(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+// 	assert.Equal(t, 500, rr.Code)
+
+// 	// //err 401 no cookie
+// 	// data, _ = json.Marshal(testQueryUserProfile)
+// 	// req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+// 	// if err != nil {
+// 	// 	t.Fatal(err)
+// 	// }
+// 	// rr = httptest.NewRecorder()
+
+// 	// userHandler.ChangeProfile(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+// 	// assert.Equal(t, 401, rr.Code)
+// }

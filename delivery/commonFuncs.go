@@ -25,7 +25,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 89.208.198.137:8080
+// @host 127.0.0.1:8080
 // @BasePath  /api/v1
 
 type OrderHandler struct {
@@ -63,7 +63,7 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if oldUserData := r.Context().Value("userdata").(*model.UserProfile); oldUserData == nil {
+	if r.Context().Value("userdata") == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
