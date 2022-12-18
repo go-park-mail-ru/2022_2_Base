@@ -25,7 +25,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 89.208.198.137:8080
+// @host 127.0.0.1:8080
 // @BasePath  /api/v1
 
 type OrderHandler struct {
@@ -187,6 +187,11 @@ func (api *OrderHandler) SetPromocode(w http.ResponseWriter, r *http.Request) {
 	if err == baseErrors.ErrForbidden403 {
 		log.Println("promocode is invalid ")
 		ReturnErrorJSON(w, baseErrors.ErrForbidden403, 403)
+		return
+	}
+	if err == baseErrors.ErrUnauthorized401 {
+		log.Println("wrong promocode")
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 	if err != nil {

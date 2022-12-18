@@ -295,7 +295,17 @@ func (ps *ProductStore) SetPromocodeDB(userID int, promocode string) error {
 	if err != nil {
 		return err
 	}
-	if cart.Promocode != nil {
+	if promocode == "" {
+		_, err = ps.db.Exec(`DELETE FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, cart.Promocode)
+		if err != nil {
+			return err
+		}
+		_, err = ps.db.Exec(`UPDATE orders SET promocode = $1 WHERE id = $2;`, nil, cart.ID)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else if cart.Promocode != nil {
 		_, err = ps.db.Exec(`UPDATE usedpromocodes SET promocode = $1 WHERE userid = $2 AND promocode = $3;`, promocode, userID, cart.Promocode)
 		if err != nil {
 			return err
