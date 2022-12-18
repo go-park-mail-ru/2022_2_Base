@@ -225,7 +225,6 @@ func (api *ProductUsecase) GetRecommendationProducts(itemID int) ([]*model.Produ
 		return nil, err
 	}
 	// shuffle
-	//a := []int{1, 2, 3, 4, 5, 6, 7, 8}
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(products), func(i, j int) { products[i], products[j] = products[j], products[i] })
 
