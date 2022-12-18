@@ -16,6 +16,9 @@ type ProductStoreInterface interface {
 	GetProductsBySearchFromStore(search string) ([]*model.Product, error)
 	GetSuggestionsFromStore(search string) ([]string, error)
 	GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error)
+	UpdatePricesOrderItemsInStore(userID int, category string, discount int) error
+	CheckPromocodeUsage(userID int, promocode string) error
+	SetPromocodeDB(userID int, promocode string) error
 	CreateCart(userID int) error
 	GetCart(userID int) (*model.Order, error)
 	UpdateCart(userID int, items *[]int) error
@@ -211,7 +214,7 @@ func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error)
 
 func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
-	rows, err := ps.db.Query(`SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
+	rows, err := ps.db.Query(`SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	defer rows.Close()
 	if err != nil {
 		log.Println(err)
@@ -230,6 +233,107 @@ func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem,
 	return products, nil
 }
 
+func (ps *ProductStore) UpdatePricesOrderItemsInStore(userID int, category string, discount int) error {
+	//products := []*model.OrderItem{}
+	cart, err := ps.GetCart(userID)
+	if err != nil {
+		return err
+	}
+	orderID := cart.ID
+	orderItems, err := ps.GetOrderItemsFromStore(orderID)
+	if err != nil {
+		return err
+	}
+	var rows *sql.Rows
+	defer rows.Close()
+	for _, item := range orderItems {
+		switch category {
+		case "clean":
+			//newPrice :=
+			rows, err = ps.db.Query(`UPDATE orderItems SET price = (SELECT nominalprice FROM products WHERE id = $1) WHERE orderID = $2 AND itemID = $3;`, item.Item.ID, orderID, item.Item.ID)
+		case "all":
+			rows, err = ps.db.Query(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, item.Item.Price*float64(discount)/100, orderID, item.Item.ID)
+		default:
+			if item.Item.Category == category {
+				rows, err = ps.db.Query(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, item.Item.Price*float64(discount)/100, orderID, item.Item.ID)
+			}
+		}
+	}
+
+	// rows, err := ps.db.Query(`SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
+	// defer rows.Close()
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return nil, err
+	// }
+	// for rows.Next() {
+	// 	var count int
+	// 	dat := model.Product{}
+	// 	err := rows.Scan(&count, &dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.NominalPrice, &dat.Rating, &dat.Imgsrc)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+	// 	orderItem := model.OrderItem{Count: count, Item: &dat}
+	// 	products = append(products, &orderItem)
+	// }
+	return nil
+}
+
+func (ps *ProductStore) CheckPromocodeUsage(userID int, promocode string) error {
+	//products := []*model.OrderItem{}
+	// cart, err := ps.GetCart(userID)
+	// if err != nil {
+	// 	return err
+	// }
+	//comments := []*model.CommentDB{}
+	rows, err := ps.db.Query(`SELECT id, userid, promocode FROM usedpromocodes WHERE userid = $1;`, userID)
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return err
+	}
+	//log.Println("got comments from db")
+	for rows.Next() {
+		//dat := model.CommentDB{}
+		var id int
+		var usid int
+		var prom string
+		err := rows.Scan(&id, &usid, &prom)
+		if err != nil {
+			return err
+		}
+		if id != 0 {
+			return baseErrors.ErrConflict409
+		}
+
+	}
+	return nil
+}
+
+func (ps *ProductStore) SetPromocodeDB(userID int, promocode string) error {
+	cart, err := ps.GetCart(userID)
+	if err != nil {
+		return err
+	}
+	if cart.Promocode != nil {
+		_, err = ps.db.Exec(`UPDATE usedpromocodes SET promocode = $1 WHERE userid = $2 AND promocode = $3;`, promocode, userID, cart.Promocode)
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err = ps.db.Exec(`INSERT INTO usedpromocodes (userid, promocode) VALUES ($1, $2);`, userID, promocode)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = ps.db.Exec(`UPDATE orders SET promocode = $1 WHERE id = $2;`, promocode, cart.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (ps *ProductStore) CreateCart(userID int) error {
 	_, err := ps.db.Exec(`INSERT INTO orders (userID, orderStatus, paymentStatus, addressID, paymentcardID) VALUES ($1, $2, $3, 1, 1);`, userID, "cart", "not started")
 	if err != nil {
@@ -239,14 +343,14 @@ func (ps *ProductStore) CreateCart(userID int) error {
 }
 
 func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
-	rows, err := ps.db.Query(`SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
+	rows, err := ps.db.Query(`SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate, promocode  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	cart := &model.Order{}
 	for rows.Next() {
-		err := rows.Scan(&cart.ID, &cart.UserID, &cart.OrderStatus, &cart.PaymentStatus, &cart.AddressID, &cart.PaymentcardID, &cart.CreationDate, &cart.DeliveryDate)
+		err := rows.Scan(&cart.ID, &cart.UserID, &cart.OrderStatus, &cart.PaymentStatus, &cart.AddressID, &cart.PaymentcardID, &cart.CreationDate, &cart.DeliveryDate, &cart.Promocode)
 		if err != nil {
 			return nil, err
 		}
@@ -290,12 +394,10 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
-	//log.Println("correct1")
 	orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
 	if err != nil {
 		return err
 	}
-	//log.Println("correct2")
 	for _, prod := range orderItems {
 		if prod.Item.ID == itemID {
 			_, err = ps.db.Exec(`UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
@@ -305,7 +407,11 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 			return nil
 		}
 	}
-	_, err = ps.db.Exec(`INSERT INTO orderItems (itemID, orderID, count) VALUES ($1, $2, $3);`, itemID, cart.ID, 1)
+	product, err := ps.GetProductFromStoreByID(itemID)
+	if err != nil {
+		return nil
+	}
+	_, err = ps.db.Exec(`INSERT INTO orderItems (itemID, orderID, price, count) VALUES ($1, $2, $3);`, itemID, cart.ID, product.Price, 1)
 	if err != nil {
 		return err
 	}

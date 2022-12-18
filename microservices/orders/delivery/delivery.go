@@ -63,6 +63,9 @@ func (om *OrderManager) GetOrders(ctx context.Context, userID *orders.UserID) (*
 		}
 		orderResponse.PaymentMethod = &orders.PaymentMethod{ID: int32(paymentcard.ID), PaymentType: paymentcard.PaymentType, Number: paymentcard.Number, Priority: paymentcard.Priority}
 		orderResponse.PaymentMethod.ExpiryDate = paymentcard.ExpiryDate.Unix()
+		//if order.Promocode != nil {
+		orderResponse.Promocode = order.Promocode
+		//}
 
 		responseOrders.Orders = append(responseOrders.Orders, &orderResponse)
 	}

@@ -33,3 +33,8 @@ var Headers = map[string]string{
 	"Access-Control-Allow-Methods":     "GET, POST, DELETE, OPTIONS",
 	"Content-Type":                     "application/json",
 }
+
+var Promos = []string{
+	"SALE500",
+	"SALE1500",
+}

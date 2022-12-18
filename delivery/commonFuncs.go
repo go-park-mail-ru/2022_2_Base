@@ -25,7 +25,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 89.208.198.137:8080
+// @host 127.0.0.1:8080
 // @BasePath  /api/v1
 
 type OrderHandler struct {
@@ -89,6 +89,9 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	prodCart := model.Cart{ID: cart.ID, UserID: cart.UserID}
+	if cart.Promocode != nil {
+		prodCart.Promocode = *cart.Promocode
+	}
 	for _, prod := range cart.Items {
 		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, NominalPrice: prod.Item.NominalPrice, Imgsrc: prod.Item.Imgsrc})
 	}
@@ -130,6 +133,50 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 	UserData := r.Context().Value("userdata").(*model.UserProfile)
 
 	err = api.prHandler.usecase.UpdateOrder(UserData.ID, &req.Items)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	json.NewEncoder(w).Encode(&model.Response{})
+}
+
+// SetPromocode godoc
+// @Summary Sets promocode for cart
+// @Description Sets promocode for cart
+// @ID SetPromocode
+// @Accept  json
+// @Produce  json
+// @Tags Order
+// @Param promo body model.Promocode true "Promocode"
+// @Success 200 {object} model.Response "OK"
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /cart/setpromocode [post]
+func (api *OrderHandler) SetPromocode(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var req model.Promocode
+	err := decoder.Decode(&req)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	if r.Context().Value("userdata") == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	UserData := r.Context().Value("userdata").(*model.UserProfile)
+
+	err = api.prHandler.usecase.SetPromocode(UserData.ID, req.Promocode)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -346,6 +393,11 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		newOrder.Paymentcard.ExpiryDate = t3
 		newOrder.Paymentcard.PaymentType = sanitizer.Sanitize(newOrder.Paymentcard.PaymentType)
 		newOrder.Paymentcard.Number = sanitizer.Sanitize(newOrder.Paymentcard.Number)
+
+		if order.Promocode != nil {
+			newOrder.Promocode = *order.Promocode
+		}
+		newOrder.Promocode = sanitizer.Sanitize(newOrder.Promocode)
 
 		responseOrders = append(responseOrders, &newOrder)
 	}

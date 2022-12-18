@@ -47,6 +47,7 @@ type Order struct {
 	PaymentcardID int          `json:"card"`
 	CreationDate  *time.Time   `json:"creationDate"`
 	DeliveryDate  *time.Time   `json:"deliveryDate"`
+	Promocode     *string      `json:"promocode,omitempty"`
 }
 
 type CartProduct struct {
@@ -59,9 +60,10 @@ type CartProduct struct {
 }
 
 type Cart struct {
-	ID     int            `json:"id"`
-	UserID int            `json:"userid"`
-	Items  []*CartProduct `json:"items"`
+	ID        int            `json:"id"`
+	UserID    int            `json:"userid"`
+	Items     []*CartProduct `json:"items"`
+	Promocode string         `json:"promocode,omitempty"`
 }
 
 type MakeOrder struct {
@@ -82,6 +84,7 @@ type OrderModelGetOrders struct {
 	Paymentcard   PaymentMethod  `json:"card"`
 	CreationDate  *time.Time     `json:"creationDate"`
 	DeliveryDate  *time.Time     `json:"deliveryDate"`
+	Promocode     string         `json:"promocode,omitempty"`
 }
 
 type Search struct {

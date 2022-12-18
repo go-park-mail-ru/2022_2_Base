@@ -49,13 +49,15 @@ CREATE TABLE orders (
     addressID INT REFERENCES address (id) ON DELETE RESTRICT,
     paymentCardID INT REFERENCES payment (id) ON DELETE RESTRICT,
     creationDate TIMESTAMP,
-    deliveryDate TIMESTAMP
+    deliveryDate TIMESTAMP,
+    promocode VARCHAR(15)
 );
 
 CREATE TABLE orderItems (
     id  SERIAL PRIMARY KEY,
     itemID INT NOT NULL,
     orderID INT NOT NULL,
+    price FLOAT NOT NULL,
     count INT NOT NULL
 );
 
@@ -67,6 +69,12 @@ CREATE TABLE comments (
     cons VARCHAR(300) NOT NULL,
     comment VARCHAR(300) NOT NULL,
     rating Float
+);
+
+CREATE TABLE usedpromocodes (
+    id  SERIAL PRIMARY KEY,
+    userID INT REFERENCES users (id) ON DELETE CASCADE,
+    promocode VARCHAR(15) NOT NULL
 );
 
 

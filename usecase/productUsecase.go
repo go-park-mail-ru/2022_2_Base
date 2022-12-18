@@ -2,11 +2,19 @@ package usecase
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"log"
 	"math"
 	"math/rand"
+	conf "serv/config"
+	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	orders "serv/microservices/orders/gen_files"
 	rep "serv/repository"
+	"strconv"
 	"time"
 )
 
@@ -25,6 +33,7 @@ type ProductUsecaseInterface interface {
 	GetComments(productID int) ([]*model.CommentDB, error)
 	CreateComment(in *model.CreateComment) error
 	GetRecommendationProducts(itemID int) ([]*model.Product, error)
+	SetPromocode(userID int, promocode string) error
 }
 
 type ProductUsecase struct {
@@ -125,6 +134,61 @@ func (api *ProductUsecase) GetCart(userID int) (*model.Order, error) {
 
 func (api *ProductUsecase) UpdateOrder(userID int, items *[]int) error {
 	return api.store.UpdateCart(userID, items)
+}
+
+// func ParsePromocode(promocode string) error {
+// 	runeSlice := []rune(promocode)
+// }
+
+func (api *ProductUsecase) SetPromocode(userID int, promocode string) error {
+	err := api.store.CheckPromocodeUsage(userID, promocode)
+	if err != nil {
+		return err
+	}
+	for _, specialPromo := range conf.Promos {
+		if specialPromo == promocode {
+			return api.store.SetPromocodeDB(userID, promocode)
+		}
+	}
+	runeSlice := []rune(promocode)
+	typeP := runeSlice[0]
+	discount := int(runeSlice[1]-'0')*10 + int(runeSlice[2]-'0')
+	switch strconv.QuoteRune(typeP) {
+	case "A":
+		err = api.store.UpdatePricesOrderItemsInStore(userID, "all", discount)
+	case "C":
+		err = api.store.UpdatePricesOrderItemsInStore(userID, "computers", discount)
+	case "M":
+		err = api.store.UpdatePricesOrderItemsInStore(userID, "monitors", discount)
+	case "P":
+		err = api.store.UpdatePricesOrderItemsInStore(userID, "phones", discount)
+	case "V":
+		err = api.store.UpdatePricesOrderItemsInStore(userID, "tvs", discount)
+	case "W":
+		err = api.store.UpdatePricesOrderItemsInStore(userID, "watches", discount)
+	case "T":
+		err = api.store.UpdatePricesOrderItemsInStore(userID, "tablets", discount)
+	case "X":
+		err = api.store.UpdatePricesOrderItemsInStore(userID, "accessories", discount)
+
+	}
+
+	// salt := []byte("Base2022")
+	// hashedPass := hashPass(salt, req.NewPassword)
+	// b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
+	h := hmac.New(sha256.New, []byte("Base2022"))
+	data := fmt.Sprintf("%d", userID)
+	h.Write([]byte(data))
+	hashedStr := hex.EncodeToString(h.Sum(nil))
+	log.Println(hashedStr[:5])
+	if hashedStr[:5] != promocode[3:] {
+		return baseErrors.ErrUnauthorized401
+	}
+	//err = UpdatePricesOrderItemsInStore(userID, promocode)
+	if err != nil {
+		return err
+	}
+	return api.store.SetPromocodeDB(userID, promocode)
 }
 
 func (api *ProductUsecase) AddToOrder(userID int, itemID int) error {

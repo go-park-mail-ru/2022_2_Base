@@ -42,7 +42,7 @@ func (os *OrderStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
 	log.Println("call orders store")
 	orders := []*model.Order{}
 
-	rows, err := os.db.Query(`SELECT id, userid, orderstatus, paymentstatus, addressid, paymentcardid, creationdate, deliverydate FROM orders WHERE userid = $1 AND orderstatus <> 'cart';`, userID)
+	rows, err := os.db.Query(`SELECT id, userid, orderstatus, paymentstatus, addressid, paymentcardid, creationdate, deliverydate, promocode FROM orders WHERE userid = $1 AND orderstatus <> 'cart';`, userID)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
@@ -51,7 +51,7 @@ func (os *OrderStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
 	log.Println("wwwww")
 	for rows.Next() {
 		dat := model.Order{}
-		err := rows.Scan(&dat.ID, &dat.UserID, &dat.OrderStatus, &dat.PaymentStatus, &dat.AddressID, &dat.PaymentcardID, &dat.CreationDate, &dat.DeliveryDate)
+		err := rows.Scan(&dat.ID, &dat.UserID, &dat.OrderStatus, &dat.PaymentStatus, &dat.AddressID, &dat.PaymentcardID, &dat.CreationDate, &dat.DeliveryDate, &dat.Promocode)
 		if err != nil {
 			return nil, err
 		}

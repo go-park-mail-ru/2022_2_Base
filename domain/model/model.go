@@ -35,3 +35,7 @@ type Comment struct {
 	Comment  string  `json:"comment,omitempty"`
 	Rating   float64 `json:"rating"`
 }
+
+type Promocode struct {
+	Promocode string `json:"promocode"`
+}
