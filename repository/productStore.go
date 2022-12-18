@@ -245,7 +245,7 @@ func (ps *ProductStore) UpdatePricesOrderItemsInStore(userID int, category strin
 		return err
 	}
 	for _, item := range orderItems {
-		_, err = ps.db.Exec(`UPDATE orderItems SET price = (SELECT nominalprice FROM products WHERE id = $1) WHERE orderID = $2 AND itemID = $3;`, item.Item.ID, orderID, item.Item.ID)
+		_, err = ps.db.Exec(`UPDATE orderItems SET price = (SELECT price FROM products WHERE id = $1) WHERE orderID = $2 AND itemID = $3;`, item.Item.ID, orderID, item.Item.ID)
 		if err != nil {
 			return err
 		}
