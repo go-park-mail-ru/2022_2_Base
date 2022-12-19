@@ -214,7 +214,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
 	req.Password = b64Pass
 
-	err = api.usecase.AddUser(&req)
+	id, err := api.usecase.AddUser(&req)
 	if err != nil {
 		log.Println("error while adding user to db: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -229,7 +229,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		//return
 	}
 
-	promo := api.usecase.GenPromocode(1)
+	promo := api.usecase.GenPromocode(id)
 	PromoMail := model.Mail{Type: "promocode", Username: req.Username, Useremail: req.Email, Promocode: promo}
 	err = api.usecase.SendMail(PromoMail)
 	if err != nil {

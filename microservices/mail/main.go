@@ -85,6 +85,7 @@ func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothi
 		textbody = "Ваш новый промокод: " + *in.Promocode
 	case "greeting":
 		header = "Приветствие"
+		textbody = "Здравствуйте, " + in.Username
 	}
 	msg := gomail.NewMessage()
 	// msg.SetHeader("From", "<paste your gmail account here>")
@@ -94,8 +95,7 @@ func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothi
 	// msg.Attach("/home/User/cat.jpg")
 	// n := gomail.NewDialer("smtp.gmail.com", 587, "<paste your gmail account here>", "<paste Google password or app password here>")
 	msg.SetHeader("From", "Musicialbaum@mail.ru")
-	msg.SetHeader("To", "Scorpion1remeres@gmail.com")
-	//msg.SetHeader("To", in.Useremail)
+	msg.SetHeader("To", in.Useremail)
 	msg.SetHeader("Subject", header)
 	msg.SetBody("text/html", "<b>"+textbody+"</b>")
 	//msg.Attach("/home/User/cat.jpg")

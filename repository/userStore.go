@@ -9,7 +9,7 @@ import (
 )
 
 type UserStoreInterface interface {
-	AddUser(in *model.UserDB) error
+	AddUser(in *model.UserDB) (int, error)
 	UpdateUser(userID int, in *model.UserProfile) error
 	ChangeUserPasswordDB(userID int, newPass string) error
 	UpdateUsersAddress(adressID int, in *model.Address) error
@@ -34,12 +34,18 @@ func NewUserStore(db *sql.DB) UserStoreInterface {
 	}
 }
 
-func (us *UserStore) AddUser(in *model.UserDB) error {
-	_, err := us.db.Exec(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
+func (us *UserStore) AddUser(in *model.UserDB) (int, error) {
+	//result, err := us.db.Exec(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
+	id := 0
+	err := us.db.QueryRow(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3) RETURNING id;`, in.Email, in.Username, in.Password).Scan(&id)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	// id, err := result.LastInsertId()
+	// if err != nil {
+	// 	return 0, err
+	// }
+	return int(id), nil
 }
 
 func (us *UserStore) UpdateUser(userID int, in *model.UserProfile) error {

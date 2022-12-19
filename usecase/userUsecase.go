@@ -25,7 +25,7 @@ type UserUsecaseInterface interface {
 	DeleteSession(sessID string) error
 	SendMail(in model.Mail) error
 	GenPromocode(userID int) string
-	AddUser(params *model.UserCreateParams) error
+	AddUser(params *model.UserCreateParams) (int, error)
 	GetUserByUsername(email string) (model.UserDB, error)
 	GetAddressesByUserID(userID int) ([]*model.Address, error)
 	GetPaymentMethodByUserID(userID int) ([]*model.PaymentMethod, error)
@@ -146,7 +146,7 @@ func (api *UserUsecase) GenPromocode(userID int) string {
 	return promocode
 }
 
-func (api *UserUsecase) AddUser(params *model.UserCreateParams) error {
+func (api *UserUsecase) AddUser(params *model.UserCreateParams) (int, error) {
 	username := params.Username
 	password := params.Password
 	email := params.Email
