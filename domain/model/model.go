@@ -39,3 +39,12 @@ type Comment struct {
 type Promocode struct {
 	Promocode string `json:"promocode"`
 }
+
+type Mail struct {
+	Type        string `json:"type"`
+	Username    string `json:"username"`
+	Useremail   string `json:"usermail"`
+	Promocode   string `json:"promocode,omitempty"`
+	OrderStatus string `json:"orderstatus,omitempty"`
+	OrderID     int    `json:"orderid,omitempty"`
+}

@@ -2,6 +2,10 @@ package usecase
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
@@ -9,6 +13,7 @@ import (
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	auth "serv/microservices/auth/gen_files"
+	mail "serv/microservices/mail/gen_files"
 	rep "serv/repository"
 	"strconv"
 )
@@ -18,6 +23,8 @@ type UserUsecaseInterface interface {
 	CheckSession(sessID string) (string, error)
 	ChangeEmail(sessID string, newEmail string) error
 	DeleteSession(sessID string) error
+	SendMail(in model.Mail) error
+	GenPromocode(userID int) string
 	AddUser(params *model.UserCreateParams) error
 	GetUserByUsername(email string) (model.UserDB, error)
 	GetAddressesByUserID(userID int) ([]*model.Address, error)
@@ -32,12 +39,14 @@ type UserUsecaseInterface interface {
 
 type UserUsecase struct {
 	sessManager auth.AuthCheckerClient
+	mailManager mail.MailServiceClient
 	store       rep.UserStoreInterface
 }
 
-func NewUserUsecase(us rep.UserStoreInterface, sessManager auth.AuthCheckerClient) UserUsecaseInterface {
+func NewUserUsecase(us rep.UserStoreInterface, sessManager auth.AuthCheckerClient, mailManager mail.MailServiceClient) UserUsecaseInterface {
 	return &UserUsecase{
 		sessManager: sessManager,
+		mailManager: mailManager,
 		store:       us,
 	}
 }
@@ -85,6 +94,56 @@ func (uh *UserUsecase) DeleteSession(sessID string) error {
 		return err
 	}
 	return nil
+}
+
+func (api *UserUsecase) SendMail(in model.Mail) error {
+	orderid := int32(in.OrderID)
+	ans, err := api.mailManager.SendMail(
+		context.Background(),
+		&mail.Mail{Type: in.Type, Username: in.Username, Useremail: in.Useremail, OrderStatus: &in.OrderStatus, Promocode: &in.Promocode, OrderID: &orderid})
+	if err != nil || !ans.IsSuccessful {
+		return err
+	}
+	return nil
+}
+
+func (api *UserUsecase) GenPromocode(userID int) string {
+	// err := api.store.CheckPromocodeUsage(userID, promocode)
+	// if err != nil {
+	// 	return err
+	// }
+	// for _, specialPromo := range conf.Promos {
+	// 	if specialPromo == promocode {
+	// 		return api.store.SetPromocodeDB(userID, promocode)
+	// 	}
+	// }
+	// if promocode == "" {
+	// 	err = api.store.UpdatePricesOrderItemsInStore(userID, "clear", 0)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	return api.store.SetPromocodeDB(userID, promocode)
+	// }
+	// if len(promocode) < 8 {
+	// 	return baseErrors.ErrForbidden403
+	// }
+	// err = api.RecalculatePrices(userID, promocode)
+	// if err != nil {
+	// 	return err
+	// }
+	h := hmac.New(sha256.New, []byte("Base2022"))
+	data := fmt.Sprintf("%d", userID)
+	h.Write([]byte(data))
+	hashedStr := hex.EncodeToString(h.Sum(nil))
+	//log.Println(hashedStr[:5])
+	// if hashedStr[:5] != promocode[3:] {
+	// 	return baseErrors.ErrUnauthorized401
+	// }
+	// if err != nil {
+	// 	return err
+	// }
+	promocode := "A10" + hashedStr[:5]
+	return promocode
 }
 
 func (api *UserUsecase) AddUser(params *model.UserCreateParams) error {

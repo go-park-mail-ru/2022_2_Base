@@ -221,6 +221,23 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	RegisterMail := model.Mail{Type: "greeting", Username: req.Username, Useremail: req.Email}
+	err = api.usecase.SendMail(RegisterMail)
+	if err != nil {
+		log.Println("error sending greeting email ", err)
+		//ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		//return
+	}
+
+	promo := api.usecase.GenPromocode(1)
+	PromoMail := model.Mail{Type: "promocode", Username: req.Username, Useremail: req.Email, Promocode: promo}
+	err = api.usecase.SendMail(PromoMail)
+	if err != nil {
+		log.Println("error sending promocode email ", err)
+		//ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		//return
+	}
+
 	sess, err := api.usecase.SetSession(req.Email)
 
 	if err != nil {

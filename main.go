@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	"os"
 
 	_ "serv/docs"
 	"serv/repository"
@@ -24,6 +23,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	auth "serv/microservices/auth/gen_files"
+	mail "serv/microservices/mail/gen_files"
 	orders "serv/microservices/orders/gen_files"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -52,11 +52,14 @@ var (
 var (
 	ordersManager orders.OrdersWorkerClient
 )
+var (
+	mailManager mail.MailServiceClient
+)
 
 func main() {
 	myRouter := mux.NewRouter()
-	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
-	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
+	urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
+	//urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	log.Println("conn: ", urlDB)
 	db, err := sql.Open("pgx", urlDB)
 	if err != nil {
@@ -67,8 +70,8 @@ func main() {
 	defer db.Close()
 
 	grcpConnAuth, err := grpc.Dial(
-		"auth:8082",
-		//"localhost:8082",
+		//"auth:8082",
+		"localhost:8082",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
 		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
@@ -81,8 +84,8 @@ func main() {
 	defer grcpConnAuth.Close()
 
 	grcpConnOrders, err := grpc.Dial(
-		"orders:8083",
-		//"localhost:8083",
+		//"orders:8083",
+		"localhost:8083",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
 		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
@@ -94,14 +97,29 @@ func main() {
 	}
 	defer grcpConnOrders.Close()
 
+	grcpConnMail, err := grpc.Dial(
+		//"mail:8084",
+		"localhost:8084",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
+		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
+	)
+	if err != nil {
+		log.Println("cant connect to grpc mail")
+	} else {
+		log.Println("connected to grpc mail service")
+	}
+	defer grcpConnOrders.Close()
+
 	sessManager = auth.NewAuthCheckerClient(grcpConnAuth)
 	ordersManager = orders.NewOrdersWorkerClient(grcpConnOrders)
+	mailManager = mail.NewMailServiceClient(grcpConnMail)
 
 	userStore := repository.NewUserStore(db)
 	productStore := repository.NewProductStore(db)
 
-	userUsecase := usecase.NewUserUsecase(userStore, sessManager)
-	productUsecase := usecase.NewProductUsecase(productStore, ordersManager)
+	userUsecase := usecase.NewUserUsecase(userStore, sessManager, mailManager)
+	productUsecase := usecase.NewProductUsecase(productStore, ordersManager, mailManager)
 
 	userHandler := deliv.NewUserHandler(userUsecase)
 	sessionHandler := deliv.NewSessionHandler(userUsecase)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 	"net/http"
@@ -17,6 +18,8 @@ import (
 
 	//"github.com/emersion/go-smtp"
 	gomail "gopkg.in/gomail.v2"
+
+	conf "serv/config"
 )
 
 func main() {
@@ -32,27 +35,6 @@ func main() {
 	grpc_prometheus.Register(server)
 	mail.RegisterMailServiceServer(server, NewMailManager())
 	http.Handle("/metrics", promhttp.Handler())
-
-	msg := gomail.NewMessage()
-	// msg.SetHeader("From", "<paste your gmail account here>")
-	// msg.SetHeader("To", "<paste the email address you want to send to>")
-	// msg.SetHeader("Subject", "<paste the subject of the mail>")
-	// msg.SetBody("text/html", "<b>This is the body of the mail</b>")
-	// msg.Attach("/home/User/cat.jpg")
-
-	// n := gomail.NewDialer("smtp.gmail.com", 587, "<paste your gmail account here>", "<paste Google password or app password here>")
-	msg.SetHeader("From", "Musicialbaum@gmail.com")
-	msg.SetHeader("To", "Scorpion1remeres@gmail.com")
-	msg.SetHeader("Subject", "LOL")
-	msg.SetBody("text/html", "<b>This is the body of the mail</b>")
-	//msg.Attach("/home/User/cat.jpg")
-
-	n := gomail.NewDialer("smtp.gmail.com", 587, "Musicialbaum@gmail.com", "Musicial2022")
-
-	// Send the email
-	if err := n.DialAndSend(msg); err != nil {
-		panic(err)
-	}
 
 	// // Setup an unencrypted connection to a local mail server.
 	// c, err := smtp.Dial("localhost:25")
@@ -73,22 +55,8 @@ func main() {
 	// }
 
 	// log.Println("starting server at :8082")
+	log.Println("starting server at :8084")
 	server.Serve(lis)
-
-	// auth := sasl.NewPlainClient("", "user@example.com", "password")
-
-	// // Connect to the server, authenticate, set the sender and recipient,
-	// // and send the email all in one step.
-	// to := []string{"recipient@example.net"}
-	// msg := strings.NewReader("To: recipient@example.net\r\n" +
-	// 	"Subject: discount Gophers!\r\n" +
-	// 	"\r\n" +
-	// 	"This is the email body.\r\n")
-	// err := smtp.SendMail("mail.example.com:25", auth, "sender@example.org", to, msg)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
 }
 
 const sessKeyLen = 10
@@ -101,41 +69,43 @@ func NewMailManager() *MailManager {
 	return &MailManager{}
 }
 
-// func (sm *SessionManager) Create(ctx context.Context, in *session.Session) (*session.SessionID, error) {
-// 	log.Println("call Create", in)
-// 	newUUID := uuid.New()
-// 	id := &session.SessionID{
-// 		ID: newUUID.String(),
-// 	}
-// 	sm.mu.Lock()
-// 	sm.sessions[id.ID] = in
-// 	sm.mu.Unlock()
-
-// 	return id, nil
-// }
-
-// func (sm *SessionManager) Check(ctx context.Context, in *session.SessionID) (*session.Session, error) {
-// 	log.Println("call Check", in)
-// 	sm.mu.RLock()
-// 	defer sm.mu.RUnlock()
-// 	if sess, ok := sm.sessions[in.ID]; ok {
-// 		return sess, nil
-// 	}
-// 	return nil, grpc.Errorf(codes.NotFound, "session not found")
-// }
-
-// func (sm *SessionManager) Delete(ctx context.Context, in *session.SessionID) (*session.Nothing, error) {
-// 	log.Println("call Delete", in)
-// 	sm.mu.Lock()
-// 	defer sm.mu.Unlock()
-// 	delete(sm.sessions, in.ID)
-// 	return &session.Nothing{IsSuccessful: true}, nil
-// }
-
-// func (sm *SessionManager) ChangeEmail(ctx context.Context, in *session.NewLogin) (*session.Nothing, error) {
-// 	log.Println("call ChangeEmail", in)
-// 	sm.mu.Lock()
-// 	defer sm.mu.Unlock()
-// 	sm.sessions[in.ID] = &session.Session{Login: in.Login}
-// 	return &session.Nothing{IsSuccessful: true}, nil
-// }
+func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothing, error) {
+	log.Println("call SendMail", in)
+	var header string = "Письмо"
+	var textbody string = "This is the body of the mail"
+	switch in.Type {
+	case "orderstatus":
+		header = "Изменение статуса заказа"
+		switch *in.OrderStatus {
+		case "created":
+			textbody = "Заказ номер " + string(*in.OrderID) + "оформлен"
+		}
+	case "promocode":
+		header = "Получен новый промокод"
+		textbody = "Ваш новый промокод: " + *in.Promocode
+	case "greeting":
+		header = "Приветствие"
+	}
+	msg := gomail.NewMessage()
+	// msg.SetHeader("From", "<paste your gmail account here>")
+	// msg.SetHeader("To", "<paste the email address you want to send to>")
+	// msg.SetHeader("Subject", "<paste the subject of the mail>")
+	// msg.SetBody("text/html", "<b>This is the body of the mail</b>")
+	// msg.Attach("/home/User/cat.jpg")
+	// n := gomail.NewDialer("smtp.gmail.com", 587, "<paste your gmail account here>", "<paste Google password or app password here>")
+	msg.SetHeader("From", "Musicialbaum@mail.ru")
+	msg.SetHeader("To", "Scorpion1remeres@gmail.com")
+	//msg.SetHeader("To", in.Useremail)
+	msg.SetHeader("Subject", header)
+	msg.SetBody("text/html", "<b>"+textbody+"</b>")
+	//msg.Attach("/home/User/cat.jpg")
+	//n := gomail.NewDialer("smtp.gmail.com", 587, "Musicialbaum@mail.ru", "Musicial2022")
+	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", conf.MailPassword)
+	// Send the email
+	if err := n.DialAndSend(msg); err != nil {
+		//panic(err)
+		log.Println(err)
+		return &mail.Nothing{IsSuccessful: false}, err
+	}
+	return &mail.Nothing{IsSuccessful: true}, nil
+}

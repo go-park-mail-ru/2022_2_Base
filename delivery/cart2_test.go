@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"time"
 
 	"testing"
 
@@ -78,7 +79,7 @@ func TestMakeOrder(t *testing.T) {
 	err = faker.FakeData(testOrder)
 	assert.NoError(t, err)
 	testOrder.UserID = testUserProfile.ID
-
+	testOrder.DeliveryDate = time.Unix(1, 10)
 	//ok
 	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(nil)
 	url := "/api/v1/" + "cart/makeorder"

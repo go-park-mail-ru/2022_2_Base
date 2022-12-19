@@ -337,11 +337,19 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = api.prHandler.usecase.MakeOrder(&req)
+	orderID, err := api.prHandler.usecase.MakeOrder(&req)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
+	}
+
+	RegisterMail := model.Mail{Type: "orderstatus", Username: oldUserData.Username, Useremail: oldUserData.Email, OrderID: orderID, OrderStatus: "created"}
+	err = api.usHandler.usecase.SendMail(RegisterMail)
+	if err != nil {
+		log.Println("error sending email ", err)
+		//ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		//return
 	}
 
 	json.NewEncoder(w).Encode(&model.Response{})

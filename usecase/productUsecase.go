@@ -6,12 +6,12 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"math"
 	"math/rand"
 	conf "serv/config"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
+	mail "serv/microservices/mail/gen_files"
 	orders "serv/microservices/orders/gen_files"
 	rep "serv/repository"
 	"time"
@@ -27,7 +27,7 @@ type ProductUsecaseInterface interface {
 	UpdateOrder(userID int, items *[]int) error
 	AddToOrder(userID int, itemID int) error
 	DeleteFromOrder(userID int, itemID int) error
-	MakeOrder(in *model.MakeOrder) error
+	MakeOrder(in *model.MakeOrder) (int, error)
 	GetOrders(userID int) (*orders.OrdersResponse, error)
 	GetComments(productID int) ([]*model.CommentDB, error)
 	CreateComment(in *model.CreateComment) error
@@ -38,12 +38,14 @@ type ProductUsecaseInterface interface {
 
 type ProductUsecase struct {
 	ordersManager orders.OrdersWorkerClient
+	mailManager   mail.MailServiceClient
 	store         rep.ProductStoreInterface
 }
 
-func NewProductUsecase(ps rep.ProductStoreInterface, ordersManager orders.OrdersWorkerClient) ProductUsecaseInterface {
+func NewProductUsecase(ps rep.ProductStoreInterface, ordersManager orders.OrdersWorkerClient, mailManager mail.MailServiceClient) ProductUsecaseInterface {
 	return &ProductUsecase{
 		ordersManager: ordersManager,
+		mailManager:   mailManager,
 		store:         ps,
 	}
 }
@@ -150,7 +152,6 @@ func (api *ProductUsecase) RecalculatePrices(userID int, promocode string) error
 	switch string(typeP) {
 	case "A":
 		err = api.store.UpdatePricesOrderItemsInStore(userID, "all", discount)
-		log.Println("123535")
 	case "C":
 		err = api.store.UpdatePricesOrderItemsInStore(userID, "computers", discount)
 	case "M":
@@ -166,8 +167,7 @@ func (api *ProductUsecase) RecalculatePrices(userID int, promocode string) error
 	case "X":
 		err = api.store.UpdatePricesOrderItemsInStore(userID, "accessories", discount)
 	default:
-		err = nil
-
+		err = baseErrors.ErrForbidden403
 	}
 	//log.Println("sdsddsd")
 	return err
@@ -230,10 +230,10 @@ func (api *ProductUsecase) DeleteFromOrder(userID int, itemID int) error {
 	return api.store.DeleteItemFromCartById(userID, itemID)
 }
 
-func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) error {
+func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) (int, error) {
 	cart, err := api.store.GetCart(in.UserID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	remainedItemsIDs := []int{}
 	boughtItemsIDs := []int{}
@@ -262,12 +262,12 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) error {
 
 	err = api.store.UpdateCart(in.UserID, &boughtItemsIDs)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if cart.Promocode != nil {
 		err = api.RecalculatePrices(in.UserID, *cart.Promocode)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
@@ -281,15 +281,15 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) error {
 			DeliveryDate:  in.DeliveryDate.Unix(),
 		})
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	err = api.store.CreateCart(in.UserID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return api.store.UpdateCart(in.UserID, &remainedItemsIDs)
+	return cart.ID, api.store.UpdateCart(in.UserID, &remainedItemsIDs)
 }
 
 func (api *ProductUsecase) GetOrders(userID int) (*orders.OrdersResponse, error) {
