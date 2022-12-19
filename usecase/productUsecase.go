@@ -143,7 +143,6 @@ func (api *ProductUsecase) RecalculatePrices(userID int, promocode string) error
 	byteSlice := []byte(promocode)
 	typeP := byteSlice[0]
 	discount := int(runeSlice[1]-'0')*10 + int(runeSlice[2]-'0')
-	//log.Println(string(typeP), discount)
 
 	err := api.store.UpdatePricesOrderItemsInStore(userID, "clear", 0)
 	if err != nil {
@@ -169,7 +168,6 @@ func (api *ProductUsecase) RecalculatePrices(userID int, promocode string) error
 	default:
 		err = baseErrors.ErrForbidden403
 	}
-	//log.Println("sdsddsd")
 	return err
 }
 
@@ -201,7 +199,6 @@ func (api *ProductUsecase) SetPromocode(userID int, promocode string) error {
 	data := fmt.Sprintf("%d", userID)
 	h.Write([]byte(data))
 	hashedStr := hex.EncodeToString(h.Sum(nil))
-	//log.Println(hashedStr[:5])
 	if hashedStr[:5] != promocode[3:] {
 		return baseErrors.ErrUnauthorized401
 	}

@@ -10,12 +10,13 @@ import (
 	mail "serv/microservices/mail/gen_files"
 
 	"google.golang.org/grpc"
+	"gopkg.in/gomail.v2"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	conf "serv/config"
+
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	//"github.com/emersion/go-smtp"
-	//"github.com/emersion/go-smtp"
 )
 
 func main() {
@@ -47,42 +48,34 @@ func NewMailManager() *MailManager {
 
 func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothing, error) {
 	log.Println("call SendMail", in)
-	//var header string = "Письмо"
+	var header string = "Письмо"
 	var textbody string = "This is the body of the mail"
 	switch in.Type {
 	case "orderstatus":
-		//header = "Изменение статуса заказа"
+		header = "Изменение статуса заказа"
 		switch *in.OrderStatus {
 		case "created":
-			//textbody = "Заказ номер " + string(*in.OrderID) + "оформлен"
 			textbody = "Заказ номер " + fmt.Sprintf("%d", *in.OrderID) + " оформлен"
 			log.Println(textbody)
 		}
 	case "promocode":
-		//header = "Получен новый промокод"
+		header = "Получен новый промокод"
 		textbody = "Ваш новый промокод: " + *in.Promocode
 	case "greeting":
-		//header = "Приветствие"
+		header = "Приветствие"
 		textbody = "Здравствуйте, " + in.Username
 	}
-	// msg := gomail.NewMessage()
-	// // msg.SetHeader("From", "<paste your gmail account here>")
-	// // msg.SetHeader("To", "<paste the email address you want to send to>")
-	// // msg.SetHeader("Subject", "<paste the subject of the mail>")
-	// // msg.SetBody("text/html", "<b>This is the body of the mail</b>")
-	// // msg.Attach("/home/User/cat.jpg")
-	// // n := gomail.NewDialer("smtp.gmail.com", 587, "<paste your gmail account here>", "<paste Google password or app password here>")
-	// msg.SetHeader("From", "Musicialbaum@mail.ru")
-	// msg.SetHeader("To", in.Useremail)
-	// msg.SetHeader("Subject", header)
-	// msg.SetBody("text/html", "<b>"+textbody+"</b>")
-	// //msg.Attach("/home/User/cat.jpg")
-	// //n := gomail.NewDialer("smtp.gmail.com", 587, "Musicialbaum@mail.ru", "Musicial2022")
-	// n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", conf.MailPassword)
-	// // Send the email
-	// if err := n.DialAndSend(msg); err != nil {
-	// 	log.Println(err)
-	// 	return &mail.Nothing{IsSuccessful: false}, err
-	// }
+	msg := gomail.NewMessage()
+	msg.SetHeader("From", "Musicialbaum@mail.ru")
+	msg.SetHeader("To", in.Useremail)
+	msg.SetHeader("Subject", header)
+	msg.SetBody("text/html", "<b>"+textbody+"</b>")
+	//msg.Attach("/home/User/cat.jpg")
+	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", conf.MailPassword)
+	// Send the email
+	if err := n.DialAndSend(msg); err != nil {
+		log.Println(err)
+		return &mail.Nothing{IsSuccessful: false}, err
+	}
 	return &mail.Nothing{IsSuccessful: true}, nil
 }
