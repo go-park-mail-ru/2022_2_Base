@@ -35,26 +35,6 @@ func main() {
 	grpc_prometheus.Register(server)
 	mail.RegisterMailServiceServer(server, NewMailManager())
 	http.Handle("/metrics", promhttp.Handler())
-
-	// // Setup an unencrypted connection to a local mail server.
-	// c, err := smtp.Dial("localhost:25")
-	// if err != nil {
-	// 	return err
-	// }
-	// defer c.Close()
-
-	// // Set the sender and recipient, and send the email all in one step.
-	// to := []string{"recipient@example.net"}
-	// msg := strings.NewReader("To: recipient@example.net\r\n" +
-	// 	"Subject: discount Gophers!\r\n" +
-	// 	"\r\n" +
-	// 	"This is the email body.\r\n")
-	// err = c.SendMail("sender@example.org", to, msg)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// log.Println("starting server at :8082")
 	log.Println("starting server at :8084")
 	server.Serve(lis)
 }
@@ -103,7 +83,6 @@ func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothi
 	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", conf.MailPassword)
 	// Send the email
 	if err := n.DialAndSend(msg); err != nil {
-		//panic(err)
 		log.Println(err)
 		return &mail.Nothing{IsSuccessful: false}, err
 	}
