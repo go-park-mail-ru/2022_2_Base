@@ -42,6 +42,7 @@ jobs:
       - name: connect to host
         uses: appleboy/ssh-action@master
         with:
+          debug: true
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
