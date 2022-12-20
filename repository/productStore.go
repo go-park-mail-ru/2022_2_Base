@@ -30,6 +30,9 @@ type ProductStoreInterface interface {
 	CreateCommentInStore(in *model.CreateComment) error
 	UpdateProductRatingInStore(itemID int) error
 	GetRecommendationProductsFromStore(itemID int) ([]*model.Product, error)
+	GetFavoritesDB(userID int, lastitemid int, count int, sort string) ([]*model.Product, error)
+	InsertItemIntoFavoritesDB(userID int, itemID int) error
+	DeleteItemFromFavoritesDB(userID int, itemID int) error
 }
 
 type ProductStore struct {
@@ -563,4 +566,79 @@ func (ps *ProductStore) GetRecommendationProductsFromStore(itemID int) ([]*model
 		products = append(products, &dat)
 	}
 	return products, nil
+}
+
+func (ps *ProductStore) GetFavoritesDB(userID int, lastitemid int, count int, sort string) ([]*model.Product, error) {
+	products := []*model.Product{}
+	lastProduct, err := ps.GetProductFromStoreByID(lastitemid)
+	if err != nil {
+		return nil, err
+	}
+	var rows *sql.Rows
+
+	if sort == "priceup" {
+		rows, err = ps.db.Query(`SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (price, products.id) > ($1, $2) AND userid = $3 ORDER BY (price, products.id) LIMIT $4;`, lastProduct.Price, lastitemid, userID, count)
+	} else if sort == "pricedown" {
+		if lastProduct.Price == 0 {
+			lastProduct.Price = 1e10
+		}
+		rows, err = ps.db.Query(`SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (price, products.id) < ($1, $2) AND userid = $3 ORDER BY (price, products.id) DESC LIMIT $4;`, lastProduct.Price, lastitemid, userID, count)
+	} else if sort == "ratingup" {
+		rows, err = ps.db.Query(`SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (rating, products.id) > ($1, $2) AND userid = $3 ORDER BY (rating, products.id) ASC LIMIT $4;`, lastProduct.Rating, lastitemid, userID, count)
+	} else if sort == "ratingdown" {
+		if lastitemid == 0 {
+			lastitemid = 1e9
+			lastProduct.Rating = 10
+		}
+		rows, err = ps.db.Query(`SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (rating, products.id) < ($1, $2) AND userid = $3 ORDER BY (rating, products.id) DESC LIMIT $4;`, lastProduct.Rating, lastitemid, userID, count)
+	} else {
+		rows, err = ps.db.Query(`SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE products.id > $1 AND userid = $2 LIMIT $3;`, lastitemid, userID, count)
+	}
+
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return nil, err
+	}
+	log.Println("got favorites from db")
+	for rows.Next() {
+		dat := model.Product{}
+		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.NominalPrice, &dat.Rating, &dat.Imgsrc)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, &dat)
+	}
+	return products, nil
+}
+
+func (ps *ProductStore) InsertItemIntoFavoritesDB(userID int, itemID int) error {
+	id := 0
+	rows, err := ps.db.Query(`SELECT id FROM favorites WHERE userid = $1 AND itemid = $2`, userID, itemID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err := rows.Scan(&id)
+		if err != nil {
+			return err
+		}
+	}
+	if id != 0 {
+		return nil
+	}
+	_, err = ps.db.Exec(`INSERT INTO favorites (userID, itemID) VALUES ($1, $2);`, userID, itemID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ps *ProductStore) DeleteItemFromFavoritesDB(userID int, itemID int) error {
+	_, err := ps.db.Exec(`DELETE FROM favorites WHERE userid = $1 AND itemid = $2;`, userID, itemID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -55,10 +55,16 @@ CREATE TABLE orders (
 
 CREATE TABLE orderItems (
     id  SERIAL PRIMARY KEY,
-    itemID INT NOT NULL,
+    itemID INT REFERENCES products (id) ON DELETE CASCADE,
     orderID INT NOT NULL,
     price FLOAT NOT NULL,
     count INT NOT NULL
+);
+
+CREATE TABLE favorites (
+    id  SERIAL PRIMARY KEY,
+    itemID INT REFERENCES products (id) ON DELETE CASCADE,
+    userID INT REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE TABLE comments (

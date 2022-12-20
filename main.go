@@ -147,6 +147,9 @@ func main() {
 	userRouter.HandleFunc(conf.PathProfile, userHandler.ChangeProfile).Methods(http.MethodPost, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathAvatar, userHandler.SetAvatar).Methods(http.MethodPost, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathPassword, userHandler.ChangePassword).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc(conf.PathFavorites, productHandler.GetFavorites).Methods(http.MethodGet, http.MethodOptions)
+	userRouter.HandleFunc(conf.PathInsertIntoFavorites, productHandler.InsertItemIntoFavorites).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc(conf.PathDeleteFromFavorites, productHandler.DeleteItemFromFavorites).Methods(http.MethodPost, http.MethodOptions)
 
 	myRouter.HandleFunc(conf.PathComments, orderHandler.GetComments).Methods(http.MethodGet, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathMakeComment, orderHandler.CreateComment).Methods(http.MethodPost, http.MethodOptions)

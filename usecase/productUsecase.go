@@ -34,6 +34,9 @@ type ProductUsecaseInterface interface {
 	GetRecommendationProducts(itemID int) ([]*model.Product, error)
 	SetPromocode(userID int, promocode string) error
 	RecalculatePrices(userID int, promocode string) error
+	GetFavorites(userID int, lastitemid int, count int, sort string) ([]*model.Product, error)
+	InsertItemIntoFavorites(userID int, itemID int) error
+	DeleteItemFromFavorites(userID int, itemID int) error
 }
 
 type ProductUsecase struct {
@@ -64,7 +67,6 @@ func (api *ProductUsecase) GetProducts(lastitemid int, count int, sort string) (
 		product.CommentsCount = &commsCount
 
 	}
-
 	return products, nil
 }
 
@@ -355,4 +357,34 @@ func (api *ProductUsecase) GetRecommendationProducts(itemID int) ([]*model.Produ
 		product.CommentsCount = &commsCount
 	}
 	return products, nil
+}
+
+func (api *ProductUsecase) GetFavorites(userID int, lastitemid int, count int, sort string) ([]*model.Product, error) {
+	products, err := api.store.GetFavoritesDB(userID, lastitemid, count, sort)
+	if err != nil {
+		return nil, err
+	}
+	for _, product := range products {
+		rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.Rating = math.Round(rating*100) / 100
+		product.CommentsCount = &commsCount
+
+		properties, err := api.store.GetProductPropertiesFromStore(product.ID, product.Category)
+		if err != nil {
+			return nil, err
+		}
+		product.Properties = properties[:4]
+	}
+	return products, nil
+}
+
+func (api *ProductUsecase) InsertItemIntoFavorites(userID int, itemID int) error {
+	return api.store.InsertItemIntoFavoritesDB(userID, itemID)
+}
+
+func (api *ProductUsecase) DeleteItemFromFavorites(userID int, itemID int) error {
+	return api.store.DeleteItemFromFavoritesDB(userID, itemID)
 }

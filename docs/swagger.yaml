@@ -230,7 +230,7 @@ definitions:
       username:
         type: string
     type: object
-host: 127.0.0.1:8080
+host: 89.208.198.137:8080
 info:
   contact:
     email: support@swagger.io
@@ -880,6 +880,118 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Set user's avatar
+      tags:
+      - User
+  /user/deletefromfav:
+    post:
+      consumes:
+      - application/json
+      description: Deletes Item From favorite
+      operationId: DeleteItemFromFav
+      parameters:
+      - description: Favorite item
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/model.ProductCartItem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Deletes Item From favorite
+      tags:
+      - User
+  /user/favorites:
+    get:
+      consumes:
+      - application/json
+      description: Gets user's favorites
+      operationId: GetFavorites
+      parameters:
+      - description: lastitemid
+        in: query
+        name: lastitemid
+        required: true
+        type: string
+      - description: count
+        in: query
+        name: count
+        required: true
+        type: string
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets user's favorites
+      tags:
+      - User
+  /user/insertintofav:
+    post:
+      consumes:
+      - application/json
+      description: Inserts Item into favorite
+      operationId: InsertItemIntoFav
+      parameters:
+      - description: Favorite item
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/model.ProductCartItem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Inserts Item into favorite
       tags:
       - User
   /user/makecomment:

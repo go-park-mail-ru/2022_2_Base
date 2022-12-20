@@ -25,7 +25,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 127.0.0.1:8080
+// @host 89.208.198.137:8080
 // @BasePath  /api/v1
 
 type OrderHandler struct {
@@ -515,5 +515,154 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
+	json.NewEncoder(w).Encode(&model.Response{})
+}
+
+// GetFavorites
+// @Summary Gets user's favorites
+// @Description Gets user's favorites
+// @ID GetFavorites
+// @Accept  json
+// @Produce  json
+// @Tags User
+// @Param   lastitemid    query     string  true  "lastitemid"
+// @Param   count         query     string  true  "count"
+// @Param   sort         query     string  false  "sort"
+// @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /user/favorites [get]
+func (api *ProductHandler) GetFavorites(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	lastitemidS := r.URL.Query().Get("lastitemid")
+	countS := r.URL.Query().Get("count")
+	sort := r.URL.Query().Get("sort")
+	lastitemid, err := strconv.Atoi(lastitemidS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+	count, err := strconv.Atoi(countS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	if r.Context().Value("userdata") == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	UserData := r.Context().Value("userdata").(*model.UserProfile)
+
+	products, err := api.usecase.GetFavorites(UserData.ID, lastitemid, count, sort)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	for _, prod := range products {
+
+		if prod.Imgsrc != nil {
+			*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
+		}
+		prod.Name = sanitizer.Sanitize(prod.Name)
+		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
+	}
+	json.NewEncoder(w).Encode(&model.Response{Body: products})
+}
+
+// InsertItemIntoFav godoc
+// @Summary Inserts Item into favorite
+// @Description Inserts Item into favorite
+// @ID InsertItemIntoFav
+// @Accept  json
+// @Produce  json
+// @Tags User
+// @Param item body model.ProductCartItem true "Favorite item"
+// @Success 200 {object} model.Response "OK"
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /user/insertintofav [post]
+func (api *ProductHandler) InsertItemIntoFavorites(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var req model.ProductCartItem
+	err := decoder.Decode(&req)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	if r.Context().Value("userdata") == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	UserData := r.Context().Value("userdata").(*model.UserProfile)
+
+	err = api.usecase.InsertItemIntoFavorites(UserData.ID, req.ItemID)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	json.NewEncoder(w).Encode(&model.Response{})
+}
+
+// DeleteItemFromFav godoc
+// @Summary Deletes Item From favorite
+// @Description Deletes Item From favorite
+// @ID DeleteItemFromFav
+// @Accept  json
+// @Produce  json
+// @Tags User
+// @Param item body model.ProductCartItem true "Favorite item"
+// @Success 200 {object} model.Response "OK"
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /user/deletefromfav [post]
+func (api *ProductHandler) DeleteItemFromFavorites(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var req model.ProductCartItem
+	err := decoder.Decode(&req)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	if r.Context().Value("userdata") == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	UserData := r.Context().Value("userdata").(*model.UserProfile)
+
+	err = api.usecase.DeleteItemFromFavorites(UserData.ID, req.ItemID)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
 	json.NewEncoder(w).Encode(&model.Response{})
 }
