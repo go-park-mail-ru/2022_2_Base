@@ -1,4 +1,4 @@
-# .env
+.env
 config/DBconfig.go
 txts/
 commands_for_db.txt

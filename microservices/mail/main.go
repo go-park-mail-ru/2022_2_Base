@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 
 	mail "serv/microservices/mail/gen_files"
 
@@ -13,8 +14,6 @@ import (
 	"gopkg.in/gomail.v2"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-
-	conf "serv/config"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 )
@@ -71,7 +70,7 @@ func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothi
 	msg.SetHeader("Subject", header)
 	msg.SetBody("text/html", "<b>"+textbody+"</b>")
 	//msg.Attach("/home/User/cat.jpg")
-	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", conf.MailPassword)
+	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", os.Getenv("MailPassword"))
 	// Send the email
 	if err := n.DialAndSend(msg); err != nil {
 		log.Println(err)

@@ -170,21 +170,11 @@ func (ps *ProductStore) GetProductsRatingAndCommsCountFromStore(itemsID int) (fl
 }
 
 func (ps *ProductStore) GetProductPropertiesFromStore(itemID int, itemCategory string) ([]*model.Property, error) {
-	//var rating *float64
-	//var commsCount *int
-	//product, err := ps.GetProductFromStoreByID(itemID)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	//products := [6]*model.Product{}
-	//log.Println("call get product properties from db")
-	//properties := make([]*model.Property, 6)
 	properties := []*model.Property{}
 	var rows *sql.Rows
 	var err error
 
 	propertiesDB := make([]model.Property, 6)
-	//log.Println(itemID, properties, propertiesDB)
 	switch itemCategory {
 	case "monitors":
 		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN monitors cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
@@ -216,9 +206,6 @@ func (ps *ProductStore) GetProductPropertiesFromStore(itemID int, itemCategory s
 		}
 		properties = append(properties, &propertiesDB[0], &propertiesDB[1], &propertiesDB[2], &propertiesDB[3], &propertiesDB[4], &propertiesDB[5])
 	}
-	//log.Println("aaaaaaaa")
-	//propertiesSlice := properties[:]
-	//log.Println(itemID, propertiesSlice, properties)
 	return properties, nil
 }
 

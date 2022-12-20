@@ -63,11 +63,6 @@ func (api *ProductUsecase) GetProducts(lastitemid int, count int, sort string) (
 		product.Rating = math.Round(rating*100) / 100
 		product.CommentsCount = &commsCount
 
-		properties, err := api.store.GetProductPropertiesFromStore(product.ID, product.Category)
-		if err != nil {
-			return nil, err
-		}
-		product.Properties = properties
 	}
 
 	return products, nil
@@ -85,6 +80,12 @@ func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, c
 		}
 		product.Rating = math.Round(rating*100) / 100
 		product.CommentsCount = &commsCount
+
+		properties, err := api.store.GetProductPropertiesFromStore(product.ID, product.Category)
+		if err != nil {
+			return nil, err
+		}
+		product.Properties = properties[:4]
 	}
 	return products, nil
 }
@@ -100,6 +101,12 @@ func (api *ProductUsecase) GetProductByID(id int) (*model.Product, error) {
 	}
 	product.Rating = math.Round(rating*100) / 100
 	product.CommentsCount = &commsCount
+
+	properties, err := api.store.GetProductPropertiesFromStore(product.ID, product.Category)
+	if err != nil {
+		return nil, err
+	}
+	product.Properties = properties
 	return product, nil
 }
 
@@ -115,6 +122,12 @@ func (api *ProductUsecase) GetProductsBySearch(search string) ([]*model.Product,
 		}
 		product.Rating = math.Round(rating*100) / 100
 		product.CommentsCount = &commsCount
+
+		properties, err := api.store.GetProductPropertiesFromStore(product.ID, product.Category)
+		if err != nil {
+			return nil, err
+		}
+		product.Properties = properties[:4]
 	}
 	return products, nil
 }
