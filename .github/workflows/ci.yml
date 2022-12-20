@@ -1,0 +1,66 @@
+# name: linter
+
+# on:
+#   push:
+#     branches: [master]
+#   pull_request:
+#     branches: [master]
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Use Node.js
+#         uses: actions/setup-node@v2
+#         with:
+#           node-version: 16.x
+#           cache: "npm"
+#       - name: Install modules
+#         run: npm ci
+#       - name: Run ESLint
+#         run: npm run lint
+#       - name: Run Stylelint
+#         run: npm run css
+name: CI/CD
+
+# on:
+#   push:
+#     branches: [master]
+#   pull_request:
+#     branches: [master]
+
+on:
+  push:
+    branches: ["**"]
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    steps:
+      - name: connect to host
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            ls
+      - name: try
+        run: ls
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: deploy
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         envs: GITHUB_SHA
+  #         host: ${{ secrets.HOST }}
+  #         username: ${{ secrets.USERNAME }}
+  #         key: ${{ secrets.PRIVATE_KEY }}
+  #         script: |
+  #           sudo docker rm -f $(sudo docker ps -aq)
+  #           sudo docker run -e VERSION=${GITHUB_SHA::8} -d -p 8080:8080 dmitrydorofeev/godeploy:${GITHUB_SHA::8}
