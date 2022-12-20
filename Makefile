@@ -1,27 +1,29 @@
-make build:
+test:
+	go test -race -coverpkg=./... -coverprofile cover.out.tmp ./...; cat cover.out.tmp | grep -v "_easyjson.go" > cover1.out.tmp; cat cover1.out.tmp | grep -v ".pb.go" > cover2.out.tmp; cat cover2.out.tmp | grep -v "_mock.go" > cover.out; go tool cover -func cover.out
+
+build:stop
 	sudo docker-compose up -d --build
 
-make build:d:
+build-it:
 	sudo docker-compose up --build
 
-make stop:
-	sudo docker container stop "$(sudo docker container ls | grep -Eo '[a-zA-Z0-9]{12}')"
+stop:docker-fix
+	sudo docker-compose down
 
-make container:prune:
+container-prune:
 	sudo docker container prune -f
 
-make image:prune:
+image-prune:
 	sudo docker image prune -f
 
-make inspect:postgres:
+inspect-postgres:
 	docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres
 
-make docker:postgres-bash:
+docker-postgres-bash:
 	sudo docker exec -it postgres bash
 
-make docker:prune-all:
+docker-prune-all:
 	sudo docker system prune -a
 
-make docker:fix:
+docker-fix:
 	sudo killall containerd-shim	
-	
