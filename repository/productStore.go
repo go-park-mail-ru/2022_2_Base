@@ -14,6 +14,7 @@ type ProductStoreInterface interface {
 	GetProductsWithCategoryFromStore(category string, lastitemid int, count int, sort string) ([]*model.Product, error)
 	GetProductFromStoreByID(itemsID int) (*model.Product, error)
 	GetProductsRatingAndCommsCountFromStore(itemsID int) (float64, int, error)
+	GetProductPropertiesFromStore(itemID int, itemCategory string) ([]*model.Property, error)
 	GetProductsBySearchFromStore(search string) ([]*model.Product, error)
 	GetSuggestionsFromStore(search string) ([]string, error)
 	GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error)
@@ -155,6 +156,7 @@ func (ps *ProductStore) GetProductsRatingAndCommsCountFromStore(itemsID int) (fl
 		log.Println("err get rows: ", err)
 		return 0, 0, nil
 	}
+	log.Println("got product Rating And Comms from db")
 	for rows.Next() {
 		err := rows.Scan(&commsCount, &rating)
 		if err != nil {
@@ -165,6 +167,59 @@ func (ps *ProductStore) GetProductsRatingAndCommsCountFromStore(itemsID int) (fl
 		return 0, 0, nil
 	}
 	return *rating, *commsCount, nil
+}
+
+func (ps *ProductStore) GetProductPropertiesFromStore(itemID int, itemCategory string) ([]*model.Property, error) {
+	//var rating *float64
+	//var commsCount *int
+	//product, err := ps.GetProductFromStoreByID(itemID)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	//products := [6]*model.Product{}
+	//log.Println("call get product properties from db")
+	//properties := make([]*model.Property, 6)
+	properties := []*model.Property{}
+	var rows *sql.Rows
+	var err error
+
+	propertiesDB := make([]model.Property, 6)
+	//log.Println(itemID, properties, propertiesDB)
+	switch itemCategory {
+	case "monitors":
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN monitors cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+	case "phones":
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN phones cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+	case "tvs":
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN tvs cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+	case "computers":
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN computers cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+	case "watches":
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN watches cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+	case "tablets":
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN tablets cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+	case "accessories":
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN accessories cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+
+	}
+
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return nil, err
+	}
+	log.Println("got product properties from db")
+	for rows.Next() {
+		err := rows.Scan(&propertiesDB[0].Name, &propertiesDB[1].Name, &propertiesDB[2].Name, &propertiesDB[3].Name, &propertiesDB[4].Name, &propertiesDB[5].Name, &propertiesDB[0].Description, &propertiesDB[1].Description, &propertiesDB[2].Description, &propertiesDB[3].Description, &propertiesDB[4].Description, &propertiesDB[5].Description)
+		if err != nil {
+			return nil, err
+		}
+		properties = append(properties, &propertiesDB[0], &propertiesDB[1], &propertiesDB[2], &propertiesDB[3], &propertiesDB[4], &propertiesDB[5])
+	}
+	//log.Println("aaaaaaaa")
+	//propertiesSlice := properties[:]
+	//log.Println(itemID, propertiesSlice, properties)
+	return properties, nil
 }
 
 func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Product, error) {

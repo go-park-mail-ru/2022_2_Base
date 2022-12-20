@@ -153,6 +153,10 @@ definitions:
         type: string
       price:
         type: number
+      properties:
+        items:
+          $ref: '#/definitions/model.Property'
+        type: array
       rating:
         type: number
     type: object
@@ -171,6 +175,13 @@ definitions:
   model.Promocode:
     properties:
       promocode:
+        type: string
+    type: object
+  model.Property:
+    properties:
+      description:
+        type: string
+      name:
         type: string
     type: object
   model.Response:

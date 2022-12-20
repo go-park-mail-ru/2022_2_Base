@@ -2,15 +2,21 @@ package model
 
 import "time"
 
+type Property struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+}
+
 type Product struct {
-	ID            int     `json:"id"`
-	Name          string  `json:"name"`
-	Category      string  `json:"category"`
-	Price         float64 `json:"lowprice,omitempty"`
-	NominalPrice  float64 `json:"price"`
-	Rating        float64 `json:"rating"`
-	Imgsrc        *string `json:"imgsrc,omitempty"`
-	CommentsCount *int    `json:"commentscount,omitempty"`
+	ID            int         `json:"id"`
+	Name          string      `json:"name"`
+	Category      string      `json:"category"`
+	Price         float64     `json:"lowprice,omitempty"`
+	NominalPrice  float64     `json:"price"`
+	Rating        float64     `json:"rating"`
+	Imgsrc        *string     `json:"imgsrc,omitempty"`
+	CommentsCount *int        `json:"commentscount,omitempty"`
+	Properties    []*Property `json:"properties"`
 }
 
 type ProductCart struct {

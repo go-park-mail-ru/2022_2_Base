@@ -191,7 +191,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	if user.Email != "" {
 		log.Println("error user exists ", err)
-		ReturnErrorJSON(w, baseErrors.ErrConflict409, 409)
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
 

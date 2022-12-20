@@ -1388,6 +1388,12 @@ const docTemplate = `{
                 "price": {
                     "type": "number"
                 },
+                "properties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Property"
+                    }
+                },
                 "rating": {
                     "type": "number"
                 }
@@ -1416,6 +1422,17 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "promocode": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Property": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }

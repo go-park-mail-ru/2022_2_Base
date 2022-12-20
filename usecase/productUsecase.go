@@ -62,7 +62,14 @@ func (api *ProductUsecase) GetProducts(lastitemid int, count int, sort string) (
 		}
 		product.Rating = math.Round(rating*100) / 100
 		product.CommentsCount = &commsCount
+
+		properties, err := api.store.GetProductPropertiesFromStore(product.ID, product.Category)
+		if err != nil {
+			return nil, err
+		}
+		product.Properties = properties
 	}
+
 	return products, nil
 }
 
