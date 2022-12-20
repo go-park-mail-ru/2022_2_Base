@@ -30,7 +30,7 @@ jobs:
         with:
           go-version: 1.18
       - uses: actions/checkout@v3
-      - run: go test ./...
+      - run: go test -race -coverpkg=./... -coverprofile cover.out.tmp ./...; cat cover.out.tmp
 
   deploy:
     needs: [linter, tests]
