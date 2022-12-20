@@ -1,35 +1,4 @@
-# name: linter
-
-# on:
-#   push:
-#     branches: [master]
-#   pull_request:
-#     branches: [master]
-
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Use Node.js
-#         uses: actions/setup-node@v2
-#         with:
-#           node-version: 16.x
-#           cache: "npm"
-#       - name: Install modules
-#         run: npm ci
-#       - name: Run ESLint
-#         run: npm run lint
-#       - name: Run Stylelint
-#         run: npm run css
-name: CI/CD
-
-# on:
-#   push:
-#     branches: [master]
-#   pull_request:
-#     branches: [master]
+name: CI
 
 on:
   push:
@@ -55,39 +24,4 @@ jobs:
         with:
           go-version: 1.18
       - uses: actions/checkout@v3
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: latest
       - run: go test -race -coverpkg=./... -coverprofile cover.out.tmp ./...; cat cover.out.tmp | grep -v "_easyjson.go" > cover1.out.tmp; cat cover1.out.tmp | grep -v ".pb.go" > cover2.out.tmp; cat cover2.out.tmp | grep -v "_mock.go" > cover.out; go tool cover -func cover.out
-
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: download service
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          script: cd back && git fetch && git checkout main && git pull
-
-      # - name: stop running service
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.HOST }}
-      #     username: ${{ secrets.USERNAME }}
-      #     key: ${{ secrets.KEY }}
-      #     script: |
-      #       cd back
-      #       make stop && make stop
-
-      # - name: deploy service
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.HOST }}
-      #     username: ${{ secrets.USERNAME }}
-      #     key: ${{ secrets.KEY }}
-      #     script: |
-      #       cd back
-      #       make build

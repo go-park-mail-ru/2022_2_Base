@@ -1,0 +1,44 @@
+# on:
+#   push:
+#     branches: [master]
+#   pull_request:
+#     branches: [master]
+
+name: CD
+
+on:
+  push:
+    branches: ["**"]
+
+jobs:
+  deploy:
+    needs: [linter, tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: download service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: cd back && git fetch && git checkout main && git pull
+
+      # - name: stop running service
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     username: ${{ secrets.USERNAME }}
+      #     key: ${{ secrets.KEY }}
+      #     script: |
+      #       cd back
+      #       make stop && make stop
+
+      # - name: deploy service
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     username: ${{ secrets.USERNAME }}
+      #     key: ${{ secrets.KEY }}
+      #     script: |
+      #       cd back
+      #       make build
