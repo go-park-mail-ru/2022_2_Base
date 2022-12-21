@@ -187,13 +187,6 @@ func TestInsertItemIntoCartById(t *testing.T) {
 			rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
 			return rr
 		}())
-	// mock.
-	// 	ExpectQuery("SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
-	// 	WithArgs(orderID).
-	// 	WillReturnRows(func() *sqlmock.Rows {
-	// 		rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
-	// 		return rr
-	// 	}())
 
 	mock.
 		ExpectExec("UPDATE orderItems").
@@ -302,13 +295,6 @@ func TestDeleteItemFromCartById(t *testing.T) {
 			rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
 			return rr
 		}())
-	// mock.
-	// 	ExpectQuery("SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
-	// 	WithArgs(orderID).
-	// 	WillReturnRows(func() *sqlmock.Rows {
-	// 		rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
-	// 		return rr
-	// 	}())
 
 	mock.
 		ExpectExec("DELETE").
@@ -346,13 +332,6 @@ func TestDeleteItemFromCartById(t *testing.T) {
 			rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(2, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
 			return rr
 		}())
-	// mock.
-	// 	ExpectQuery("SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
-	// 	WithArgs(orderID).
-	// 	WillReturnRows(func() *sqlmock.Rows {
-	// 		rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(2, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
-	// 		return rr
-	// 	}())
 
 	mock.
 		ExpectExec("UPDATE").
@@ -435,13 +414,6 @@ func TestUpdateCart(t *testing.T) {
 			rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
 			return rr
 		}())
-	// mock.
-	// 	ExpectQuery("SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
-	// 	WithArgs(orderID).
-	// 	WillReturnRows(func() *sqlmock.Rows {
-	// 		rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
-	// 		return rr
-	// 	}())
 
 	repo := &ProductStore{
 		db: db,

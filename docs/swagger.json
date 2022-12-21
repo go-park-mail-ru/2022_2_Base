@@ -685,6 +685,58 @@
                 }
             }
         },
+        "/productswithdiscount": {
+            "get": {
+                "description": "Gets products with biggest discount for main page",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets products with biggest discount for main page",
+                "operationId": "getProductsWithBiggestDiscount",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "lastitemid",
+                        "name": "lastitemid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "count",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/recommendations/{id}": {
             "get": {
                 "description": "Gets recommendations for product by id",

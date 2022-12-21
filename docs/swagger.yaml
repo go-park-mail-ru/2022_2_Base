@@ -700,6 +700,42 @@ paths:
       summary: gets product's comments
       tags:
       - Comments
+  /productswithdiscount:
+    get:
+      consumes:
+      - application/json
+      description: Gets products with biggest discount for main page
+      operationId: getProductsWithBiggestDiscount
+      parameters:
+      - description: lastitemid
+        in: query
+        name: lastitemid
+        required: true
+        type: string
+      - description: count
+        in: query
+        name: count
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets products with biggest discount for main page
+      tags:
+      - Products
   /recommendations/{id}:
     get:
       consumes:

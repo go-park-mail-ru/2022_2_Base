@@ -134,6 +134,57 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 	json.NewEncoder(w).Encode(&model.Response{Body: products})
 }
 
+// GetProductsWithBiggestDiscount godoc
+// @Summary Gets products with biggest discount for main page
+// @Description Gets products with biggest discount for main page
+// @ID getProductsWithBiggestDiscount
+// @Accept  json
+// @Produce  json
+// @Tags Products
+// @Param   lastitemid    query     string  true  "lastitemid"
+// @Param   count         query     string  true  "count"
+// @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /productswithdiscount [get]
+func (api *ProductHandler) GetProductsWithBiggestDiscount(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	lastitemidS := r.URL.Query().Get("lastitemid")
+	countS := r.URL.Query().Get("count")
+	lastitemid, err := strconv.Atoi(lastitemidS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+	count, err := strconv.Atoi(countS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+	products, err := api.usecase.GetProductsWithBiggestDiscount(lastitemid, count)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	for _, prod := range products {
+		if prod.Imgsrc != nil {
+			*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
+		}
+		prod.Name = sanitizer.Sanitize(prod.Name)
+		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
+	}
+	json.NewEncoder(w).Encode(&model.Response{Body: products})
+}
+
 // GetProductByID godoc
 // @Summary Gets product by id
 // @Description Gets product by id

@@ -20,6 +20,7 @@ import (
 type ProductUsecaseInterface interface {
 	GetProducts(lastitemid int, count int, sort string) ([]*model.Product, error)
 	GetProductsWithCategory(cat string, lastitemid int, count int, sort string) ([]*model.Product, error)
+	GetProductsWithBiggestDiscount(lastitemid int, count int) ([]*model.Product, error)
 	GetProductByID(id int) (*model.Product, error)
 	GetProductsBySearch(search string) ([]*model.Product, error)
 	GetSuggestions(search string) ([]string, error)
@@ -88,6 +89,22 @@ func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, c
 			return nil, err
 		}
 		product.Properties = properties[:4]
+	}
+	return products, nil
+}
+
+func (api *ProductUsecase) GetProductsWithBiggestDiscount(lastitemid int, count int) ([]*model.Product, error) {
+	products, err := api.store.GetProductsWithBiggestDiscountFromStore(lastitemid, count)
+	if err != nil {
+		return nil, err
+	}
+	for _, product := range products {
+		rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.Rating = math.Round(rating*100) / 100
+		product.CommentsCount = &commsCount
 	}
 	return products, nil
 }

@@ -12,6 +12,7 @@ import (
 type ProductStoreInterface interface {
 	GetProductsFromStore(lastitemid int, count int, sort string) ([]*model.Product, error)
 	GetProductsWithCategoryFromStore(category string, lastitemid int, count int, sort string) ([]*model.Product, error)
+	GetProductsWithBiggestDiscountFromStore(lastitemid int, count int) ([]*model.Product, error)
 	GetProductFromStoreByID(itemsID int) (*model.Product, error)
 	GetProductsRatingAndCommsCountFromStore(itemsID int) (float64, int, error)
 	GetProductPropertiesFromStore(itemID int, itemCategory string) ([]*model.Property, error)
@@ -115,6 +116,34 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND id > $2 ORDER BY id LIMIT $3;`, category, lastitemid, count)
 	}
 
+	defer rows.Close()
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return nil, err
+	}
+	log.Println("got products from db")
+	for rows.Next() {
+		dat := model.Product{}
+		err := rows.Scan(&dat.ID, &dat.Name, &dat.Category, &dat.Price, &dat.NominalPrice, &dat.Rating, &dat.Imgsrc)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, &dat)
+	}
+	return products, nil
+}
+
+func (ps *ProductStore) GetProductsWithBiggestDiscountFromStore(lastitemid int, count int) ([]*model.Product, error) {
+	products := []*model.Product{}
+	lastProduct, err := ps.GetProductFromStoreByID(lastitemid)
+	if err != nil {
+		return nil, err
+	}
+	if lastitemid == 0 {
+		lastProduct.Price = 1
+		lastProduct.NominalPrice = 1
+	}
+	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (1 - price/nominalprice, id) < ($1, $2) ORDER BY (1 - price/nominalprice, id) DESC LIMIT $3;`, 1-lastProduct.Price/lastProduct.NominalPrice, lastProduct.ID, count)
 	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
