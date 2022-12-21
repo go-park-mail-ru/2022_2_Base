@@ -62,6 +62,7 @@ jobs:
             echo TEST_DB_PASSWORD=${{ secrets.TEST_DB_PASSWORD }} >> .env
             echo TEST_DB_NAME=${{ secrets.TEST_DB_NAME }} >> .env
             echo TEST_DB_PORT=${{ secrets.TEST_DB_PORT }} >> .env
+            echo MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} >> .env
 
       - name: stop running service
         uses: appleboy/ssh-action@master
