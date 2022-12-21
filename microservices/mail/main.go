@@ -51,6 +51,8 @@ func NewMailManager() *MailManager {
 
 type info struct {
 	Usename         string
+	Promocode       string
+	OrderID         int
 	BigImgSrc       string
 	ImgEmailLogoSrc string
 	ImgTGLogoSrc    string

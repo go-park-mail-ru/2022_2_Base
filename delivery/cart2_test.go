@@ -80,8 +80,12 @@ func TestMakeOrder(t *testing.T) {
 	assert.NoError(t, err)
 	testOrder.UserID = testUserProfile.ID
 	testOrder.DeliveryDate = time.Unix(1, 10)
+	testOrderID := 1
+	testMail := model.Mail{Type: "orderstatus", Username: testUserProfile.Username, Useremail: testUserProfile.Email, OrderID: testOrderID, OrderStatus: "created"}
+
 	//ok
-	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(nil)
+	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(testOrderID, nil)
+	userUsecaseMock.EXPECT().SendMail(testMail).Return(nil)
 	url := "/api/v1/" + "cart/makeorder"
 	data, _ := json.Marshal(testOrder)
 	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
@@ -113,7 +117,7 @@ func TestMakeOrder(t *testing.T) {
 	assert.Equal(t, 500, rr.Code)
 
 	//err 500 db
-	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(baseErrors.ErrServerError500)
+	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(0, baseErrors.ErrServerError500)
 	data, _ = json.Marshal(testOrder)
 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
 	if err != nil {
@@ -133,6 +137,18 @@ func TestMakeOrder(t *testing.T) {
 	rr = httptest.NewRecorder()
 	orderHandler.CreateComment(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, 401, rr.Code)
+
+	// //err 500 microservice
+	// productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(testOrderID, nil)
+	// userUsecaseMock.EXPECT().SendMail(testMail).Return(baseErrors.ErrServerError500)
+	// data, _ = json.Marshal(testOrder)
+	// req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	// rr = httptest.NewRecorder()
+	// orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	// assert.Equal(t, 500, rr.Code)
 }
 
 func TestGetComments(t *testing.T) {

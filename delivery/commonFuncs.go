@@ -345,12 +345,14 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	RegisterMail := model.Mail{Type: "orderstatus", Username: oldUserData.Username, Useremail: oldUserData.Email, OrderID: orderID, OrderStatus: "created"}
-	err = api.usHandler.usecase.SendMail(RegisterMail)
-	if err != nil {
-		log.Println("error sending email ", err)
-		//ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-		//return
-	}
+	go func() {
+		err = api.usHandler.usecase.SendMail(RegisterMail)
+		if err != nil {
+			log.Println("error sending email ", err)
+			//ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+			//return
+		}
+	}()
 
 	json.NewEncoder(w).Encode(&model.Response{})
 }

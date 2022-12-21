@@ -7,7 +7,7 @@ package mocks
 import (
         reflect "reflect"
         model "serv/domain/model"
-        gen_files "serv/microservices/orders/gen_files"
+        orders "serv/microservices/orders/gen_files"
 
         gomock "github.com/golang/mock/gomock"
 )
@@ -77,6 +77,20 @@ func (mr *MockProductUsecaseInterfaceMockRecorder) DeleteFromOrder(userID, itemI
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFromOrder", reflect.TypeOf((*MockProductUsecaseInterface)(nil).DeleteFromOrder), userID, itemID)
 }
 
+// DeleteItemFromFavorites mocks base method.
+func (m *MockProductUsecaseInterface) DeleteItemFromFavorites(userID, itemID int) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "DeleteItemFromFavorites", userID, itemID)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// DeleteItemFromFavorites indicates an expected call of DeleteItemFromFavorites.
+func (mr *MockProductUsecaseInterfaceMockRecorder) DeleteItemFromFavorites(userID, itemID interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteItemFromFavorites", reflect.TypeOf((*MockProductUsecaseInterface)(nil).DeleteItemFromFavorites), userID, itemID)
+}
+
 // GetCart mocks base method.
 func (m *MockProductUsecaseInterface) GetCart(userID int) (*model.Order, error) {
         m.ctrl.T.Helper()
@@ -107,11 +121,26 @@ func (mr *MockProductUsecaseInterfaceMockRecorder) GetComments(productID interfa
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetComments", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetComments), productID)
 }
 
+// GetFavorites mocks base method.
+func (m *MockProductUsecaseInterface) GetFavorites(userID, lastitemid, count int, sort string) ([]*model.Product, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetFavorites", userID, lastitemid, count, sort)
+        ret0, _ := ret[0].([]*model.Product)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// GetFavorites indicates an expected call of GetFavorites.
+func (mr *MockProductUsecaseInterfaceMockRecorder) GetFavorites(userID, lastitemid, count, sort interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFavorites", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetFavorites), userID, lastitemid, count, sort)
+}
+
 // GetOrders mocks base method.
-func (m *MockProductUsecaseInterface) GetOrders(userID int) (*gen_files.OrdersResponse, error) {
+func (m *MockProductUsecaseInterface) GetOrders(userID int) (*orders.OrdersResponse, error) {
         m.ctrl.T.Helper()
         ret := m.ctrl.Call(m, "GetOrders", userID)
-        ret0, _ := ret[0].(*gen_files.OrdersResponse)
+        ret0, _ := ret[0].(*orders.OrdersResponse)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
@@ -182,6 +211,21 @@ func (mr *MockProductUsecaseInterfaceMockRecorder) GetProductsWithCategory(cat, 
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsWithCategory", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProductsWithCategory), cat, lastitemid, count, sort)
 }
 
+// GetRecommendationProducts mocks base method.
+func (m *MockProductUsecaseInterface) GetRecommendationProducts(itemID int) ([]*model.Product, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetRecommendationProducts", itemID)
+        ret0, _ := ret[0].([]*model.Product)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// GetRecommendationProducts indicates an expected call of GetRecommendationProducts.
+func (mr *MockProductUsecaseInterfaceMockRecorder) GetRecommendationProducts(itemID interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecommendationProducts", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetRecommendationProducts), itemID)
+}
+
 // GetSuggestions mocks base method.
 func (m *MockProductUsecaseInterface) GetSuggestions(search string) ([]string, error) {
         m.ctrl.T.Helper()
@@ -197,18 +241,61 @@ func (mr *MockProductUsecaseInterfaceMockRecorder) GetSuggestions(search interfa
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSuggestions", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetSuggestions), search)
 }
 
-// MakeOrder mocks base method.
-func (m *MockProductUsecaseInterface) MakeOrder(in *model.MakeOrder) error {
+// InsertItemIntoFavorites mocks base method.
+func (m *MockProductUsecaseInterface) InsertItemIntoFavorites(userID, itemID int) error {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "MakeOrder", in)
+        ret := m.ctrl.Call(m, "InsertItemIntoFavorites", userID, itemID)
         ret0, _ := ret[0].(error)
         return ret0
+}
+
+// InsertItemIntoFavorites indicates an expected call of InsertItemIntoFavorites.
+func (mr *MockProductUsecaseInterfaceMockRecorder) InsertItemIntoFavorites(userID, itemID interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertItemIntoFavorites", reflect.TypeOf((*MockProductUsecaseInterface)(nil).InsertItemIntoFavorites), userID, itemID)
+}
+
+// MakeOrder mocks base method.
+func (m *MockProductUsecaseInterface) MakeOrder(in *model.MakeOrder) (int, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "MakeOrder", in)
+        ret0, _ := ret[0].(int)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
 }
 
 // MakeOrder indicates an expected call of MakeOrder.
 func (mr *MockProductUsecaseInterfaceMockRecorder) MakeOrder(in interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeOrder", reflect.TypeOf((*MockProductUsecaseInterface)(nil).MakeOrder), in)
+}
+
+// RecalculatePrices mocks base method.
+func (m *MockProductUsecaseInterface) RecalculatePrices(userID int, promocode string) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "RecalculatePrices", userID, promocode)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// RecalculatePrices indicates an expected call of RecalculatePrices.
+func (mr *MockProductUsecaseInterfaceMockRecorder) RecalculatePrices(userID, promocode interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecalculatePrices", reflect.TypeOf((*MockProductUsecaseInterface)(nil).RecalculatePrices), userID, promocode)
+}
+
+// SetPromocode mocks base method.
+func (m *MockProductUsecaseInterface) SetPromocode(userID int, promocode string) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "SetPromocode", userID, promocode)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// SetPromocode indicates an expected call of SetPromocode.
+func (mr *MockProductUsecaseInterfaceMockRecorder) SetPromocode(userID, promocode interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPromocode", reflect.TypeOf((*MockProductUsecaseInterface)(nil).SetPromocode), userID, promocode)
 }
 
 // UpdateOrder mocks base method.

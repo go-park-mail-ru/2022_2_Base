@@ -157,7 +157,19 @@ func (api *ProductUsecase) GetCart(userID int) (*model.Order, error) {
 }
 
 func (api *ProductUsecase) UpdateOrder(userID int, items *[]int) error {
-	return api.store.UpdateCart(userID, items)
+	cart, err := api.store.GetCart(userID)
+	if err != nil {
+		return err
+	}
+	err = api.store.UpdateCart(userID, items)
+	if err != nil {
+		return err
+	}
+	if cart.Promocode != nil {
+		return api.RecalculatePrices(userID, *cart.Promocode)
+	}
+	return nil
+	//return api.store.UpdateCart(userID, items)
 }
 
 func (api *ProductUsecase) RecalculatePrices(userID int, promocode string) error {

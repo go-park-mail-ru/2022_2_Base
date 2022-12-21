@@ -428,11 +428,11 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
-	orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
-	if err != nil {
-		return err
-	}
-	for _, prod := range orderItems {
+	// orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
+	// if err != nil {
+	// 	return err
+	// }
+	for _, prod := range cart.Items {
 		if prod.Item.ID == itemID {
 			_, err = ps.db.Exec(`UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
 			if err != nil {
@@ -457,11 +457,11 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
-	orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
-	if err != nil {
-		return err
-	}
-	for _, prod := range orderItems {
+	// orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
+	// if err != nil {
+	// 	return err
+	// }
+	for _, prod := range cart.Items {
 		if prod.Item.ID == itemID {
 			if prod.Count != 1 {
 				_, err = ps.db.Exec(`UPDATE orderItems SET count = count-1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)

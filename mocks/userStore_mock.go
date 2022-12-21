@@ -35,11 +35,12 @@ func (m *MockUserStoreInterface) EXPECT() *MockUserStoreInterfaceMockRecorder {
 }
 
 // AddUser mocks base method.
-func (m *MockUserStoreInterface) AddUser(in *model.UserDB) error {
+func (m *MockUserStoreInterface) AddUser(in *model.UserDB) (int, error) {
         m.ctrl.T.Helper()
         ret := m.ctrl.Call(m, "AddUser", in)
-        ret0, _ := ret[0].(error)
-        return ret0
+        ret0, _ := ret[0].(int)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
 }
 
 // AddUser indicates an expected call of AddUser.

@@ -143,11 +143,19 @@ func TestSignUp(t *testing.T) {
 	testsessID := new(auth.SessionID)
 	err := faker.FakeData(testsessID)
 	assert.NoError(t, err)
+	testUserID := 2
+	testPromocode := "Az2"
+	testMail := model.Mail{Type: "greeting", Username: testUser.Username, Useremail: testUser.Email}
+	testMailPromo := model.Mail{Type: "promocode", Username: testUser.Username, Useremail: testUser.Email, Promocode: testPromocode}
 
 	//ok
 	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{}, nil)
-	userUsecaseMock.EXPECT().AddUser(&testUser2).Return(nil)
+	userUsecaseMock.EXPECT().AddUser(&testUser2).Return(testUserID, nil)
+	userUsecaseMock.EXPECT().SendMail(testMail).Return(nil)
+	userUsecaseMock.EXPECT().GenPromocode(testUserID).Return(testPromocode)
+	userUsecaseMock.EXPECT().SendMail(testMailPromo).Return(nil)
 	userUsecaseMock.EXPECT().SetSession(testUser.Email).Return(testsessID, nil)
+
 	url := conf.PathLogin
 	data, _ := json.Marshal(testUser)
 	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
@@ -195,7 +203,7 @@ func TestSignUp(t *testing.T) {
 	rr = httptest.NewRecorder()
 	userHandler = NewSessionHandler(userUsecaseMock)
 	userHandler.SignUp(rr, req)
-	assert.Equal(t, 409, rr.Code)
+	assert.Equal(t, 401, rr.Code)
 
 	//err 401 err validation
 	testUser3 := model.UserCreateParams{Email: "a", Username: "art", Password: "12345678"}
