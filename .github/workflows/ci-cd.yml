@@ -38,6 +38,16 @@ jobs:
     needs: [linter, tests]
     runs-on: ubuntu-latest
     steps:
+      - name: stop running service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd back
+            make stop && make stop && make stop
+
       - name: download service
         uses: appleboy/scp-action@master
         with:
@@ -63,16 +73,6 @@ jobs:
             echo TEST_DB_NAME=${{ secrets.TEST_DB_NAME }} >> .env
             echo TEST_DB_PORT=${{ secrets.TEST_DB_PORT }} >> .env
             echo MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} >> .env
-
-      - name: stop running service
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          script: |
-            cd back
-            make stop && make stop
 
       - name: deploy service
         uses: appleboy/ssh-action@master

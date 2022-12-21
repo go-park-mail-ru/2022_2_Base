@@ -1,7 +1,7 @@
 test:
 	go test -race -coverpkg=./... -coverprofile cover.out.tmp ./...; cat cover.out.tmp | grep -v "_easyjson.go" > cover1.out.tmp; cat cover1.out.tmp | grep -v ".pb.go" > cover2.out.tmp; cat cover2.out.tmp | grep -v "_mock.go" > cover.out; go tool cover -func cover.out
 
-build:stop
+build:
 	sudo docker-compose up -d --build
 
 build-it:
