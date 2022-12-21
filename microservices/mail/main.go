@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
+	"path/filepath"
 
 	mail "serv/microservices/mail/gen_files"
 
@@ -16,6 +16,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
+
+	"bytes"
+	"html/template"
+	conf "serv/config"
 )
 
 func main() {
@@ -45,10 +49,41 @@ func NewMailManager() *MailManager {
 	return &MailManager{}
 }
 
+type info struct {
+	Usename         string
+	BigImgSrc       string
+	ImgEmailLogoSrc string
+	ImgTGLogoSrc    string
+	ImgGitLogoSrc   string
+}
+
 func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothing, error) {
 	log.Println("call SendMail", in)
 	var header string = "Письмо"
 	var textbody string = "This is the body of the mail"
+
+	fp := filepath.Join("mails_templates", "mail_register", "index.html")
+
+	t := template.New(fp)
+	//t := template.New("./mails_templates/mail_register/index.html")
+
+	var err error
+	//t, err = t.ParseFiles("./mails_templates/mail_register/index.html")
+	t, err = t.ParseFiles(fp)
+	if err != nil {
+		log.Println(err)
+	}
+
+	var tpl bytes.Buffer
+	i := info{Usename: in.Username, BigImgSrc: "images/image-2.png", ImgEmailLogoSrc: "images/image-3.png", ImgTGLogoSrc: "images/image-3.png", ImgGitLogoSrc: "images/image-4.png"}
+	//if err := t.ExecuteTemplate(&tpl, "./mails_templates/mail_register/index.html", i); err != nil {
+	if err := t.ExecuteTemplate(&tpl, "index.html", i); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+	//log.Println(result)
+
 	switch in.Type {
 	case "orderstatus":
 		header = "Изменение статуса заказа"
@@ -66,12 +101,14 @@ func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothi
 	}
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", "Musicialbaum@mail.ru")
-	msg.SetHeader("To", in.Useremail)
+	//msg.SetHeader("To", in.Useremail)
+	msg.SetHeader("To", "Scorpion1remeres@gmail.com")
 	msg.SetHeader("Subject", header)
-	msg.SetBody("text/html", "<b>"+textbody+"</b>")
+	//msg.SetBody("text/html", "<b>"+textbody+"</b>")
+	msg.SetBody("text/html", result)
 	//msg.Attach("/home/User/cat.jpg")
-	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", os.Getenv("MailPassword"))
-	// Send the email
+	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", conf.MailPassword)
+	//Send the email
 	if err := n.DialAndSend(msg); err != nil {
 		log.Println(err)
 		return &mail.Nothing{IsSuccessful: false}, err
