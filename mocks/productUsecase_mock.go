@@ -196,6 +196,21 @@ func (mr *MockProductUsecaseInterfaceMockRecorder) GetProductsBySearch(search in
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsBySearch", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProductsBySearch), search)
 }
 
+// GetProductsWithBiggestDiscount mocks base method.
+func (m *MockProductUsecaseInterface) GetProductsWithBiggestDiscount(lastitemid, count int) ([]*model.Product, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetProductsWithBiggestDiscount", lastitemid, count)
+        ret0, _ := ret[0].([]*model.Product)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// GetProductsWithBiggestDiscount indicates an expected call of GetProductsWithBiggestDiscount.
+func (mr *MockProductUsecaseInterfaceMockRecorder) GetProductsWithBiggestDiscount(lastitemid, count interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsWithBiggestDiscount", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProductsWithBiggestDiscount), lastitemid, count)
+}
+
 // GetProductsWithCategory mocks base method.
 func (m *MockProductUsecaseInterface) GetProductsWithCategory(cat string, lastitemid, count int, sort string) ([]*model.Product, error) {
         m.ctrl.T.Helper()

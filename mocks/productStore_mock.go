@@ -240,6 +240,21 @@ func (mr *MockProductStoreInterfaceMockRecorder) GetProductsRatingAndCommsCountF
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsRatingAndCommsCountFromStore", reflect.TypeOf((*MockProductStoreInterface)(nil).GetProductsRatingAndCommsCountFromStore), itemsID)
 }
 
+// GetProductsWithBiggestDiscountFromStore mocks base method.
+func (m *MockProductStoreInterface) GetProductsWithBiggestDiscountFromStore(lastitemid, count int) ([]*model.Product, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetProductsWithBiggestDiscountFromStore", lastitemid, count)
+        ret0, _ := ret[0].([]*model.Product)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// GetProductsWithBiggestDiscountFromStore indicates an expected call of GetProductsWithBiggestDiscountFromStore.
+func (mr *MockProductStoreInterfaceMockRecorder) GetProductsWithBiggestDiscountFromStore(lastitemid, count interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsWithBiggestDiscountFromStore", reflect.TypeOf((*MockProductStoreInterface)(nil).GetProductsWithBiggestDiscountFromStore), lastitemid, count)
+}
+
 // GetProductsWithCategoryFromStore mocks base method.
 func (m *MockProductStoreInterface) GetProductsWithCategoryFromStore(category string, lastitemid, count int, sort string) ([]*model.Product, error) {
         m.ctrl.T.Helper()

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"time"
 
 	"testing"
@@ -85,7 +86,11 @@ func TestMakeOrder(t *testing.T) {
 
 	//ok
 	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(testOrderID, nil)
-	userUsecaseMock.EXPECT().SendMail(testMail).Return(nil)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	userUsecaseMock.EXPECT().SendMail(testMail).Do(func(arg1 interface{}) {
+		defer wg.Done()
+	})
 	url := "/api/v1/" + "cart/makeorder"
 	data, _ := json.Marshal(testOrder)
 	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
@@ -94,6 +99,7 @@ func TestMakeOrder(t *testing.T) {
 	}
 	rr := httptest.NewRecorder()
 	orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	wg.Wait()
 	assert.Equal(t, http.StatusOK, rr.Code)
 
 	//err 400 query err
@@ -281,4 +287,99 @@ func TestCreateComment(t *testing.T) {
 	rr = httptest.NewRecorder()
 	orderHandler.CreateComment(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, 401, rr.Code)
+}
+
+func TestSetPromocode(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userHandler := NewUserHandler(userUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock)
+	orderHandler := NewOrderHandler(userHandler, productHandler)
+
+	testUserProfile := new(model.UserProfile)
+	err := faker.FakeData(testUserProfile)
+	assert.NoError(t, err)
+	testPromocode := new(model.Promocode)
+	err = faker.FakeData(testPromocode)
+	assert.NoError(t, err)
+
+	//ok
+	productUsecaseMock.EXPECT().SetPromocode(testUserProfile.ID, testPromocode.Promocode).Return(nil)
+	url := "/api/v1" + "/cart/setpromocode"
+	data, _ := json.Marshal(testPromocode)
+	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	orderHandler.SetPromocode(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	//err 400 query err
+	data, _ = json.Marshal("sfdsd")
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.SetPromocode(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 400, rr.Code)
+
+	//err 500 no user
+	data, _ = json.Marshal(testPromocode)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.SetPromocode(rr, req)
+	assert.Equal(t, 500, rr.Code)
+
+	//err 500 db
+	productUsecaseMock.EXPECT().SetPromocode(testUserProfile.ID, testPromocode.Promocode).Return(baseErrors.ErrServerError500)
+	data, _ = json.Marshal(testPromocode)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.SetPromocode(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 500, rr.Code)
+
+	//err 409 db
+	productUsecaseMock.EXPECT().SetPromocode(testUserProfile.ID, testPromocode.Promocode).Return(baseErrors.ErrConflict409)
+	data, _ = json.Marshal(testPromocode)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.SetPromocode(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 409, rr.Code)
+
+	//err 401 db
+	productUsecaseMock.EXPECT().SetPromocode(testUserProfile.ID, testPromocode.Promocode).Return(baseErrors.ErrUnauthorized401)
+	data, _ = json.Marshal(testPromocode)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.SetPromocode(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 403, rr.Code)
+
+	//err 403 db
+	productUsecaseMock.EXPECT().SetPromocode(testUserProfile.ID, testPromocode.Promocode).Return(baseErrors.ErrForbidden403)
+	data, _ = json.Marshal(testPromocode)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.SetPromocode(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 403, rr.Code)
 }

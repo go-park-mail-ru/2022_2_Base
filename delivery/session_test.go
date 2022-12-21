@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -128,7 +129,7 @@ func TestLogin(t *testing.T) {
 }
 
 func TestSignUp(t *testing.T) {
-	t.Parallel()
+	//t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -145,16 +146,29 @@ func TestSignUp(t *testing.T) {
 	assert.NoError(t, err)
 	testUserID := 2
 	testPromocode := "Az2"
-	testMail := model.Mail{Type: "greeting", Username: testUser.Username, Useremail: testUser.Email}
+	//testMail := model.Mail{Type: "greeting", Username: testUser.Username, Useremail: testUser.Email}
 	testMailPromo := model.Mail{Type: "promocode", Username: testUser.Username, Useremail: testUser.Email, Promocode: testPromocode}
 
 	//ok
 	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{}, nil)
 	userUsecaseMock.EXPECT().AddUser(&testUser2).Return(testUserID, nil)
-	userUsecaseMock.EXPECT().SendMail(testMail).Return(nil)
-	userUsecaseMock.EXPECT().GenPromocode(testUserID).Return(testPromocode)
-	userUsecaseMock.EXPECT().SendMail(testMailPromo).Return(nil)
+	//userUsecaseMock.EXPECT().SendMail(testMail).Return(nil)
+	//userUsecaseMock.EXPECT().GenPromocode(testUserID).Return(testPromocode)
+
 	userUsecaseMock.EXPECT().SetSession(testUser.Email).Return(testsessID, nil)
+	userUsecaseMock.EXPECT().GenPromocode(testUserID).Return(testPromocode)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	// userUsecaseMock.EXPECT().SendMail(testMail).Do(func(arg1 interface{}) {
+	// 	defer wg.Done()
+	// })
+	//wg.Add(1)
+	// userUsecaseMock.EXPECT().GenPromocode(testUserID).Do(func(arg1 interface{}) {
+	// 	defer wg.Done()
+	// })
+	userUsecaseMock.EXPECT().SendMail(testMailPromo).Do(func(arg2 interface{}) {
+		defer wg.Done()
+	})
 
 	url := conf.PathLogin
 	data, _ := json.Marshal(testUser)
@@ -165,6 +179,7 @@ func TestSignUp(t *testing.T) {
 	rr := httptest.NewRecorder()
 	userHandler := NewSessionHandler(userUsecaseMock)
 	userHandler.SignUp(rr, req)
+	wg.Wait()
 	assert.Equal(t, 201, rr.Code)
 
 	//err 400 query err
