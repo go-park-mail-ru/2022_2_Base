@@ -1,8 +1,7 @@
 name: CI/CD
 
 on:
-  # push:
-  pull_request:
+  push:
     branches: [main]
 
 jobs:
@@ -36,20 +35,10 @@ jobs:
         run: go test -race -coverpkg=./... -coverprofile cover.out.tmp ./...; cat cover.out.tmp | grep -v "_easyjson.go" > cover1.out.tmp; cat cover1.out.tmp | grep -v ".pb.go" > cover2.out.tmp; cat cover2.out.tmp | grep -v "_mock.go" > cover.out; go tool cover -func cover.out
 
   deploy:
-    # needs: [linter, tests]
+    needs: [linter, tests]
     runs-on: ubuntu-latest
     steps:
-      # - name: download service
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.HOST }}
-      #     username: ${{ secrets.USERNAME }}
-      #     key: ${{ secrets.KEY }}
-      #     script: |
-      #       sudo apt update && sudo apt install git
-      #       cd back && git fetch && git checkout main && git pull
-
-      - name: Transfer bin file to server
+      - name: download service
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -74,22 +63,22 @@ jobs:
             echo TEST_DB_NAME=${{ secrets.TEST_DB_NAME }} >> .env
             echo TEST_DB_PORT=${{ secrets.TEST_DB_PORT }} >> .env
 
-      # - name: stop running service
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.HOST }}
-      #     username: ${{ secrets.USERNAME }}
-      #     key: ${{ secrets.KEY }}
-      #     script: |
-      #       cd back
-      #       make stop && make stop
+      - name: stop running service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd back
+            make stop && make stop
 
-      # - name: deploy service
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.HOST }}
-      #     username: ${{ secrets.USERNAME }}
-      #     key: ${{ secrets.KEY }}
-      #     script: |
-      #       cd back
-      #       make build
+      - name: deploy service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd back
+            make build
