@@ -26,4 +26,5 @@ docker-prune-all:
 	sudo docker system prune -a
 
 docker-fix:
-	- killall containerd-shim
+	@true
+	sudo killall containerd-shim
