@@ -8,18 +8,18 @@ import (
 	orderst "serv/microservices/orders/repository"
 )
 
-// type OrderUsecaseInterface interface {
-// 	MakeOrder(ctx context.Context, in *orders.MakeOrderType) error
-// 	GetOrders(userID int) ([]*model.Order, error)
-// 	GetOrdersAddress(addressID int) (model.Address, error)
-// 	GetOrdersPayment(paymentID int) (model.PaymentMethod, error)
-// }
+type OrderUsecaseInterface interface {
+	MakeOrder(ctx context.Context, in *orders.MakeOrderType) error
+	GetOrders(userID int) ([]*model.Order, error)
+	GetOrdersAddress(addressID int) (model.Address, error)
+	GetOrdersPayment(paymentID int) (model.PaymentMethod, error)
+}
 
 type OrderUsecase struct {
 	store orderst.OrderStoreInterface
 }
 
-func NewOrderUsecase(os orderst.OrderStoreInterface) *OrderUsecase {
+func NewOrderUsecase(os orderst.OrderStoreInterface) OrderUsecaseInterface {
 	return &OrderUsecase{
 		store: os,
 	}

@@ -385,3 +385,102 @@ func TestCreateComment(t *testing.T) {
 	err = prodUsecase.CreateComment(testComm)
 	assert.Equal(t, baseErrors.ErrServerError500, err)
 }
+
+func TestGetRecommendationProducts(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
+	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
+	mailManager := mocks.NewMockMailServiceClient(ctrl)
+	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager, mailManager)
+	mockItemID := 0
+	testProducts := new([3]*model.Product)
+	err := faker.FakeData(testProducts)
+	testProductsSlice := testProducts[:]
+	for _, testProd := range testProductsSlice {
+		testProd.Category = "phones"
+	}
+	assert.NoError(t, err)
+	prodStoreMock.EXPECT().GetRecommendationProductsFromStore(mockItemID).Return(testProductsSlice, nil)
+	for _, testProd := range testProductsSlice {
+		prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProd.ID).Return(testProd.Rating, *testProd.CommentsCount, nil)
+	}
+	products, err := prodUsecase.GetRecommendationProducts(mockItemID)
+	assert.NoError(t, err)
+	assert.Equal(t, testProductsSlice, products)
+	// error
+	prodStoreMock.EXPECT().GetRecommendationProductsFromStore(mockItemID).Return(nil, baseErrors.ErrServerError500)
+	_, err = prodUsecase.GetRecommendationProducts(mockItemID)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+}
+
+func TestGetFavorites(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
+	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
+	mailManager := mocks.NewMockMailServiceClient(ctrl)
+	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager, mailManager)
+	mockItemID := 0
+	mockLastItemID := 0
+	mockCount := 1
+	mockSort := ""
+	testProducts := new([3]*model.Product)
+	err := faker.FakeData(testProducts)
+	testProductsSlice := testProducts[:]
+	for _, testProd := range testProductsSlice {
+		testProd.Category = "phones"
+		//testProd.
+	}
+	assert.NoError(t, err)
+	prodStoreMock.EXPECT().GetFavoritesDB(mockItemID, mockLastItemID, mockCount, mockSort).Return(testProductsSlice, nil)
+	for _, testProd := range testProductsSlice {
+		prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProd.ID).Return(testProd.Rating, *testProd.CommentsCount, nil)
+		prodStoreMock.EXPECT().GetProductPropertiesFromStore(testProd.ID, testProd.Category).Return(testProd.Properties, nil)
+	}
+	products, err := prodUsecase.GetFavorites(mockItemID, mockLastItemID, mockCount, mockSort)
+	assert.NoError(t, err)
+	assert.Equal(t, testProductsSlice, products)
+	// error
+	prodStoreMock.EXPECT().GetFavoritesDB(mockItemID, mockLastItemID, mockCount, mockSort).Return(nil, baseErrors.ErrServerError500)
+	_, err = prodUsecase.GetFavorites(mockItemID, mockLastItemID, mockCount, mockSort)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+}
+
+func TestUpdateFavorites(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prodStoreMock := mocks.NewMockProductStoreInterface(ctrl)
+	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
+
+	mailManager := mocks.NewMockMailServiceClient(ctrl)
+	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager, mailManager)
+
+	var itemID int = 1
+	var userID int = 1
+	//AddToFav
+	prodStoreMock.EXPECT().InsertItemIntoFavoritesDB(userID, itemID).Return(nil)
+	err := prodUsecase.InsertItemIntoFavorites(userID, itemID)
+	assert.NoError(t, err)
+
+	//error 500
+	prodStoreMock.EXPECT().InsertItemIntoFavoritesDB(userID, itemID).Return(baseErrors.ErrServerError500)
+	err = prodUsecase.InsertItemIntoFavorites(userID, itemID)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+
+	//DeleteFromFav
+	prodStoreMock.EXPECT().DeleteItemFromFavoritesDB(userID, itemID).Return(nil)
+	err = prodUsecase.DeleteItemFromFavorites(userID, itemID)
+	assert.NoError(t, err)
+
+	//error
+	prodStoreMock.EXPECT().DeleteItemFromFavoritesDB(userID, itemID).Return(baseErrors.ErrServerError500)
+	err = prodUsecase.DeleteItemFromFavorites(userID, itemID)
+	assert.Equal(t, baseErrors.ErrServerError500, err)
+}

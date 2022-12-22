@@ -10,10 +10,10 @@ import (
 type OrderManager struct {
 	orders.UnimplementedOrdersWorkerServer
 
-	usecase orderuc.OrderUsecase
+	usecase orderuc.OrderUsecaseInterface
 }
 
-func NewOrdersManager(ouc orderuc.OrderUsecase) *OrderManager {
+func NewOrdersManager(ouc orderuc.OrderUsecaseInterface) *OrderManager {
 	return &OrderManager{
 		usecase: ouc,
 	}

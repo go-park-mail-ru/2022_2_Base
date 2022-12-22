@@ -36,7 +36,7 @@ func main() {
 
 	orderUsecase := orderuc.NewOrderUsecase(orderStore)
 
-	ordersManager := orderdl.NewOrdersManager(*orderUsecase)
+	ordersManager := orderdl.NewOrdersManager(orderUsecase)
 
 	server := grpc.NewServer(
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
