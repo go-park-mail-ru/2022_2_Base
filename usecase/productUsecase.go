@@ -186,7 +186,6 @@ func (api *ProductUsecase) UpdateOrder(userID int, items *[]int) error {
 		return api.RecalculatePrices(userID, *cart.Promocode)
 	}
 	return nil
-	//return api.store.UpdateCart(userID, items)
 }
 
 func (api *ProductUsecase) RecalculatePrices(userID int, promocode string) error {

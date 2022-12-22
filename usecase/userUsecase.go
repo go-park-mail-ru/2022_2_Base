@@ -108,40 +108,10 @@ func (api *UserUsecase) SendMail(in model.Mail) error {
 }
 
 func (api *UserUsecase) GenPromocode(userID int) string {
-	// err := api.store.CheckPromocodeUsage(userID, promocode)
-	// if err != nil {
-	// 	return err
-	// }
-	// for _, specialPromo := range conf.Promos {
-	// 	if specialPromo == promocode {
-	// 		return api.store.SetPromocodeDB(userID, promocode)
-	// 	}
-	// }
-	// if promocode == "" {
-	// 	err = api.store.UpdatePricesOrderItemsInStore(userID, "clear", 0)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	return api.store.SetPromocodeDB(userID, promocode)
-	// }
-	// if len(promocode) < 8 {
-	// 	return baseErrors.ErrForbidden403
-	// }
-	// err = api.RecalculatePrices(userID, promocode)
-	// if err != nil {
-	// 	return err
-	// }
 	h := hmac.New(sha256.New, []byte("Base2022"))
 	data := fmt.Sprintf("%d", userID)
 	h.Write([]byte(data))
 	hashedStr := hex.EncodeToString(h.Sum(nil))
-	//log.Println(hashedStr[:5])
-	// if hashedStr[:5] != promocode[3:] {
-	// 	return baseErrors.ErrUnauthorized401
-	// }
-	// if err != nil {
-	// 	return err
-	// }
 	promocode := "A10" + hashedStr[:5]
 	return promocode
 }
