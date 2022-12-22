@@ -29,6 +29,7 @@ type KeyUserdata struct {
 
 func WithUser(ctx context.Context, user *model.UserProfile) context.Context {
 	return context.WithValue(ctx, KeyUserdata{"userdata"}, user)
+
 }
 
 func (amw *AuthMiddleware) CheckAuthMiddleware(next http.Handler) http.Handler {

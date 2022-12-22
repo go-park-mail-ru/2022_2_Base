@@ -1,0 +1,85 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - uses: actions/checkout@master
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/checkout@v3
+      - name: run tests
+        run: go test -race -coverpkg=./... -coverprofile cover.out.tmp ./...;
+      - name: coverage
+        run: go test -race -coverpkg=./... -coverprofile cover.out.tmp ./...; cat cover.out.tmp | grep -v "_easyjson.go" > cover1.out.tmp; cat cover1.out.tmp | grep -v ".pb.go" > cover2.out.tmp; cat cover2.out.tmp | grep -v "_mock.go" > cover.out; go tool cover -func cover.out
+
+  deploy:
+    needs: [linter, tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: stop running service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd back
+            make stop && make stop && make stop
+
+      - name: download service
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          source: "."
+          target: "/home/ubuntu/back"
+
+      - name: create env
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd back && rm .env && touch .env
+            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+            echo TEST_DB_HOST=${{ secrets.TEST_DB_HOST }} >> .env
+            echo TEST_DB_DRIVER=${{ secrets.TEST_DB_DRIVER }} >> .env
+            echo TEST_DB_USER=${{ secrets.TEST_DB_USER }} >> .env
+            echo TEST_DB_PASSWORD=${{ secrets.TEST_DB_PASSWORD }} >> .env
+            echo TEST_DB_NAME=${{ secrets.TEST_DB_NAME }} >> .env
+            echo TEST_DB_PORT=${{ secrets.TEST_DB_PORT }} >> .env
+            echo MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} >> .env
+
+      - name: deploy service
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd back
+            make build
