@@ -394,6 +394,7 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		order.PaymentStatus = sanitizer.Sanitize(order.PaymentStatus)
 
 		newOrder := model.OrderModelGetOrders{ID: int(order.ID), UserID: int(order.UserID), OrderStatus: order.OrderStatus, PaymentStatus: order.PaymentStatus}
+		newOrder.Items = []*model.CartProduct{}
 		for _, prod := range order.Items {
 			if prod.Imgsrc != nil {
 				*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
@@ -404,6 +405,7 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 			}
 			newOrder.Items = append(newOrder.Items, &model.CartProduct{ID: int(prod.ID), Name: prod.Name, Count: int(prod.Count), Price: prod.Price, NominalPrice: prod.NominalPrice, Imgsrc: prod.Imgsrc})
 		}
+
 		t1 := time.Unix(order.CreationDate, 0)
 		newOrder.CreationDate = &t1
 		t2 := time.Unix(order.DeliveryDate, 0)

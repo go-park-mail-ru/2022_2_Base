@@ -152,9 +152,6 @@ func TestSignUp(t *testing.T) {
 	//ok
 	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{}, nil)
 	userUsecaseMock.EXPECT().AddUser(&testUser2).Return(testUserID, nil)
-	//userUsecaseMock.EXPECT().SendMail(testMail).Return(nil)
-	//userUsecaseMock.EXPECT().GenPromocode(testUserID).Return(testPromocode)
-
 	userUsecaseMock.EXPECT().SetSession(testUser.Email).Return(testsessID, nil)
 	userUsecaseMock.EXPECT().GenPromocode(testUserID).Return(testPromocode)
 	wg := sync.WaitGroup{}
@@ -162,10 +159,6 @@ func TestSignUp(t *testing.T) {
 	userUsecaseMock.EXPECT().SendMail(testMail).Do(func(arg1 interface{}) {
 		defer wg.Done()
 	})
-	//wg.Add(1)
-	// userUsecaseMock.EXPECT().GenPromocode(testUserID).Do(func(arg1 interface{}) {
-	// 	defer wg.Done()
-	// })
 	userUsecaseMock.EXPECT().SendMail(testMailPromo).Do(func(arg2 interface{}) {
 		defer wg.Done()
 	})

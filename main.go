@@ -84,8 +84,8 @@ func main() {
 	defer grcpConnAuth.Close()
 
 	grcpConnOrders, err := grpc.Dial(
-		"orders:8083",
-		//"localhost:8083",
+		//"orders:8083",
+		"localhost:8083",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
 		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),

@@ -143,7 +143,7 @@ table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: under
                                                         <td style="padding-right: 0px;padding-left: 0px;"
                                                             align="center">
 
-                                                            <img align="center" border="0" src="images/image-3.png"
+                                                            <img align="center" border="0" src={{.BigImgSrc}}
                                                                  alt="Image" title="Image"
                                                                  style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 80%;max-width: 480px;"
                                                                  width="480"/>
@@ -220,7 +220,7 @@ table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: under
 
                                                 <h1 class="v-font-size"
                                                     style="margin: 0px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-size: 27px;">
-                                                    <strong>11111111</strong></h1>
+                                                    <strong>{{.OrderID}}</strong></h1>
 
                                             </td>
                                         </tr>
@@ -255,7 +255,7 @@ table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: under
 
                                                 <h1 class="v-font-size"
                                                     style="margin: 0px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-size: 22px;">
-                                                    передан курьеру</h1>
+                                                    оформлен</h1>
 
                                             </td>
                                         </tr>
@@ -343,7 +343,7 @@ table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: under
                                                                     style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
                                                                     <a href="https://email.com/" title="Email"
                                                                        target="_blank">
-                                                                        <img src="images/image-1.png" alt="Email"
+                                                                        <img src={{.ImgEmailLogoSrc}} alt="Email"
                                                                              title="Email" width="32"
                                                                              style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
                                                                     </a>
@@ -360,7 +360,7 @@ table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: under
                                                                     style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
                                                                     <a href="https://telegram.org/" title="Telegram"
                                                                        target="_blank">
-                                                                        <img src="images/image-4.png" alt="Telegram"
+                                                                        <img src={{.ImgTGLogoSrc}} alt="Telegram"
                                                                              title="Telegram" width="32"
                                                                              style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
                                                                     </a>
@@ -377,7 +377,7 @@ table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: under
                                                                     style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
                                                                     <a href="https://github.com/frontend-park-mail-ru/2022_2_Base"
                                                                        title="GitHub" target="_blank">
-                                                                        <img src="images/image-2.png" alt="GitHub"
+                                                                        <img src={{.ImgGitLogoSrc}} alt="GitHub"
                                                                              title="GitHub" width="32"
                                                                              style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
                                                                     </a>
