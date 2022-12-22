@@ -79,8 +79,6 @@ func TestGetProductsByIDAndBySearch(t *testing.T) {
 	testProducts := new([3]*model.Product)
 	err := faker.FakeData(testProducts)
 	testProductsSlice := testProducts[:]
-	err = faker.FakeData(testProducts)
-	testProductsSlice = testProducts[:]
 	search := testProductsSlice[0].Name
 	assert.NoError(t, err)
 

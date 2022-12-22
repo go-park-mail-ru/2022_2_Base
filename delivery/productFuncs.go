@@ -313,7 +313,6 @@ func (api *ProductHandler) GetSuggestions(w http.ResponseWriter, r *http.Request
 	if r.Method == http.MethodOptions {
 		return
 	}
-	sanitizer := bluemonday.UGCPolicy()
 	var req model.Search
 	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
@@ -327,9 +326,6 @@ func (api *ProductHandler) GetSuggestions(w http.ResponseWriter, r *http.Request
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
-	}
-	for _, sugg := range suggestions {
-		sugg = sanitizer.Sanitize(sugg)
 	}
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: suggestions}, w)
 	if err != nil {

@@ -43,7 +43,6 @@ func NewOrderHandler(us *UserHandler, pr *ProductHandler) *OrderHandler {
 func ReturnErrorJSON(w http.ResponseWriter, err error, errCode int) {
 	w.WriteHeader(errCode)
 	_, _, _ = easyjson.MarshalToHTTPResponseWriter(&model.Error{Error: err.Error()}, w)
-	return
 }
 
 // GetCart godoc
@@ -63,12 +62,12 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	cart, err := api.prHandler.usecase.GetCart(UserData.ID)
 	if err != nil {
@@ -129,12 +128,12 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	err = api.prHandler.usecase.UpdateOrder(UserData.ID, &req.Items)
 	if err != nil {
@@ -179,12 +178,12 @@ func (api *OrderHandler) SetPromocode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	err = api.prHandler.usecase.SetPromocode(UserData.ID, req.Promocode)
 	if err == baseErrors.ErrConflict409 {
@@ -242,12 +241,12 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	err = api.prHandler.usecase.AddToOrder(UserData.ID, req.ItemID)
 	if err != nil {
@@ -291,12 +290,12 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	err = api.prHandler.usecase.DeleteFromOrder(UserData.ID, req.ItemID)
 	if err == baseErrors.ErrNotFound404 {
@@ -344,12 +343,12 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
+	oldUserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	if oldUserData.ID != req.UserID {
 		log.Println(err)
@@ -399,12 +398,12 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	orders, err := api.prHandler.usecase.GetOrders(UserData.ID)
 	if err != nil {
@@ -484,6 +483,11 @@ func (api *OrderHandler) GetComments(w http.ResponseWriter, r *http.Request) {
 	s := strings.Split(r.URL.Path, "/")
 	idS := s[len(s)-1]
 	id, err := strconv.Atoi(idS)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 	commentsDB, err := api.prHandler.usecase.GetComments(id)
 	if err != nil {
 		log.Println(err)
@@ -536,12 +540,12 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
+	oldUserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 	if oldUserData.ID != req.UserID {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
@@ -596,12 +600,12 @@ func (api *ProductHandler) GetFavorites(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	products, err := api.usecase.GetFavorites(UserData.ID, lastitemid, count, sort)
 	if err != nil {
@@ -654,12 +658,12 @@ func (api *ProductHandler) InsertItemIntoFavorites(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	err = api.usecase.InsertItemIntoFavorites(UserData.ID, req.ItemID)
 	if err != nil {
@@ -701,12 +705,12 @@ func (api *ProductHandler) DeleteItemFromFavorites(w http.ResponseWriter, r *htt
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	err = api.usecase.DeleteItemFromFavorites(UserData.ID, req.ItemID)
 	if err != nil {

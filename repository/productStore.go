@@ -73,11 +73,11 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort str
 		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
 	}
 
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
+	defer rows.Close()
 	log.Println("got products from db")
 	for rows.Next() {
 		dat := model.Product{}
@@ -116,11 +116,11 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND id > $2 ORDER BY id LIMIT $3;`, category, lastitemid, count)
 	}
 
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
+	defer rows.Close()
 	log.Println("got products from db")
 	for rows.Next() {
 		dat := model.Product{}
@@ -144,11 +144,11 @@ func (ps *ProductStore) GetProductsWithBiggestDiscountFromStore(lastitemid int, 
 		lastProduct.NominalPrice = 1
 	}
 	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (1 - price/nominalprice, id) < ($1, $2) ORDER BY (1 - price/nominalprice, id) DESC LIMIT $3;`, 1-lastProduct.Price/lastProduct.NominalPrice, lastProduct.ID, count)
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
+	defer rows.Close()
 	log.Println("got products from db")
 	for rows.Next() {
 		dat := model.Product{}
@@ -164,11 +164,11 @@ func (ps *ProductStore) GetProductsWithBiggestDiscountFromStore(lastitemid int, 
 func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, error) {
 	product := model.Product{}
 	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id = $1;`, itemsID)
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
+	defer rows.Close()
 	log.Println("got product by id from db")
 	for rows.Next() {
 		err := rows.Scan(&product.ID, &product.Name, &product.Category, &product.Price, &product.NominalPrice, &product.Rating, &product.Imgsrc)
@@ -183,11 +183,11 @@ func (ps *ProductStore) GetProductsRatingAndCommsCountFromStore(itemsID int) (fl
 	var rating *float64
 	var commsCount *int
 	rows, err := ps.db.Query(`SELECT COUNT(id), AVG(rating) FROM comments WHERE itemid = $1;`, itemsID)
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return 0, 0, nil
 	}
+	defer rows.Close()
 	log.Println("got product Rating And Comms from db")
 	for rows.Next() {
 		err := rows.Scan(&commsCount, &rating)
@@ -225,11 +225,11 @@ func (ps *ProductStore) GetProductPropertiesFromStore(itemID int, itemCategory s
 
 	}
 
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
+	defer rows.Close()
 	log.Println("got product properties from db")
 	for rows.Next() {
 		err := rows.Scan(&propertiesDB[0].Name, &propertiesDB[1].Name, &propertiesDB[2].Name, &propertiesDB[3].Name, &propertiesDB[4].Name, &propertiesDB[5].Name, &propertiesDB[0].Description, &propertiesDB[1].Description, &propertiesDB[2].Description, &propertiesDB[3].Description, &propertiesDB[4].Description, &propertiesDB[5].Description)
@@ -248,11 +248,11 @@ func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Pr
 	searchLetters := strings.Split(searchWordsUnite, "")
 	searchString := strings.ToLower(`%` + strings.Join(searchLetters, "%") + `%`)
 	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE LOWER(name) LIKE $1 LIMIT 20;`, searchString)
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
+	defer rows.Close()
 	log.Println("got products from db")
 	for rows.Next() {
 		dat := model.Product{}
@@ -270,11 +270,11 @@ func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error)
 	searchWords := strings.Split(search, " ")
 	searchString := strings.ToLower(`%` + strings.Join(searchWords, " ") + `%`)
 	rows, err := ps.db.Query(`SELECT name FROM products WHERE LOWER(name) LIKE $1 LIMIT 3;`, searchString)
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
+	defer rows.Close()
 	log.Println("got products from db")
 	for rows.Next() {
 		var dat string
@@ -290,11 +290,11 @@ func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error)
 func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
 	rows, err := ps.db.Query(`SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
-	defer rows.Close()
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var count int
 		dat := model.Product{}
@@ -344,11 +344,11 @@ func (ps *ProductStore) UpdatePricesOrderItemsInStore(userID int, category strin
 
 func (ps *ProductStore) CheckPromocodeUsage(userID int, promocode string) error {
 	rows, err := ps.db.Query(`SELECT id, userid, promocode FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, promocode)
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var id int
 		var usid int
@@ -447,7 +447,10 @@ func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
 		return err
 	}
 	for _, item := range *items {
-		ps.InsertItemIntoCartById(userID, item)
+		err = ps.InsertItemIntoCartById(userID, item)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -506,11 +509,11 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.CommentDB, error) {
 	comments := []*model.CommentDB{}
 	rows, err := ps.db.Query(`SELECT userid, pros, cons, comment, rating FROM comments WHERE itemid = $1;`, productID)
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
+	defer rows.Close()
 	log.Println("got comments from db")
 	for rows.Next() {
 		dat := model.CommentDB{}
@@ -557,11 +560,11 @@ func (ps *ProductStore) GetRecommendationProductsFromStore(itemID int) ([]*model
 
 	// products from same category
 	rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) < ($2, $3) ORDER BY (rating, id) DESC LIMIT $4;`, product.Category, lastProductRating, lastitemid, categoryproductsCount)
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
+	defer rows.Close()
 	log.Println("got products from db 1")
 	for rows.Next() {
 		dat := model.Product{}
@@ -577,6 +580,7 @@ func (ps *ProductStore) GetRecommendationProductsFromStore(itemID int) ([]*model
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
+	defer rows.Close()
 	log.Println("got products from db 2")
 	for rows.Next() {
 		dat := model.Product{}

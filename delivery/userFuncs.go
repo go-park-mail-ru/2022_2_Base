@@ -40,12 +40,12 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	userProfile := r.Context().Value("userdata").(*model.UserProfile)
+	userProfile := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	userProfile.Email = sanitizer.Sanitize(userProfile.Email)
 	userProfile.Username = sanitizer.Sanitize(userProfile.Username)
@@ -95,12 +95,12 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
+	oldUserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	session, err := r.Cookie("session_id")
 	if err != nil {
@@ -149,12 +149,12 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
+	oldUserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	file, _, err := r.FormFile("file")
 	if err != nil {
@@ -213,12 +213,12 @@ func (api *UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
+	oldUserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	if len(req.NewPassword) < 6 {
 		log.Println("validation error ", err)

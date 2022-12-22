@@ -36,10 +36,11 @@ func main() {
 	mail.RegisterMailServiceServer(server, NewMailManager())
 	http.Handle("/metrics", promhttp.Handler())
 	log.Println("starting server at :8084")
-	server.Serve(lis)
+	err = server.Serve(lis)
+	if err != nil {
+		log.Println("cant serve", err)
+	}
 }
-
-const sessKeyLen = 10
 
 type MailManager struct {
 	mail.UnimplementedMailServiceServer

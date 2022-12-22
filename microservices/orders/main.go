@@ -51,5 +51,8 @@ func main() {
 	http.Handle("/metrics", promhttp.Handler())
 
 	log.Println("starting server at :8083")
-	server.Serve(lis)
+	err = server.Serve(lis)
+	if err != nil {
+		log.Println("cant serve", err)
+	}
 }

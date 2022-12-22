@@ -43,11 +43,11 @@ func (os *OrderStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
 	orders := []*model.Order{}
 
 	rows, err := os.db.Query(`SELECT id, userid, orderstatus, paymentstatus, addressid, paymentcardid, creationdate, deliverydate, promocode FROM orders WHERE userid = $1 AND orderstatus <> 'cart';`, userID)
-	defer rows.Close()
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		dat := model.Order{}
 		err := rows.Scan(&dat.ID, &dat.UserID, &dat.OrderStatus, &dat.PaymentStatus, &dat.AddressID, &dat.PaymentcardID, &dat.CreationDate, &dat.DeliveryDate, &dat.Promocode)
@@ -73,10 +73,10 @@ func (os *OrderStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
 func (os *OrderStore) GetOrdersAddressFromStore(addressID int) (*model.Address, error) {
 	adress := model.Address{}
 	rows, err := os.db.Query(`SELECT id, city, street, house, flat, priority FROM address WHERE id  = $1`, addressID)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&adress.ID, &adress.City, &adress.Street, &adress.House, &adress.Flat, &adress.Priority)
 		if err != nil {
@@ -89,10 +89,10 @@ func (os *OrderStore) GetOrdersAddressFromStore(addressID int) (*model.Address, 
 func (os *OrderStore) GetOrdersPaymentFromStore(paymentID int) (*model.PaymentMethod, error) {
 	payment := model.PaymentMethod{}
 	rows, err := os.db.Query(`SELECT id, paymentType, number, expiryDate, priority FROM payment WHERE id  = $1`, paymentID)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		err := rows.Scan(&payment.ID, &payment.PaymentType, &payment.Number, &payment.ExpiryDate, &payment.Priority)
 		if err != nil {
@@ -105,10 +105,10 @@ func (os *OrderStore) GetOrdersPaymentFromStore(paymentID int) (*model.PaymentMe
 func (os *OrderStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
 	rows, err := os.db.Query(`SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		var count int
 		dat := model.Product{}

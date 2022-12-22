@@ -414,7 +414,10 @@ func TestUpdateCart(t *testing.T) {
 			rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, itemID, "IPhone", "phones", 50000, 50000, 0, nil)
 			return rr
 		}())
-
+	mock.
+		ExpectExec("UPDATE").
+		WithArgs(itemID, orderID).
+		WillReturnResult(sqlmock.NewResult(1, 1))
 	repo := &ProductStore{
 		db: db,
 	}
