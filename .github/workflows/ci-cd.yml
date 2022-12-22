@@ -66,6 +66,7 @@ jobs:
           script: |
             cd back-next && make stop && make stop && make stop
             cd ../back && make stop && make stop && make stop
+          continue-on-error: true
 
       - name: download service
         uses: appleboy/scp-action@master
