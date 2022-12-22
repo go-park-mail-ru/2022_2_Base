@@ -72,86 +72,86 @@ func TestGetCart(t *testing.T) {
 	assert.Equal(t, 500, rr.Code)
 }
 
-// func TestUpdateCart(t *testing.T) {
-// 	t.Parallel()
-// 	ctrl := gomock.NewController(t)
-// 	defer ctrl.Finish()
+func TestUpdateCart(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-// 	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
-// 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
-// 	userHandler := NewUserHandler(userUsecaseMock)
-// 	productHandler := NewProductHandler(productUsecaseMock)
-// 	orderHandler := NewOrderHandler(userHandler, productHandler)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userHandler := NewUserHandler(userUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock)
+	orderHandler := NewOrderHandler(userHandler, productHandler)
 
-// 	testUserProfile := new(model.UserProfile)
-// 	err := faker.FakeData(testUserProfile)
-// 	assert.NoError(t, err)
-// 	testProductCart := new(model.ProductCart)
-// 	err = faker.FakeData(testProductCart)
-// 	assert.NoError(t, err)
-// 	testCart := new(model.Order)
-// 	err = faker.FakeData(testCart)
-// 	assert.NoError(t, err)
-// 	testCart.Promocode = nil
+	testUserProfile := new(model.UserProfile)
+	err := faker.FakeData(testUserProfile)
+	assert.NoError(t, err)
+	testProductCart := new(model.ProductCart)
+	err = faker.FakeData(testProductCart)
+	assert.NoError(t, err)
+	testCart := new(model.Order)
+	err = faker.FakeData(testCart)
+	assert.NoError(t, err)
+	testCart.Promocode = nil
 
-// 	//ok
-// 	productUsecaseMock.EXPECT().GetCart(testUserProfile.ID).Return(testCart, nil)
-// 	productUsecaseMock.EXPECT().UpdateOrder(testUserProfile.ID, &testProductCart.Items).Return(nil)
+	//ok
+	//productUsecaseMock.EXPECT().GetCart(testUserProfile.ID).Return(testCart, nil)
+	productUsecaseMock.EXPECT().UpdateOrder(testUserProfile.ID, &testProductCart.Items).Return(nil)
 
-// 	url := "/api/v1/cart"
-// 	data, _ := json.Marshal(testProductCart)
-// 	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr := httptest.NewRecorder()
-// 	orderHandler.UpdateCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-// 	assert.Equal(t, http.StatusOK, rr.Code)
+	url := "/api/v1/cart"
+	data, _ := json.Marshal(testProductCart)
+	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	orderHandler.UpdateCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, http.StatusOK, rr.Code)
 
-// 	// //err 400 query err
-// 	// data, _ = json.Marshal("sfdsd")
-// 	// req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	// if err != nil {
-// 	// 	t.Fatal(err)
-// 	// }
-// 	// rr = httptest.NewRecorder()
-// 	// orderHandler.UpdateCart(rr, req)
-// 	// assert.Equal(t, 400, rr.Code)
+	//err 400 query err
+	data, _ = json.Marshal("sfdsd")
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.UpdateCart(rr, req)
+	assert.Equal(t, 400, rr.Code)
 
-// 	// //err 500 no user
-// 	// data, _ = json.Marshal(testProductCart)
-// 	// req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	// if err != nil {
-// 	// 	t.Fatal(err)
-// 	// }
-// 	// rr = httptest.NewRecorder()
-// 	// orderHandler.UpdateCart(rr, req)
-// 	// assert.Equal(t, 500, rr.Code)
+	//err 500 no user
+	data, _ = json.Marshal(testProductCart)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.UpdateCart(rr, req)
+	assert.Equal(t, 500, rr.Code)
 
-// 	// //err 500 db
-// 	// productUsecaseMock.EXPECT().GetCart(testUserProfile.ID).Return(nil, baseErrors.ErrServerError500)
-// 	// data, _ = json.Marshal(testProductCart)
-// 	// req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	// if err != nil {
-// 	// 	t.Fatal(err)
-// 	// }
-// 	// rr = httptest.NewRecorder()
-// 	// orderHandler.UpdateCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-// 	// assert.Equal(t, 500, rr.Code)
+	//err 500 db
+	productUsecaseMock.EXPECT().UpdateOrder(testUserProfile.ID, &testProductCart.Items).Return(baseErrors.ErrServerError500)
+	//productUsecaseMock.EXPECT().GetCart(testUserProfile.ID).Return(nil, baseErrors.ErrServerError500)
+	data, _ = json.Marshal(testProductCart)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.UpdateCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 500, rr.Code)
 
-// 	// //err 500 db
-// 	// productUsecaseMock.EXPECT().GetCart(testUserProfile.ID).Return(testCart, nil)
-// 	// productUsecaseMock.EXPECT().UpdateOrder(testUserProfile.ID, &testProductCart.Items).Return(baseErrors.ErrServerError500)
-// 	// data, _ = json.Marshal(testProductCart)
-// 	// req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	// if err != nil {
-// 	// 	t.Fatal(err)
-// 	// }
-// 	// rr = httptest.NewRecorder()
-// 	// orderHandler.UpdateCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-// 	// assert.Equal(t, 500, rr.Code)
-// }
-
+	//err 500 db
+	//productUsecaseMock.EXPECT().GetCart(testUserProfile.ID).Return(testCart, nil)
+	productUsecaseMock.EXPECT().UpdateOrder(testUserProfile.ID, &testProductCart.Items).Return(baseErrors.ErrServerError500)
+	data, _ = json.Marshal(testProductCart)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.UpdateCart(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 500, rr.Code)
+}
 
 func TestAddItemToCart(t *testing.T) {
 	t.Parallel()

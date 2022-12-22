@@ -300,20 +300,26 @@ func TestGetOrders(t *testing.T) {
 
 	mailManager := mocks.NewMockMailServiceClient(ctrl)
 	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager, mailManager)
-	testOrders := new(orders.OrdersResponse)
+	//testOrders := new(orders.OrdersResponse)
+	testOrders := new([3]*orders.Order)
 	err := faker.FakeData(testOrders)
 	assert.NoError(t, err)
+	testOrdersResponse := new(orders.OrdersResponse)
+	err = faker.FakeData(testOrders)
+	assert.NoError(t, err)
+	testOrdersSlice := testOrders[:]
+	testOrdersResponse.Orders = testOrdersSlice
 
-	var userID int = int(testOrders.Orders[0].UserID)
+	var userID int = int(testOrdersResponse.Orders[0].UserID)
 	//ok
 	ordersManager.EXPECT().GetOrders(
 		context.Background(),
 		&orders.UserID{
 			UserID: int32(userID),
-		}).Return(testOrders, nil)
+		}).Return(testOrdersResponse, nil)
 	orders3, err := prodUsecase.GetOrders(userID)
 	assert.NoError(t, err)
-	assert.Equal(t, testOrders, orders3)
+	assert.Equal(t, testOrdersResponse, orders3)
 
 	//error
 	ordersManager.EXPECT().GetOrders(

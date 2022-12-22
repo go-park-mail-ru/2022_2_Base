@@ -262,16 +262,14 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	promo := api.usecase.GenPromocode(userID)
 	PromoMail := model.Mail{Type: "promocode", Username: req.Username, Useremail: req.Email, Promocode: promo}
 
-	go func() {
-		err = api.usecase.SendMail(RegisterMail)
-		if err != nil {
-			log.Println("error sending greeting email ", err)
-		}
-		err = api.usecase.SendMail(PromoMail)
-		if err != nil {
-			log.Println("error sending promocode email ", err)
-		}
-	}()
+	err = api.usecase.SendMail(RegisterMail)
+	if err != nil {
+		log.Println("error sending greeting email ", err)
+	}
+	err = api.usecase.SendMail(PromoMail)
+	if err != nil {
+		log.Println("error sending promocode email ", err)
+	}
 
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
 	if err != nil {

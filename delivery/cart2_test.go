@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"time"
 
 	"testing"
 
@@ -60,101 +61,85 @@ func TestGetOrders(t *testing.T) {
 	assert.Equal(t, 500, rr.Code)
 }
 
-// func TestMakeOrder(t *testing.T) {
-// 	t.Parallel()
-// 	ctrl := gomock.NewController(t)
-// 	defer ctrl.Finish()
+func TestMakeOrder(t *testing.T) {
+	//t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-// 	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
-// 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
-// 	userHandler := NewUserHandler(userUsecaseMock)
-// 	productHandler := NewProductHandler(productUsecaseMock)
-// 	orderHandler := NewOrderHandler(userHandler, productHandler)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userHandler := NewUserHandler(userUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock)
+	orderHandler := NewOrderHandler(userHandler, productHandler)
 
-// 	testUserProfile := new(model.UserProfile)
-// 	err := faker.FakeData(testUserProfile)
-// 	assert.NoError(t, err)
-// 	testOrder := new(model.MakeOrder)
-// 	err = faker.FakeData(testOrder)
-// 	assert.NoError(t, err)
-// 	testOrder.UserID = testUserProfile.ID
-// 	testOrder.DeliveryDate = time.Unix(1, 10)
-// 	testOrderID := 1
-// 	testMail := model.Mail{Type: "orderstatus", Username: testUserProfile.Username, Useremail: testUserProfile.Email, OrderID: testOrderID, OrderStatus: "created"}
+	testUserProfile := new(model.UserProfile)
+	err := faker.FakeData(testUserProfile)
+	assert.NoError(t, err)
+	testOrder := new(model.MakeOrder)
+	err = faker.FakeData(testOrder)
+	assert.NoError(t, err)
+	testOrder.UserID = testUserProfile.ID
+	testOrder.DeliveryDate = time.Unix(1, 10)
+	testOrderID := 1
+	testMail := model.Mail{Type: "orderstatus", Username: testUserProfile.Username, Useremail: testUserProfile.Email, OrderID: testOrderID, OrderStatus: "created"}
 
-// 	//ok
-// 	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(testOrderID, nil)
-// 	wg := sync.WaitGroup{}
-// 	wg.Add(1)
-// 	userUsecaseMock.EXPECT().SendMail(testMail).Do(func(arg1 interface{}) {
-// 		defer wg.Done()
-// 	})
-// 	url := "/api/v1/" + "cart/makeorder"
-// 	data, _ := json.Marshal(testOrder)
-// 	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr := httptest.NewRecorder()
-// 	orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-// 	wg.Wait()
-// 	assert.Equal(t, http.StatusOK, rr.Code)
+	//ok
+	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(testOrderID, nil)
 
-// 	//err 400 query err
-// 	data, _ = json.Marshal("sfdsd")
-// 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr = httptest.NewRecorder()
-// 	orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-// 	assert.Equal(t, 400, rr.Code)
+	userUsecaseMock.EXPECT().SendMail(testMail).Return(nil)
 
-// 	//err 500 no user
-// 	data, _ = json.Marshal(testOrder)
-// 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr = httptest.NewRecorder()
-// 	orderHandler.MakeOrder(rr, req)
-// 	assert.Equal(t, 500, rr.Code)
+	url := "/api/v1/" + "cart/makeorder"
+	data, _ := json.Marshal(testOrder)
+	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, http.StatusOK, rr.Code)
 
-// 	//err 500 db
-// 	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(0, baseErrors.ErrServerError500)
-// 	data, _ = json.Marshal(testOrder)
-// 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr = httptest.NewRecorder()
-// 	orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-// 	assert.Equal(t, 500, rr.Code)
+	//err 400 query err
+	data, _ = json.Marshal("sfdsd")
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 400, rr.Code)
 
-// 	//err 401 db
-// 	testOrder.UserID = testUserProfile.ID + 1
-// 	data, _ = json.Marshal(testOrder)
-// 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr = httptest.NewRecorder()
-// 	orderHandler.CreateComment(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-// 	assert.Equal(t, 401, rr.Code)
+	//err 500 no user
+	data, _ = json.Marshal(testOrder)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.MakeOrder(rr, req)
+	assert.Equal(t, 500, rr.Code)
 
-// 	// //err 500 microservice
-// 	// productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(testOrderID, nil)
-// 	// userUsecaseMock.EXPECT().SendMail(testMail).Return(baseErrors.ErrServerError500)
-// 	// data, _ = json.Marshal(testOrder)
-// 	// req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	// if err != nil {
-// 	// 	t.Fatal(err)
-// 	// }
-// 	// rr = httptest.NewRecorder()
-// 	// orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
-// 	// assert.Equal(t, 500, rr.Code)
-// }
+	//err 500 db
+	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(0, baseErrors.ErrServerError500)
+	data, _ = json.Marshal(testOrder)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.MakeOrder(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 500, rr.Code)
 
+	//err 401 db
+	testOrder.UserID = testUserProfile.ID + 1
+	data, _ = json.Marshal(testOrder)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	orderHandler.CreateComment(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
+	assert.Equal(t, 401, rr.Code)
+}
 
 func TestGetComments(t *testing.T) {
 	t.Parallel()
