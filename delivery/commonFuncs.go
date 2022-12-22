@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	baseErrors "serv/domain/errors"
@@ -26,7 +25,7 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host 89.208.198.137:8080
+// @host 127.0.0.1:8080
 // @BasePath  /api/v1
 
 type OrderHandler struct {
@@ -43,7 +42,7 @@ func NewOrderHandler(us *UserHandler, pr *ProductHandler) *OrderHandler {
 
 func ReturnErrorJSON(w http.ResponseWriter, err error, errCode int) {
 	w.WriteHeader(errCode)
-	json.NewEncoder(w).Encode(&model.Error{Error: err.Error()})
+	_, _, _ = easyjson.MarshalToHTTPResponseWriter(&model.Error{Error: err.Error()}, w)
 	return
 }
 
