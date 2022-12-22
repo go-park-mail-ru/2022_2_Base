@@ -79,6 +79,21 @@ services:
     networks:
       - mynet
 
+  mail:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-mail
+    container_name: mail
+    ports:
+      - "8084:8084"
+    expose:
+      - "8084"
+    volumes:
+      - ./:/mail
+    restart: on-failure
+    networks:
+      - mynet
+
   orders:
     build:
       context: .

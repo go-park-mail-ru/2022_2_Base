@@ -22,7 +22,6 @@ func main() {
 	if err != nil {
 		log.Println("cant listen port", err)
 	}
-
 	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	log.Println("conn: ", urlDB)
 	db, err := sql.Open("pgx", urlDB)
@@ -49,5 +48,8 @@ func main() {
 	http.Handle("/metrics", promhttp.Handler())
 
 	log.Println("starting server at :8083")
-	server.Serve(lis)
+	err = server.Serve(lis)
+	if err != nil {
+		log.Println("cant serve", err)
+	}
 }

@@ -15,6 +15,19 @@ definitions:
       street:
         type: string
     type: object
+  model.Cart:
+    properties:
+      id:
+        type: integer
+      items:
+        items:
+          $ref: '#/definitions/model.CartProduct'
+        type: array
+      promocode:
+        type: string
+      userid:
+        type: integer
+    type: object
   model.CartProduct:
     properties:
       count:
@@ -86,36 +99,6 @@ definitions:
       userid:
         type: integer
     type: object
-  model.Order:
-    properties:
-      address:
-        type: integer
-      card:
-        type: integer
-      creationDate:
-        type: string
-      deliveryDate:
-        type: string
-      id:
-        type: integer
-      items:
-        items:
-          $ref: '#/definitions/model.OrderItem'
-        type: array
-      orderstatus:
-        type: string
-      paymentstatus:
-        type: string
-      userid:
-        type: integer
-    type: object
-  model.OrderItem:
-    properties:
-      count:
-        type: integer
-      item:
-        $ref: '#/definitions/model.Product'
-    type: object
   model.OrderModelGetOrders:
     properties:
       address:
@@ -135,6 +118,8 @@ definitions:
       orderstatus:
         type: string
       paymentstatus:
+        type: string
+      promocode:
         type: string
       userid:
         type: integer
@@ -168,6 +153,10 @@ definitions:
         type: string
       price:
         type: number
+      properties:
+        items:
+          $ref: '#/definitions/model.Property'
+        type: array
       rating:
         type: number
     type: object
@@ -182,6 +171,18 @@ definitions:
     properties:
       itemid:
         type: integer
+    type: object
+  model.Promocode:
+    properties:
+      promocode:
+        type: string
+    type: object
+  model.Property:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
     type: object
   model.Response:
     properties:
@@ -255,7 +256,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Order'
+            $ref: '#/definitions/model.Cart'
         "400":
           description: Bad request - Problem with the request
           schema:
@@ -446,6 +447,50 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: gets user's orders
+      tags:
+      - Order
+  /cart/setpromocode:
+    post:
+      consumes:
+      - application/json
+      description: Sets promocode for cart
+      operationId: SetPromocode
+      parameters:
+      - description: Promocode
+        in: body
+        name: promo
+        required: true
+        schema:
+          $ref: '#/definitions/model.Promocode'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.Error'
+        "409":
+          description: Conflict - UserDB already exists
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Sets promocode for cart
       tags:
       - Order
   /category/{category}:
@@ -655,6 +700,73 @@ paths:
       summary: gets product's comments
       tags:
       - Comments
+  /productswithdiscount:
+    get:
+      consumes:
+      - application/json
+      description: Gets products with biggest discount for main page
+      operationId: getProductsWithBiggestDiscount
+      parameters:
+      - description: lastitemid
+        in: query
+        name: lastitemid
+        required: true
+        type: string
+      - description: count
+        in: query
+        name: count
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets products with biggest discount for main page
+      tags:
+      - Products
+  /recommendations/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Gets recommendations for product by id
+      operationId: getRecommendations
+      parameters:
+      - description: Id of product
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets recommendations for product
+      tags:
+      - Products
   /search:
     post:
       consumes:
@@ -804,6 +916,118 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Set user's avatar
+      tags:
+      - User
+  /user/deletefromfav:
+    post:
+      consumes:
+      - application/json
+      description: Deletes Item From favorite
+      operationId: DeleteItemFromFav
+      parameters:
+      - description: Favorite item
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/model.ProductCartItem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Deletes Item From favorite
+      tags:
+      - User
+  /user/favorites:
+    get:
+      consumes:
+      - application/json
+      description: Gets user's favorites
+      operationId: GetFavorites
+      parameters:
+      - description: lastitemid
+        in: query
+        name: lastitemid
+        required: true
+        type: string
+      - description: count
+        in: query
+        name: count
+        required: true
+        type: string
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets user's favorites
+      tags:
+      - User
+  /user/insertintofav:
+    post:
+      consumes:
+      - application/json
+      description: Inserts Item into favorite
+      operationId: InsertItemIntoFav
+      parameters:
+      - description: Favorite item
+        in: body
+        name: item
+        required: true
+        schema:
+          $ref: '#/definitions/model.ProductCartItem'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Inserts Item into favorite
       tags:
       - User
   /user/makecomment:

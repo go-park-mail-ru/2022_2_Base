@@ -23,7 +23,7 @@ func TestGetOrderItemsFromStore(t *testing.T) {
 	}
 
 	mock.
-		ExpectQuery("SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
+		ExpectQuery("SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
 		WithArgs(orderID).
 		WillReturnRows(func() *sqlmock.Rows {
 			rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, 1, "IPhone", "phones", 50000, 50000, 0, nil)
@@ -50,7 +50,7 @@ func TestGetOrderItemsFromStore(t *testing.T) {
 
 	//query error
 	mock.
-		ExpectQuery("SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
+		ExpectQuery("SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
 		WithArgs(orderID).
 		WillReturnRows(func() *sqlmock.Rows {
 			rr := sqlmock.NewRows([]string{"id", "name"}).AddRow(0, "")
@@ -77,23 +77,24 @@ func TestGetOrdersFromStore(t *testing.T) {
 	var userID int = 1
 	var orderID int = 1
 	var avatar string = "av1"
+	var promo string = "A10zzzzz"
 	expectItems := []*model.OrderItem{
 		{Count: 1, Item: &model.Product{ID: 1, Name: "IPhone", Category: "phones", Price: 50000, NominalPrice: 50000, Rating: 0, Imgsrc: &avatar}},
 	}
 	expectTime := time.Unix(1, 0)
 	expect := []*model.Order{
-		{ID: 1, UserID: 1, Items: expectItems, OrderStatus: "cart", PaymentStatus: "not started", AddressID: 1, PaymentcardID: 1, CreationDate: &expectTime, DeliveryDate: &expectTime},
+		{ID: 1, UserID: 1, Items: expectItems, OrderStatus: "cart", PaymentStatus: "not started", AddressID: 1, PaymentcardID: 1, CreationDate: &expectTime, DeliveryDate: &expectTime, Promocode: &promo},
 	}
 	mock.
 		ExpectQuery("SELECT id").
 		WithArgs(userID).
 		WillReturnRows(func() *sqlmock.Rows {
-			rr := sqlmock.NewRows([]string{"id", "userID", "orderStatus", "paymentStatus", "addressID", "paymentcardID", "creationDate", "deliveryDate"}).AddRow(1, 1, "cart", "not started", 1, 1, &expectTime, &expectTime)
+			rr := sqlmock.NewRows([]string{"id", "userID", "orderStatus", "paymentStatus", "addressID", "paymentcardID", "creationDate", "deliveryDate", "promocode"}).AddRow(1, userID, "cart", "not started", 1, 1, &expectTime, &expectTime, &promo)
 			return rr
 		}())
 
 	mock.
-		ExpectQuery("SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
+		ExpectQuery("SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems").
 		WithArgs(orderID).
 		WillReturnRows(func() *sqlmock.Rows {
 			rr := sqlmock.NewRows([]string{"count", "id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, 1, "IPhone", "phones", 50000, 50000, 0, &avatar)

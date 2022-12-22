@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"sync"
 
+	baseErrors "serv/domain/errors"
 	session "serv/microservices/auth/gen_files"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -32,10 +32,11 @@ func main() {
 	session.RegisterAuthCheckerServer(server, NewSessionManager())
 	http.Handle("/metrics", promhttp.Handler())
 	log.Println("starting server at :8082")
-	server.Serve(lis)
+	err = server.Serve(lis)
+	if err != nil {
+		log.Println("cant serve", err)
+	}
 }
-
-const sessKeyLen = 10
 
 type SessionManager struct {
 	session.UnimplementedAuthCheckerServer
@@ -71,7 +72,7 @@ func (sm *SessionManager) Check(ctx context.Context, in *session.SessionID) (*se
 	if sess, ok := sm.sessions[in.ID]; ok {
 		return sess, nil
 	}
-	return nil, grpc.Errorf(codes.NotFound, "session not found")
+	return nil, baseErrors.ErrNotFound404
 }
 
 func (sm *SessionManager) Delete(ctx context.Context, in *session.SessionID) (*session.Nothing, error) {

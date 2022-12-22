@@ -21,7 +21,8 @@ func TestAddUser(t *testing.T) {
 
 	userStoreMock := mocks.NewMockUserStoreInterface(ctrl)
 	sessManager := mocks.NewMockAuthCheckerClient(ctrl)
-	userUsecase := NewUserUsecase(userStoreMock, sessManager)
+	mailManager := mocks.NewMockMailServiceClient(ctrl)
+	userUsecase := NewUserUsecase(userStoreMock, sessManager, mailManager)
 
 	testUser := new(model.UserDB)
 	err := faker.FakeData(testUser)
@@ -32,9 +33,9 @@ func TestAddUser(t *testing.T) {
 	testUser.Avatar = nil
 
 	//ok
-	userStoreMock.EXPECT().AddUser(testUser).Return(nil)
+	userStoreMock.EXPECT().AddUser(testUser).Return(testUser.ID, nil)
 	us := model.UserCreateParams{Email: testUser.Email, Username: testUser.Username, Password: testUser.Password}
-	err = userUsecase.AddUser(&us)
+	_, err = userUsecase.AddUser(&us)
 	assert.NoError(t, err)
 }
 
@@ -45,7 +46,8 @@ func TestSessions(t *testing.T) {
 
 	userStoreMock := mocks.NewMockUserStoreInterface(ctrl)
 	sessManager := mocks.NewMockAuthCheckerClient(ctrl)
-	userUsecase := NewUserUsecase(userStoreMock, sessManager)
+	mailManager := mocks.NewMockMailServiceClient(ctrl)
+	userUsecase := NewUserUsecase(userStoreMock, sessManager, mailManager)
 
 	testSessID := new(auth.SessionID)
 	err := faker.FakeData(testSessID)
@@ -109,7 +111,8 @@ func TestGetUserByUsername(t *testing.T) {
 
 	userStoreMock := mocks.NewMockUserStoreInterface(ctrl)
 	sessManager := mocks.NewMockAuthCheckerClient(ctrl)
-	userUsecase := NewUserUsecase(userStoreMock, sessManager)
+	mailManager := mocks.NewMockMailServiceClient(ctrl)
+	userUsecase := NewUserUsecase(userStoreMock, sessManager, mailManager)
 
 	testUser := new(model.UserDB)
 	err := faker.FakeData(testUser)
@@ -134,7 +137,8 @@ func TestAdresses(t *testing.T) {
 
 	userStoreMock := mocks.NewMockUserStoreInterface(ctrl)
 	sessManager := mocks.NewMockAuthCheckerClient(ctrl)
-	userUsecase := NewUserUsecase(userStoreMock, sessManager)
+	mailManager := mocks.NewMockMailServiceClient(ctrl)
+	userUsecase := NewUserUsecase(userStoreMock, sessManager, mailManager)
 
 	testUser := new(model.UserProfile)
 	err := faker.FakeData(testUser)
@@ -201,7 +205,8 @@ func TestPayments(t *testing.T) {
 
 	userStoreMock := mocks.NewMockUserStoreInterface(ctrl)
 	sessManager := mocks.NewMockAuthCheckerClient(ctrl)
-	userUsecase := NewUserUsecase(userStoreMock, sessManager)
+	mailManager := mocks.NewMockMailServiceClient(ctrl)
+	userUsecase := NewUserUsecase(userStoreMock, sessManager, mailManager)
 
 	testUser := new(model.UserProfile)
 	err := faker.FakeData(testUser)
@@ -267,7 +272,8 @@ func TestChangeUser(t *testing.T) {
 
 	userStoreMock := mocks.NewMockUserStoreInterface(ctrl)
 	sessManager := mocks.NewMockAuthCheckerClient(ctrl)
-	userUsecase := NewUserUsecase(userStoreMock, sessManager)
+	mailManager := mocks.NewMockMailServiceClient(ctrl)
+	userUsecase := NewUserUsecase(userStoreMock, sessManager, mailManager)
 
 	oldUser := new(model.UserProfile)
 	err := faker.FakeData(oldUser)

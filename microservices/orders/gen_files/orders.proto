@@ -50,6 +50,7 @@ message Order {
   PaymentMethod PaymentMethod = 7;
   int64 CreationDate = 8;
   int64 DeliveryDate = 9;
+  optional string Promocode = 10;
 }
 
 message OrdersResponse {

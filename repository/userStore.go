@@ -9,7 +9,7 @@ import (
 )
 
 type UserStoreInterface interface {
-	AddUser(in *model.UserDB) error
+	AddUser(in *model.UserDB) (int, error)
 	UpdateUser(userID int, in *model.UserProfile) error
 	ChangeUserPasswordDB(userID int, newPass string) error
 	UpdateUsersAddress(adressID int, in *model.Address) error
@@ -34,12 +34,13 @@ func NewUserStore(db *sql.DB) UserStoreInterface {
 	}
 }
 
-func (us *UserStore) AddUser(in *model.UserDB) error {
-	_, err := us.db.Exec(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3);`, in.Email, in.Username, in.Password)
+func (us *UserStore) AddUser(in *model.UserDB) (int, error) {
+	id := 0
+	err := us.db.QueryRow(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3) RETURNING id;`, in.Email, in.Username, in.Password).Scan(&id)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return int(id), nil
 }
 
 func (us *UserStore) UpdateUser(userID int, in *model.UserProfile) error {
@@ -147,10 +148,10 @@ func (us *UserStore) GetUsernameByIDFromDB(userID int) (string, error) {
 func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error) {
 	adresses := []*model.Address{}
 	rows, err := us.db.Query(`SELECT address.id, city, street, house, flat, priority FROM address JOIN users ON address.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		dat := model.Address{}
 		err := rows.Scan(&dat.ID, &dat.City, &dat.Street, &dat.House, &dat.Flat, &dat.Priority)
@@ -166,10 +167,10 @@ func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, e
 func (us *UserStore) GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error) {
 	payments := []*model.PaymentMethod{}
 	rows, err := us.db.Query(`SELECT payment.id, paymentType, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		dat := model.PaymentMethod{}
 		err := rows.Scan(&dat.ID, &dat.PaymentType, &dat.Number, &dat.ExpiryDate, &dat.Priority)

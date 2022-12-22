@@ -24,6 +24,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	auth "serv/microservices/auth/gen_files"
+	mail "serv/microservices/mail/gen_files"
 	orders "serv/microservices/orders/gen_files"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -51,6 +52,9 @@ var (
 )
 var (
 	ordersManager orders.OrdersWorkerClient
+)
+var (
+	mailManager mail.MailServiceClient
 )
 
 func main() {
@@ -91,14 +95,28 @@ func main() {
 	}
 	defer grcpConnOrders.Close()
 
+	grcpConnMail, err := grpc.Dial(
+		"mail:8084",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
+		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
+	)
+	if err != nil {
+		log.Println("cant connect to grpc mail")
+	} else {
+		log.Println("connected to grpc mail service")
+	}
+	defer grcpConnOrders.Close()
+
 	sessManager = auth.NewAuthCheckerClient(grcpConnAuth)
 	ordersManager = orders.NewOrdersWorkerClient(grcpConnOrders)
+	mailManager = mail.NewMailServiceClient(grcpConnMail)
 
 	userStore := repository.NewUserStore(db)
 	productStore := repository.NewProductStore(db)
 
-	userUsecase := usecase.NewUserUsecase(userStore, sessManager)
-	productUsecase := usecase.NewProductUsecase(productStore, ordersManager)
+	userUsecase := usecase.NewUserUsecase(userStore, sessManager, mailManager)
+	productUsecase := usecase.NewProductUsecase(productStore, ordersManager, mailManager)
 
 	userHandler := deliv.NewUserHandler(userUsecase)
 	sessionHandler := deliv.NewSessionHandler(userUsecase)
@@ -119,11 +137,16 @@ func main() {
 	myRouter.HandleFunc(conf.PathCategory, productHandler.GetProductsByCategory).Methods(http.MethodGet, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathSeacrh, productHandler.GetProductsBySearch).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathSuggestions, productHandler.GetSuggestions).Methods(http.MethodPost, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathRecommendations, productHandler.GetRecommendations).Methods(http.MethodGet, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathProductsWithDiscount, productHandler.GetProductsWithBiggestDiscount).Methods(http.MethodGet, http.MethodOptions)
 
 	userRouter.HandleFunc(conf.PathProfile, userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathProfile, userHandler.ChangeProfile).Methods(http.MethodPost, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathAvatar, userHandler.SetAvatar).Methods(http.MethodPost, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathPassword, userHandler.ChangePassword).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc(conf.PathFavorites, productHandler.GetFavorites).Methods(http.MethodGet, http.MethodOptions)
+	userRouter.HandleFunc(conf.PathInsertIntoFavorites, productHandler.InsertItemIntoFavorites).Methods(http.MethodPost, http.MethodOptions)
+	userRouter.HandleFunc(conf.PathDeleteFromFavorites, productHandler.DeleteItemFromFavorites).Methods(http.MethodPost, http.MethodOptions)
 
 	myRouter.HandleFunc(conf.PathComments, orderHandler.GetComments).Methods(http.MethodGet, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathMakeComment, orderHandler.CreateComment).Methods(http.MethodPost, http.MethodOptions)
@@ -134,6 +157,7 @@ func main() {
 	cartRouter.HandleFunc(conf.PathDeleteItemFromCart, orderHandler.DeleteItemFromCart).Methods(http.MethodPost, http.MethodOptions)
 	cartRouter.HandleFunc(conf.PathMakeOrder, orderHandler.MakeOrder).Methods(http.MethodPost, http.MethodOptions)
 	cartRouter.HandleFunc(conf.PathGetOrders, orderHandler.GetOrders).Methods(http.MethodGet, http.MethodOptions)
+	cartRouter.HandleFunc(conf.PathPromo, orderHandler.SetPromocode).Methods(http.MethodPost, http.MethodOptions)
 
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	myRouter.Use(loggingAndCORSHeadersMiddleware)
@@ -147,5 +171,8 @@ func main() {
 	userRouter.Use(amw.CheckAuthMiddleware)
 	cartRouter.Use(amw.CheckAuthMiddleware)
 
-	http.ListenAndServe(conf.Port, myRouter)
+	err = http.ListenAndServe(conf.Port, myRouter)
+	if err != nil {
+		log.Println("cant serve", err)
+	}
 }

@@ -2,6 +2,10 @@ package usecase
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
@@ -9,6 +13,7 @@ import (
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	auth "serv/microservices/auth/gen_files"
+	mail "serv/microservices/mail/gen_files"
 	rep "serv/repository"
 	"strconv"
 )
@@ -18,7 +23,9 @@ type UserUsecaseInterface interface {
 	CheckSession(sessID string) (string, error)
 	ChangeEmail(sessID string, newEmail string) error
 	DeleteSession(sessID string) error
-	AddUser(params *model.UserCreateParams) error
+	SendMail(in model.Mail) error
+	GenPromocode(userID int) string
+	AddUser(params *model.UserCreateParams) (int, error)
 	GetUserByUsername(email string) (model.UserDB, error)
 	GetAddressesByUserID(userID int) ([]*model.Address, error)
 	GetPaymentMethodByUserID(userID int) ([]*model.PaymentMethod, error)
@@ -32,12 +39,14 @@ type UserUsecaseInterface interface {
 
 type UserUsecase struct {
 	sessManager auth.AuthCheckerClient
+	mailManager mail.MailServiceClient
 	store       rep.UserStoreInterface
 }
 
-func NewUserUsecase(us rep.UserStoreInterface, sessManager auth.AuthCheckerClient) UserUsecaseInterface {
+func NewUserUsecase(us rep.UserStoreInterface, sessManager auth.AuthCheckerClient, mailManager mail.MailServiceClient) UserUsecaseInterface {
 	return &UserUsecase{
 		sessManager: sessManager,
+		mailManager: mailManager,
 		store:       us,
 	}
 }
@@ -87,7 +96,27 @@ func (uh *UserUsecase) DeleteSession(sessID string) error {
 	return nil
 }
 
-func (api *UserUsecase) AddUser(params *model.UserCreateParams) error {
+func (api *UserUsecase) SendMail(in model.Mail) error {
+	orderid := int32(in.OrderID)
+	ans, err := api.mailManager.SendMail(
+		context.Background(),
+		&mail.Mail{Type: in.Type, Username: in.Username, Useremail: in.Useremail, OrderStatus: &in.OrderStatus, Promocode: &in.Promocode, OrderID: &orderid})
+	if err != nil || !ans.IsSuccessful {
+		return err
+	}
+	return nil
+}
+
+func (api *UserUsecase) GenPromocode(userID int) string {
+	h := hmac.New(sha256.New, []byte("Base2022"))
+	data := fmt.Sprintf("%d", userID)
+	h.Write([]byte(data))
+	hashedStr := hex.EncodeToString(h.Sum(nil))
+	promocode := "A10" + hashedStr[:5]
+	return promocode
+}
+
+func (api *UserUsecase) AddUser(params *model.UserCreateParams) (int, error) {
 	username := params.Username
 	password := params.Password
 	email := params.Email

@@ -3,6 +3,7 @@
 
 // Package mock_repository is a generated GoMock package.
 package mocks
+
 import (
         reflect "reflect"
         model "serv/domain/model"
@@ -31,6 +32,20 @@ func NewMockProductStoreInterface(ctrl *gomock.Controller) *MockProductStoreInte
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockProductStoreInterface) EXPECT() *MockProductStoreInterfaceMockRecorder {
         return m.recorder
+}
+
+// CheckPromocodeUsage mocks base method.
+func (m *MockProductStoreInterface) CheckPromocodeUsage(userID int, promocode string) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "CheckPromocodeUsage", userID, promocode)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// CheckPromocodeUsage indicates an expected call of CheckPromocodeUsage.
+func (mr *MockProductStoreInterfaceMockRecorder) CheckPromocodeUsage(userID, promocode interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckPromocodeUsage", reflect.TypeOf((*MockProductStoreInterface)(nil).CheckPromocodeUsage), userID, promocode)
 }
 
 // CreateCart mocks base method.
@@ -75,6 +90,20 @@ func (mr *MockProductStoreInterfaceMockRecorder) DeleteItemFromCartById(userID, 
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteItemFromCartById", reflect.TypeOf((*MockProductStoreInterface)(nil).DeleteItemFromCartById), userID, itemID)
 }
 
+// DeleteItemFromFavoritesDB mocks base method.
+func (m *MockProductStoreInterface) DeleteItemFromFavoritesDB(userID, itemID int) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "DeleteItemFromFavoritesDB", userID, itemID)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// DeleteItemFromFavoritesDB indicates an expected call of DeleteItemFromFavoritesDB.
+func (mr *MockProductStoreInterfaceMockRecorder) DeleteItemFromFavoritesDB(userID, itemID interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteItemFromFavoritesDB", reflect.TypeOf((*MockProductStoreInterface)(nil).DeleteItemFromFavoritesDB), userID, itemID)
+}
+
 // GetCart mocks base method.
 func (m *MockProductStoreInterface) GetCart(userID int) (*model.Order, error) {
         m.ctrl.T.Helper()
@@ -105,6 +134,21 @@ func (mr *MockProductStoreInterfaceMockRecorder) GetCommentsFromStore(productID 
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommentsFromStore", reflect.TypeOf((*MockProductStoreInterface)(nil).GetCommentsFromStore), productID)
 }
 
+// GetFavoritesDB mocks base method.
+func (m *MockProductStoreInterface) GetFavoritesDB(userID, lastitemid, count int, sort string) ([]*model.Product, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetFavoritesDB", userID, lastitemid, count, sort)
+        ret0, _ := ret[0].([]*model.Product)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// GetFavoritesDB indicates an expected call of GetFavoritesDB.
+func (mr *MockProductStoreInterfaceMockRecorder) GetFavoritesDB(userID, lastitemid, count, sort interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFavoritesDB", reflect.TypeOf((*MockProductStoreInterface)(nil).GetFavoritesDB), userID, lastitemid, count, sort)
+}
+
 // GetOrderItemsFromStore mocks base method.
 func (m *MockProductStoreInterface) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
         m.ctrl.T.Helper()
@@ -133,6 +177,21 @@ func (m *MockProductStoreInterface) GetProductFromStoreByID(itemsID int) (*model
 func (mr *MockProductStoreInterfaceMockRecorder) GetProductFromStoreByID(itemsID interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductFromStoreByID", reflect.TypeOf((*MockProductStoreInterface)(nil).GetProductFromStoreByID), itemsID)
+}
+
+// GetProductPropertiesFromStore mocks base method.
+func (m *MockProductStoreInterface) GetProductPropertiesFromStore(itemID int, itemCategory string) ([]*model.Property, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetProductPropertiesFromStore", itemID, itemCategory)
+        ret0, _ := ret[0].([]*model.Property)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// GetProductPropertiesFromStore indicates an expected call of GetProductPropertiesFromStore.
+func (mr *MockProductStoreInterfaceMockRecorder) GetProductPropertiesFromStore(itemID, itemCategory interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductPropertiesFromStore", reflect.TypeOf((*MockProductStoreInterface)(nil).GetProductPropertiesFromStore), itemID, itemCategory)
 }
 
 // GetProductsBySearchFromStore mocks base method.
@@ -181,6 +240,21 @@ func (mr *MockProductStoreInterfaceMockRecorder) GetProductsRatingAndCommsCountF
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsRatingAndCommsCountFromStore", reflect.TypeOf((*MockProductStoreInterface)(nil).GetProductsRatingAndCommsCountFromStore), itemsID)
 }
 
+// GetProductsWithBiggestDiscountFromStore mocks base method.
+func (m *MockProductStoreInterface) GetProductsWithBiggestDiscountFromStore(lastitemid, count int) ([]*model.Product, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetProductsWithBiggestDiscountFromStore", lastitemid, count)
+        ret0, _ := ret[0].([]*model.Product)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// GetProductsWithBiggestDiscountFromStore indicates an expected call of GetProductsWithBiggestDiscountFromStore.
+func (mr *MockProductStoreInterfaceMockRecorder) GetProductsWithBiggestDiscountFromStore(lastitemid, count interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsWithBiggestDiscountFromStore", reflect.TypeOf((*MockProductStoreInterface)(nil).GetProductsWithBiggestDiscountFromStore), lastitemid, count)
+}
+
 // GetProductsWithCategoryFromStore mocks base method.
 func (m *MockProductStoreInterface) GetProductsWithCategoryFromStore(category string, lastitemid, count int, sort string) ([]*model.Product, error) {
         m.ctrl.T.Helper()
@@ -194,6 +268,21 @@ func (m *MockProductStoreInterface) GetProductsWithCategoryFromStore(category st
 func (mr *MockProductStoreInterfaceMockRecorder) GetProductsWithCategoryFromStore(category, lastitemid, count, sort interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsWithCategoryFromStore", reflect.TypeOf((*MockProductStoreInterface)(nil).GetProductsWithCategoryFromStore), category, lastitemid, count, sort)
+}
+
+// GetRecommendationProductsFromStore mocks base method.
+func (m *MockProductStoreInterface) GetRecommendationProductsFromStore(itemID int) ([]*model.Product, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetRecommendationProductsFromStore", itemID)
+        ret0, _ := ret[0].([]*model.Product)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// GetRecommendationProductsFromStore indicates an expected call of GetRecommendationProductsFromStore.
+func (mr *MockProductStoreInterfaceMockRecorder) GetRecommendationProductsFromStore(itemID interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecommendationProductsFromStore", reflect.TypeOf((*MockProductStoreInterface)(nil).GetRecommendationProductsFromStore), itemID)
 }
 
 // GetSuggestionsFromStore mocks base method.
@@ -225,6 +314,34 @@ func (mr *MockProductStoreInterfaceMockRecorder) InsertItemIntoCartById(userID, 
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertItemIntoCartById", reflect.TypeOf((*MockProductStoreInterface)(nil).InsertItemIntoCartById), userID, itemID)
 }
 
+// InsertItemIntoFavoritesDB mocks base method.
+func (m *MockProductStoreInterface) InsertItemIntoFavoritesDB(userID, itemID int) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "InsertItemIntoFavoritesDB", userID, itemID)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// InsertItemIntoFavoritesDB indicates an expected call of InsertItemIntoFavoritesDB.
+func (mr *MockProductStoreInterfaceMockRecorder) InsertItemIntoFavoritesDB(userID, itemID interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertItemIntoFavoritesDB", reflect.TypeOf((*MockProductStoreInterface)(nil).InsertItemIntoFavoritesDB), userID, itemID)
+}
+
+// SetPromocodeDB mocks base method.
+func (m *MockProductStoreInterface) SetPromocodeDB(userID int, promocode string) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "SetPromocodeDB", userID, promocode)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// SetPromocodeDB indicates an expected call of SetPromocodeDB.
+func (mr *MockProductStoreInterfaceMockRecorder) SetPromocodeDB(userID, promocode interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetPromocodeDB", reflect.TypeOf((*MockProductStoreInterface)(nil).SetPromocodeDB), userID, promocode)
+}
+
 // UpdateCart mocks base method.
 func (m *MockProductStoreInterface) UpdateCart(userID int, items *[]int) error {
         m.ctrl.T.Helper()
@@ -237,6 +354,20 @@ func (m *MockProductStoreInterface) UpdateCart(userID int, items *[]int) error {
 func (mr *MockProductStoreInterfaceMockRecorder) UpdateCart(userID, items interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCart", reflect.TypeOf((*MockProductStoreInterface)(nil).UpdateCart), userID, items)
+}
+
+// UpdatePricesOrderItemsInStore mocks base method.
+func (m *MockProductStoreInterface) UpdatePricesOrderItemsInStore(userID int, category string, discount int) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "UpdatePricesOrderItemsInStore", userID, category, discount)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// UpdatePricesOrderItemsInStore indicates an expected call of UpdatePricesOrderItemsInStore.
+func (mr *MockProductStoreInterfaceMockRecorder) UpdatePricesOrderItemsInStore(userID, category, discount interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePricesOrderItemsInStore", reflect.TypeOf((*MockProductStoreInterface)(nil).UpdatePricesOrderItemsInStore), userID, category, discount)
 }
 
 // UpdateProductRatingInStore mocks base method.

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+// export PATH="$PATH:$(go env GOPATH)/bin"
+// go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latests
+// protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --experimental_allow_proto3_optional --go-grpc_opt=paths=source_relative microservices/mail/gen_files/mail.proto
+
+package mail;
+option go_package = "./mail";
+
+message Mail {
+  string type = 1;
+  string username = 2;
+  string useremail = 3;
+  optional string promocode = 4;
+  optional string orderStatus = 5;
+  optional int32 orderID = 6;
+}
+
+message Nothing {
+  bool isSuccessful = 1;
+}
+
+// grpc-сервис отправки писем
+service MailService {
+    rpc SendMail (Mail) returns (Nothing) {}
+}

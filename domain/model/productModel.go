@@ -2,26 +2,21 @@ package model
 
 import "time"
 
-// type Product struct {
-// 	ID            int      `json:"id"`
-// 	Name          string   `json:"name"`
-// 	Category      string   `json:"category"`
-// 	Price         float64  `json:"price"`
-// 	DiscountPrice *float64 `json:"lowprice,omitempty"`
-// 	Rating        float64  `json:"rating"`
-// 	Imgsrc        *string  `json:"imgsrc,omitempty"`
-// 	CommentsCount *int     `json:"commentscount,omitempty"`
-// }
+type Property struct {
+	Name        string  `json:"name"`
+	Description *string `json:"description,omitempty"`
+}
 
 type Product struct {
-	ID            int     `json:"id"`
-	Name          string  `json:"name"`
-	Category      string  `json:"category"`
-	Price         float64 `json:"lowprice,omitempty"`
-	NominalPrice  float64 `json:"price"`
-	Rating        float64 `json:"rating"`
-	Imgsrc        *string `json:"imgsrc,omitempty"`
-	CommentsCount *int    `json:"commentscount,omitempty"`
+	ID            int         `json:"id"`
+	Name          string      `json:"name"`
+	Category      string      `json:"category"`
+	Price         float64     `json:"lowprice,omitempty"`
+	NominalPrice  float64     `json:"price"`
+	Rating        float64     `json:"rating"`
+	Imgsrc        *string     `json:"imgsrc,omitempty"`
+	CommentsCount *int        `json:"commentscount,omitempty"`
+	Properties    []*Property `json:"properties"`
 }
 
 type ProductCart struct {
@@ -47,6 +42,7 @@ type Order struct {
 	PaymentcardID int          `json:"card"`
 	CreationDate  *time.Time   `json:"creationDate"`
 	DeliveryDate  *time.Time   `json:"deliveryDate"`
+	Promocode     *string      `json:"promo,omitempty"`
 }
 
 type CartProduct struct {
@@ -59,9 +55,10 @@ type CartProduct struct {
 }
 
 type Cart struct {
-	ID     int            `json:"id"`
-	UserID int            `json:"userid"`
-	Items  []*CartProduct `json:"items"`
+	ID        int            `json:"id"`
+	UserID    int            `json:"userid"`
+	Items     []*CartProduct `json:"items"`
+	Promocode string         `json:"promocode,omitempty"`
 }
 
 type MakeOrder struct {
@@ -82,6 +79,7 @@ type OrderModelGetOrders struct {
 	Paymentcard   PaymentMethod  `json:"card"`
 	CreationDate  *time.Time     `json:"creationDate"`
 	DeliveryDate  *time.Time     `json:"deliveryDate"`
+	Promocode     string         `json:"promocode,omitempty"`
 }
 
 type Search struct {

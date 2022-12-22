@@ -37,11 +37,12 @@ func (m *MockUserUsecaseInterface) EXPECT() *MockUserUsecaseInterfaceMockRecorde
 }
 
 // AddUser mocks base method.
-func (m *MockUserUsecaseInterface) AddUser(params *model.UserCreateParams) error {
+func (m *MockUserUsecaseInterface) AddUser(params *model.UserCreateParams) (int, error) {
         m.ctrl.T.Helper()
         ret := m.ctrl.Call(m, "AddUser", params)
-        ret0, _ := ret[0].(error)
-        return ret0
+        ret0, _ := ret[0].(int)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
 }
 
 // AddUser indicates an expected call of AddUser.
@@ -149,6 +150,20 @@ func (mr *MockUserUsecaseInterfaceMockRecorder) DeleteSession(sessID interface{}
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSession", reflect.TypeOf((*MockUserUsecaseInterface)(nil).DeleteSession), sessID)
 }
 
+// GenPromocode mocks base method.
+func (m *MockUserUsecaseInterface) GenPromocode(userID int) string {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GenPromocode", userID)
+        ret0, _ := ret[0].(string)
+        return ret0
+}
+
+// GenPromocode indicates an expected call of GenPromocode.
+func (mr *MockUserUsecaseInterfaceMockRecorder) GenPromocode(userID interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenPromocode", reflect.TypeOf((*MockUserUsecaseInterface)(nil).GenPromocode), userID)
+}
+
 // GetAddressesByUserID mocks base method.
 func (m *MockUserUsecaseInterface) GetAddressesByUserID(userID int) ([]*model.Address, error) {
         m.ctrl.T.Helper()
@@ -192,6 +207,20 @@ func (m *MockUserUsecaseInterface) GetUserByUsername(email string) (model.UserDB
 func (mr *MockUserUsecaseInterfaceMockRecorder) GetUserByUsername(email interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockUserUsecaseInterface)(nil).GetUserByUsername), email)
+}
+
+// SendMail mocks base method.
+func (m *MockUserUsecaseInterface) SendMail(in model.Mail) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "SendMail", in)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// SendMail indicates an expected call of SendMail.
+func (mr *MockUserUsecaseInterfaceMockRecorder) SendMail(in interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMail", reflect.TypeOf((*MockUserUsecaseInterface)(nil).SendMail), in)
 }
 
 // SetAvatar mocks base method.

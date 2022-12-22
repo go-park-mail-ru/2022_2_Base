@@ -43,7 +43,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Order"
+                            "$ref": "#/definitions/model.Cart"
                         }
                     },
                     "400": {
@@ -312,6 +312,71 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/cart/setpromocode": {
+            "post": {
+                "description": "Sets promocode for cart",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Sets promocode for cart",
+                "operationId": "SetPromocode",
+                "parameters": [
+                    {
+                        "description": "Promocode",
+                        "name": "promo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.Promocode"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict - UserDB already exists",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
                         }
@@ -627,6 +692,103 @@ const docTemplate = `{
                 }
             }
         },
+        "/productswithdiscount": {
+            "get": {
+                "description": "Gets products with biggest discount for main page",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets products with biggest discount for main page",
+                "operationId": "getProductsWithBiggestDiscount",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "lastitemid",
+                        "name": "lastitemid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "count",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/recommendations/{id}": {
+            "get": {
+                "description": "Gets recommendations for product by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets recommendations for product",
+                "operationId": "getRecommendations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Id of product",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/search": {
             "post": {
                 "description": "Gets product by search",
@@ -832,6 +994,170 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/deletefromfav": {
+            "post": {
+                "description": "Deletes Item From favorite",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Deletes Item From favorite",
+                "operationId": "DeleteItemFromFav",
+                "parameters": [
+                    {
+                        "description": "Favorite item",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ProductCartItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/favorites": {
+            "get": {
+                "description": "Gets user's favorites",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Gets user's favorites",
+                "operationId": "GetFavorites",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "lastitemid",
+                        "name": "lastitemid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "count",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "sort",
+                        "name": "sort",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/insertintofav": {
+            "post": {
+                "description": "Inserts Item into favorite",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Inserts Item into favorite",
+                "operationId": "InsertItemIntoFav",
+                "parameters": [
+                    {
+                        "description": "Favorite item",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ProductCartItem"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
                         }
                     },
                     "401": {
@@ -1067,6 +1393,26 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Cart": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.CartProduct"
+                    }
+                },
+                "promocode": {
+                    "type": "string"
+                },
+                "userid": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.CartProduct": {
             "type": "object",
             "properties": {
@@ -1176,52 +1522,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Order": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "integer"
-                },
-                "card": {
-                    "type": "integer"
-                },
-                "creationDate": {
-                    "type": "string"
-                },
-                "deliveryDate": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.OrderItem"
-                    }
-                },
-                "orderstatus": {
-                    "type": "string"
-                },
-                "paymentstatus": {
-                    "type": "string"
-                },
-                "userid": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.OrderItem": {
-            "type": "object",
-            "properties": {
-                "count": {
-                    "type": "integer"
-                },
-                "item": {
-                    "$ref": "#/definitions/model.Product"
-                }
-            }
-        },
         "model.OrderModelGetOrders": {
             "type": "object",
             "properties": {
@@ -1250,6 +1550,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "paymentstatus": {
+                    "type": "string"
+                },
+                "promocode": {
                     "type": "string"
                 },
                 "userid": {
@@ -1301,6 +1604,12 @@ const docTemplate = `{
                 "price": {
                     "type": "number"
                 },
+                "properties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Property"
+                    }
+                },
                 "rating": {
                     "type": "number"
                 }
@@ -1322,6 +1631,25 @@ const docTemplate = `{
             "properties": {
                 "itemid": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.Promocode": {
+            "type": "object",
+            "properties": {
+                "promocode": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Property": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

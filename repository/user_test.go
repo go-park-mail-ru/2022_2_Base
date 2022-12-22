@@ -18,15 +18,19 @@ func TestAddUser(t *testing.T) {
 	var userEmail string = "a@a"
 	var userName string = "art"
 	var userPass string = "12345678"
+	var userID int
 	mock.
-		ExpectExec("INSERT INTO users").
+		ExpectQuery("INSERT INTO users").
 		WithArgs(userEmail, userName, userPass).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+		WillReturnRows(func() *sqlmock.Rows {
+			rr := sqlmock.NewRows([]string{"id"}).AddRow(userID)
+			return rr
+		}())
 	repo := &UserStore{
 		db: db,
 	}
 	in := model.UserDB{Email: userEmail, Username: userName, Password: userPass}
-	err = repo.AddUser(&in)
+	_, err = repo.AddUser(&in)
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
 		return

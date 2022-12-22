@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	baseErrors "serv/domain/errors"
@@ -10,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mailru/easyjson"
 	"github.com/microcosm-cc/bluemonday"
 )
 
@@ -42,8 +42,7 @@ func NewOrderHandler(us *UserHandler, pr *ProductHandler) *OrderHandler {
 
 func ReturnErrorJSON(w http.ResponseWriter, err error, errCode int) {
 	w.WriteHeader(errCode)
-	json.NewEncoder(w).Encode(&model.Error{Error: err.Error()})
-	return
+	_, _, _ = easyjson.MarshalToHTTPResponseWriter(&model.Error{Error: err.Error()}, w)
 }
 
 // GetCart godoc
@@ -53,7 +52,7 @@ func ReturnErrorJSON(w http.ResponseWriter, err error, errCode int) {
 // @Accept  json
 // @Produce  json
 // @Tags Order
-// @Success 200 {object} model.Order
+// @Success 200 {object} model.Cart
 // @Failure 400 {object} model.Error "Bad request - Problem with the request"
 // @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
 // @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
@@ -63,12 +62,12 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	cart, err := api.prHandler.usecase.GetCart(UserData.ID)
 	if err != nil {
@@ -89,10 +88,18 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	prodCart := model.Cart{ID: cart.ID, UserID: cart.UserID}
+	if cart.Promocode != nil {
+		prodCart.Promocode = *cart.Promocode
+	}
 	for _, prod := range cart.Items {
 		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, NominalPrice: prod.Item.NominalPrice, Imgsrc: prod.Item.Imgsrc})
 	}
-	json.NewEncoder(w).Encode(prodCart)
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(prodCart, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // UpdateCart godoc
@@ -113,21 +120,20 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.ProductCart
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	err = api.prHandler.usecase.UpdateOrder(UserData.ID, &req.Items)
 	if err != nil {
@@ -136,7 +142,77 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+}
+
+// SetPromocode godoc
+// @Summary Sets promocode for cart
+// @Description Sets promocode for cart
+// @ID SetPromocode
+// @Accept  json
+// @Produce  json
+// @Tags Order
+// @Param promo body model.Promocode true "Promocode"
+// @Success 200 {object} model.Response "OK"
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 403 {object} model.Error "Forbidden"
+// @Failure 409 {object} model.Error "Conflict - UserDB already exists"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /cart/setpromocode [post]
+func (api *OrderHandler) SetPromocode(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	var req model.Promocode
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
+
+	err = api.prHandler.usecase.SetPromocode(UserData.ID, req.Promocode)
+	if err == baseErrors.ErrConflict409 {
+		log.Println("promocode is already used ")
+		ReturnErrorJSON(w, baseErrors.ErrConflict409, 409)
+		return
+	}
+	if err == baseErrors.ErrForbidden403 {
+		log.Println("promocode is invalid ")
+		ReturnErrorJSON(w, baseErrors.ErrForbidden403, 403)
+		return
+	}
+	if err == baseErrors.ErrUnauthorized401 {
+		log.Println("wrong promocode")
+		ReturnErrorJSON(w, baseErrors.ErrForbidden403, 403)
+		return
+	}
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // AddItemToCart godoc
@@ -157,21 +233,20 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.ProductCartItem
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	err = api.prHandler.usecase.AddToOrder(UserData.ID, req.ItemID)
 	if err != nil {
@@ -180,7 +255,12 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // DeleteItemFromCart godoc
@@ -202,21 +282,20 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.ProductCartItem
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	err = api.prHandler.usecase.DeleteFromOrder(UserData.ID, req.ItemID)
 	if err == baseErrors.ErrNotFound404 {
@@ -230,7 +309,12 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // MakeOrder godoc
@@ -251,21 +335,20 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.MakeOrder
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
+	oldUserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	if oldUserData.ID != req.UserID {
 		log.Println(err)
@@ -273,14 +356,29 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = api.prHandler.usecase.MakeOrder(&req)
+	orderID, err := api.prHandler.usecase.MakeOrder(&req)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	RegisterMail := model.Mail{Type: "orderstatus", Username: oldUserData.Username, Useremail: oldUserData.Email, OrderID: orderID, OrderStatus: "created"}
+	go func() {
+		err = api.usHandler.usecase.SendMail(RegisterMail)
+		if err != nil {
+			log.Println("error sending email ", err)
+			//ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+			//return
+		}
+	}()
+
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // GetOrders godoc
@@ -300,12 +398,12 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	UserData := r.Context().Value("userdata").(*model.UserProfile)
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
 	orders, err := api.prHandler.usecase.GetOrders(UserData.ID)
 	if err != nil {
@@ -320,6 +418,7 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		order.PaymentStatus = sanitizer.Sanitize(order.PaymentStatus)
 
 		newOrder := model.OrderModelGetOrders{ID: int(order.ID), UserID: int(order.UserID), OrderStatus: order.OrderStatus, PaymentStatus: order.PaymentStatus}
+		newOrder.Items = []*model.CartProduct{}
 		for _, prod := range order.Items {
 			if prod.Imgsrc != nil {
 				*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
@@ -330,6 +429,7 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 			}
 			newOrder.Items = append(newOrder.Items, &model.CartProduct{ID: int(prod.ID), Name: prod.Name, Count: int(prod.Count), Price: prod.Price, NominalPrice: prod.NominalPrice, Imgsrc: prod.Imgsrc})
 		}
+
 		t1 := time.Unix(order.CreationDate, 0)
 		newOrder.CreationDate = &t1
 		t2 := time.Unix(order.DeliveryDate, 0)
@@ -347,9 +447,19 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		newOrder.Paymentcard.PaymentType = sanitizer.Sanitize(newOrder.Paymentcard.PaymentType)
 		newOrder.Paymentcard.Number = sanitizer.Sanitize(newOrder.Paymentcard.Number)
 
+		if order.Promocode != nil {
+			newOrder.Promocode = *order.Promocode
+		}
+		newOrder.Promocode = sanitizer.Sanitize(newOrder.Promocode)
+
 		responseOrders = append(responseOrders, &newOrder)
 	}
-	json.NewEncoder(w).Encode(&model.Response{Body: responseOrders})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: responseOrders}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // GetComments godoc
@@ -373,6 +483,11 @@ func (api *OrderHandler) GetComments(w http.ResponseWriter, r *http.Request) {
 	s := strings.Split(r.URL.Path, "/")
 	idS := s[len(s)-1]
 	id, err := strconv.Atoi(idS)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 	commentsDB, err := api.prHandler.usecase.GetComments(id)
 	if err != nil {
 		log.Println(err)
@@ -391,7 +506,12 @@ func (api *OrderHandler) GetComments(w http.ResponseWriter, r *http.Request) {
 		comm.Cons = sanitizer.Sanitize(comm.Cons)
 		comm.Comment = sanitizer.Sanitize(comm.Comment)
 	}
-	json.NewEncoder(w).Encode(&model.Response{Body: comments})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: comments}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // CreateComment godoc
@@ -412,21 +532,20 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.CreateComment
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
 
-	if r.Context().Value("userdata") == nil {
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
 		log.Println("err get user from context ")
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	oldUserData := r.Context().Value("userdata").(*model.UserProfile)
+	oldUserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 	if oldUserData.ID != req.UserID {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
@@ -438,5 +557,172 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+}
+
+// GetFavorites
+// @Summary Gets user's favorites
+// @Description Gets user's favorites
+// @ID GetFavorites
+// @Accept  json
+// @Produce  json
+// @Tags User
+// @Param   lastitemid    query     string  true  "lastitemid"
+// @Param   count         query     string  true  "count"
+// @Param   sort         query     string  false  "sort"
+// @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /user/favorites [get]
+func (api *ProductHandler) GetFavorites(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	lastitemidS := r.URL.Query().Get("lastitemid")
+	countS := r.URL.Query().Get("count")
+	sort := r.URL.Query().Get("sort")
+	lastitemid, err := strconv.Atoi(lastitemidS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+	count, err := strconv.Atoi(countS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
+
+	products, err := api.usecase.GetFavorites(UserData.ID, lastitemid, count, sort)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	for _, prod := range products {
+
+		if prod.Imgsrc != nil {
+			*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
+		}
+		prod.Name = sanitizer.Sanitize(prod.Name)
+		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
+	}
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: products}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+}
+
+// InsertItemIntoFav godoc
+// @Summary Inserts Item into favorite
+// @Description Inserts Item into favorite
+// @ID InsertItemIntoFav
+// @Accept  json
+// @Produce  json
+// @Tags User
+// @Param item body model.ProductCartItem true "Favorite item"
+// @Success 200 {object} model.Response "OK"
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /user/insertintofav [post]
+func (api *ProductHandler) InsertItemIntoFavorites(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	var req model.ProductCartItem
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
+
+	err = api.usecase.InsertItemIntoFavorites(UserData.ID, req.ItemID)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+}
+
+// DeleteItemFromFav godoc
+// @Summary Deletes Item From favorite
+// @Description Deletes Item From favorite
+// @ID DeleteItemFromFav
+// @Accept  json
+// @Produce  json
+// @Tags User
+// @Param item body model.ProductCartItem true "Favorite item"
+// @Success 200 {object} model.Response "OK"
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /user/deletefromfav [post]
+func (api *ProductHandler) DeleteItemFromFavorites(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	var req model.ProductCartItem
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
+
+	err = api.usecase.DeleteItemFromFavorites(UserData.ID, req.ItemID)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }

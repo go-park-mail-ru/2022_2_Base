@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	baseErrors "serv/domain/errors"
@@ -10,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mailru/easyjson"
 	"github.com/microcosm-cc/bluemonday"
 )
 
@@ -73,7 +73,12 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 			prod.Price = 0
 		}
 	}
-	json.NewEncoder(w).Encode(&model.Response{Body: products})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: products}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // GetProductsByCategory godoc
@@ -131,7 +136,68 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 			prod.Price = 0
 		}
 	}
-	json.NewEncoder(w).Encode(&model.Response{Body: products})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: products}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+}
+
+// GetProductsWithBiggestDiscount godoc
+// @Summary Gets products with biggest discount for main page
+// @Description Gets products with biggest discount for main page
+// @ID getProductsWithBiggestDiscount
+// @Accept  json
+// @Produce  json
+// @Tags Products
+// @Param   lastitemid    query     string  true  "lastitemid"
+// @Param   count         query     string  true  "count"
+// @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /productswithdiscount [get]
+func (api *ProductHandler) GetProductsWithBiggestDiscount(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	lastitemidS := r.URL.Query().Get("lastitemid")
+	countS := r.URL.Query().Get("count")
+	lastitemid, err := strconv.Atoi(lastitemidS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+	count, err := strconv.Atoi(countS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+	products, err := api.usecase.GetProductsWithBiggestDiscount(lastitemid, count)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	for _, prod := range products {
+		if prod.Imgsrc != nil {
+			*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
+		}
+		prod.Name = sanitizer.Sanitize(prod.Name)
+		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
+	}
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: products}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // GetProductByID godoc
@@ -174,7 +240,12 @@ func (api *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request
 	if product.NominalPrice == product.Price {
 		product.Price = 0
 	}
-	json.NewEncoder(w).Encode(&model.Response{Body: product})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: product}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // GetProductBySearch godoc
@@ -194,9 +265,8 @@ func (api *ProductHandler) GetProductsBySearch(w http.ResponseWriter, r *http.Re
 		return
 	}
 	sanitizer := bluemonday.UGCPolicy()
-	decoder := json.NewDecoder(r.Body)
 	var req model.Search
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -219,7 +289,12 @@ func (api *ProductHandler) GetProductsBySearch(w http.ResponseWriter, r *http.Re
 			prod.Price = 0
 		}
 	}
-	json.NewEncoder(w).Encode(&model.Response{Body: products})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: products}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // GetSuggestions godoc
@@ -238,10 +313,8 @@ func (api *ProductHandler) GetSuggestions(w http.ResponseWriter, r *http.Request
 	if r.Method == http.MethodOptions {
 		return
 	}
-	sanitizer := bluemonday.UGCPolicy()
-	decoder := json.NewDecoder(r.Body)
 	var req model.Search
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -254,8 +327,60 @@ func (api *ProductHandler) GetSuggestions(w http.ResponseWriter, r *http.Request
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	for _, sugg := range suggestions {
-		sugg = sanitizer.Sanitize(sugg)
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: suggestions}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
 	}
-	json.NewEncoder(w).Encode(&model.Response{Body: suggestions})
+}
+
+// GetRecommendations godoc
+// @Summary Gets recommendations for product
+// @Description  Gets recommendations for product by id
+// @ID getRecommendations
+// @Accept  json
+// @Produce  json
+// @Tags Products
+// @Param id path string true "Id of product"
+// @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /recommendations/{id} [get]
+func (api *ProductHandler) GetRecommendations(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	s := strings.Split(r.URL.Path, "/")
+	idS := s[len(s)-1]
+	id, err := strconv.Atoi(idS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	products, err := api.usecase.GetRecommendationProducts(id)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	for _, prod := range products {
+		if prod.Imgsrc != nil {
+			*prod.Imgsrc = sanitizer.Sanitize(*prod.Imgsrc)
+		}
+		prod.Name = sanitizer.Sanitize(prod.Name)
+		prod.Category = sanitizer.Sanitize(prod.Category)
+		if prod.NominalPrice == prod.Price {
+			prod.Price = 0
+		}
+	}
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: products}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }

@@ -23,8 +23,13 @@ func NewAuthMiddleware(uc usecase.UserUsecaseInterface) AuthenticationMiddleware
 	}
 }
 
+type KeyUserdata struct {
+	key string
+}
+
 func WithUser(ctx context.Context, user *model.UserProfile) context.Context {
-	return context.WithValue(ctx, "userdata", user)
+	return context.WithValue(ctx, KeyUserdata{"userdata"}, user)
+
 }
 
 func (amw *AuthMiddleware) CheckAuthMiddleware(next http.Handler) http.Handler {
