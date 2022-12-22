@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mailru/easyjson"
 	"github.com/microcosm-cc/bluemonday"
 )
 
@@ -73,7 +74,15 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 			prod.Price = 0
 		}
 	}
-	json.NewEncoder(w).Encode(&model.Response{Body: products})
+	//easyjson.Marshal
+	//easyjson.MarshalToWriter(w)
+	//json.NewEncoder(w).Encode(&model.Response{Body: products})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: products}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // GetProductsByCategory godoc

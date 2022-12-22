@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	mail "serv/microservices/mail/gen_files"
@@ -19,7 +20,6 @@ import (
 
 	"bytes"
 	"html/template"
-	conf "serv/config"
 )
 
 func main() {
@@ -98,12 +98,11 @@ func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothi
 
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", "Musicialbaum@mail.ru")
-	//msg.SetHeader("To", in.Useremail)
-	msg.SetHeader("To", "Scorpion1remeres@gmail.com")
+	msg.SetHeader("To", in.Useremail)
 	msg.SetHeader("Subject", header)
 	msg.SetBody("text/html", result)
 	//msg.Attach("/home/User/cat.jpg")
-	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", conf.MailPassword)
+	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", os.Getenv("MAILPASSWORD"))
 	//Send the email
 	if err := n.DialAndSend(msg); err != nil {
 		log.Println(err)
