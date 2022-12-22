@@ -84,6 +84,8 @@ services:
       context: .
       dockerfile: ./Dockerfile-mail
     container_name: mail
+    environment:
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
     ports:
       - "8084:8084"
     expose:
