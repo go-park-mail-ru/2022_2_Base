@@ -63,7 +63,6 @@ type info struct {
 func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothing, error) {
 	log.Println("call SendMail", in)
 	var header string = "Письмо"
-	//fp := filepath.Join("mails_templates", "mail_register", "index.html")
 	fp := filepath.Join("microservices", "mail", "mails_templates", "mail_register", "index.html")
 	i := info{Usename: in.Username, ImgEmailLogoSrc: "https://email.reazon.ru/mail.png", ImgTGLogoSrc: "https://email.reazon.ru/telegram.png", ImgGitLogoSrc: "https://email.reazon.ru/github.png"}
 	switch in.Type {
@@ -73,14 +72,12 @@ func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothi
 		case "created":
 			i.BigImgSrc = "https://email.reazon.ru/delivery-img.png"
 			i.OrderID = fmt.Sprintf("%d", *in.OrderID)
-			//fp = filepath.Join("mails_templates", "mail_orderstatus", "index.html")
 			fp = filepath.Join("microservices", "mail", "mails_templates", "mail_orderstatus", "index.html")
 		}
 	case "promocode":
 		header = "Получен новый промокод"
 		i.BigImgSrc = "https://email.reazon.ru/gift.png"
 		i.Promocode = *in.Promocode
-		//fp = filepath.Join("mails_templates", "mail_promocode", "index.html")
 		fp = filepath.Join("microservices", "mail", "mails_templates", "mail_promocode", "index.html")
 	case "greeting":
 		header = "Приветствие"
