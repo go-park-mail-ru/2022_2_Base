@@ -47,14 +47,11 @@ func TestGetProducts(t *testing.T) {
 	assert.Equal(t, baseErrors.ErrServerError500, err)
 
 	//GetProductsWithCategory
-	err = faker.FakeData(testProducts)
-	testProductsSlice = testProducts[:]
 	testProperties := new([6]*model.Property)
 	err = faker.FakeData(testProperties)
 	testPropertiesSlice := testProperties[:]
 	assert.NoError(t, err)
 	for _, testProd := range testProductsSlice {
-		testProd.Category = "phones"
 		testProd.Properties = testPropertiesSlice
 	}
 
@@ -84,6 +81,7 @@ func TestGetProductsByIDAndBySearch(t *testing.T) {
 	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager, mailManager)
 	testProducts := new([3]*model.Product)
 	err := faker.FakeData(testProducts)
+	assert.NoError(t, err)
 	testProductsSlice := testProducts[:]
 	testProperties := new([6]*model.Property)
 	err = faker.FakeData(testProperties)
