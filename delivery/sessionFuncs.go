@@ -3,7 +3,6 @@ package delivery
 import (
 	"bytes"
 	"encoding/base64"
-	"encoding/json"
 	"log"
 	"net/http"
 	"regexp"
@@ -13,6 +12,7 @@ import (
 
 	usecase "serv/usecase"
 
+	"github.com/mailru/easyjson"
 	"golang.org/x/crypto/argon2"
 )
 
@@ -56,9 +56,8 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.UserLogin
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println("get UserLogin ", err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -116,7 +115,12 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // LogOut godoc
@@ -153,7 +157,12 @@ func (api *SessionHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // SignUp godoc
@@ -173,9 +182,8 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		return
 	}
-	decoder := json.NewDecoder(r.Body)
 	var req model.UserCreateParams
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -265,7 +273,12 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // GetSession godoc
@@ -314,5 +327,10 @@ func (api *SessionHandler) GetSession(w http.ResponseWriter, r *http.Request) {
 		Secure:   true,
 	}
 	http.SetCookie(w, cookie)
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }

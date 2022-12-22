@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mailru/easyjson"
 	"github.com/microcosm-cc/bluemonday"
 )
 
@@ -95,7 +96,12 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 	for _, prod := range cart.Items {
 		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, NominalPrice: prod.Item.NominalPrice, Imgsrc: prod.Item.Imgsrc})
 	}
-	json.NewEncoder(w).Encode(prodCart)
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(prodCart, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // UpdateCart godoc
@@ -116,9 +122,8 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.ProductCart
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -139,7 +144,12 @@ func (api *OrderHandler) UpdateCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // SetPromocode godoc
@@ -162,9 +172,8 @@ func (api *OrderHandler) SetPromocode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.Promocode
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -200,7 +209,12 @@ func (api *OrderHandler) SetPromocode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // AddItemToCart godoc
@@ -221,9 +235,8 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.ProductCartItem
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -244,7 +257,12 @@ func (api *OrderHandler) AddItemToCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // DeleteItemFromCart godoc
@@ -266,9 +284,8 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.ProductCartItem
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -294,7 +311,12 @@ func (api *OrderHandler) DeleteItemFromCart(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // MakeOrder godoc
@@ -315,9 +337,8 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.MakeOrder
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -354,7 +375,12 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // GetOrders godoc
@@ -430,7 +456,12 @@ func (api *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 
 		responseOrders = append(responseOrders, &newOrder)
 	}
-	json.NewEncoder(w).Encode(&model.Response{Body: responseOrders})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: responseOrders}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // GetComments godoc
@@ -472,7 +503,12 @@ func (api *OrderHandler) GetComments(w http.ResponseWriter, r *http.Request) {
 		comm.Cons = sanitizer.Sanitize(comm.Cons)
 		comm.Comment = sanitizer.Sanitize(comm.Comment)
 	}
-	json.NewEncoder(w).Encode(&model.Response{Body: comments})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: comments}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // CreateComment godoc
@@ -493,9 +529,8 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.CreateComment
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -519,7 +554,12 @@ func (api *OrderHandler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // GetFavorites
@@ -581,7 +621,12 @@ func (api *ProductHandler) GetFavorites(w http.ResponseWriter, r *http.Request) 
 			prod.Price = 0
 		}
 	}
-	json.NewEncoder(w).Encode(&model.Response{Body: products})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: products}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // InsertItemIntoFav godoc
@@ -602,9 +647,8 @@ func (api *ProductHandler) InsertItemIntoFavorites(w http.ResponseWriter, r *htt
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.ProductCartItem
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -624,7 +668,12 @@ func (api *ProductHandler) InsertItemIntoFavorites(w http.ResponseWriter, r *htt
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // DeleteItemFromFav godoc
@@ -645,9 +694,8 @@ func (api *ProductHandler) DeleteItemFromFavorites(w http.ResponseWriter, r *htt
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.ProductCartItem
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -668,5 +716,10 @@ func (api *ProductHandler) DeleteItemFromFavorites(w http.ResponseWriter, r *htt
 		return
 	}
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }

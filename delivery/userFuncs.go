@@ -2,7 +2,6 @@ package delivery
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"log"
 	"net/http"
 	baseErrors "serv/domain/errors"
@@ -11,6 +10,7 @@ import (
 
 	usecase "serv/usecase"
 
+	"github.com/mailru/easyjson"
 	"github.com/microcosm-cc/bluemonday"
 )
 
@@ -62,7 +62,12 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		paym.Number = sanitizer.Sanitize(paym.Number)
 	}
 	userProfile.ID = 0
-	json.NewEncoder(w).Encode(userProfile)
+	_, _, err := easyjson.MarshalToHTTPResponseWriter(userProfile, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // ChangeUser godoc
@@ -83,9 +88,8 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.UserProfile
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -120,7 +124,12 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // SetAvatar godoc
@@ -171,7 +180,12 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
 
 // ChangePassword godoc
@@ -192,9 +206,8 @@ func (api *UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	decoder := json.NewDecoder(r.Body)
 	var req model.ChangePassword
-	err := decoder.Decode(&req)
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
 	if err != nil {
 		log.Println(err)
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
@@ -249,5 +262,10 @@ func (api *UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(&model.Response{})
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
 }
