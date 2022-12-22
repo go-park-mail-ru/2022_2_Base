@@ -103,7 +103,7 @@ func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothi
 	msg.SetHeader("Subject", header)
 	msg.SetBody("text/html", result)
 	//msg.Attach("/home/User/cat.jpg")
-	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", os.Getenv("MAILPASSWORD"))
+	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", os.Getenv("MAIL_PASSWORD"))
 	//Send the email
 	if err := n.DialAndSend(msg); err != nil {
 		log.Println(err)
