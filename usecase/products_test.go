@@ -49,10 +49,15 @@ func TestGetProducts(t *testing.T) {
 	//GetProductsWithCategory
 	err = faker.FakeData(testProducts)
 	testProductsSlice = testProducts[:]
+	testProperties := new([6]*model.Property)
+	err = faker.FakeData(testProperties)
+	testPropertiesSlice := testProperties[:]
+	assert.NoError(t, err)
 	for _, testProd := range testProductsSlice {
 		testProd.Category = "phones"
-		testProd.Properties = testProd.Properties[:2]
+		testProd.Properties = testPropertiesSlice
 	}
+
 	assert.NoError(t, err)
 	prodStoreMock.EXPECT().GetProductsWithCategoryFromStore("phones", mockLastItemID, mockCount, mockSort).Return(testProductsSlice, nil)
 	for _, testProd := range testProductsSlice {
@@ -80,10 +85,13 @@ func TestGetProductsByIDAndBySearch(t *testing.T) {
 	testProducts := new([3]*model.Product)
 	err := faker.FakeData(testProducts)
 	testProductsSlice := testProducts[:]
+	testProperties := new([6]*model.Property)
+	err = faker.FakeData(testProperties)
+	testPropertiesSlice := testProperties[:]
 	search := testProductsSlice[0].Name
 	assert.NoError(t, err)
 	for _, testProd := range testProductsSlice {
-		testProd.Properties = testProd.Properties[:2]
+		testProd.Properties = testPropertiesSlice
 	}
 
 	//by id
