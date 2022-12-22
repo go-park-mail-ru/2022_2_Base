@@ -146,7 +146,7 @@ func TestSignUp(t *testing.T) {
 	assert.NoError(t, err)
 	testUserID := 2
 	testPromocode := "Az2"
-	//testMail := model.Mail{Type: "greeting", Username: testUser.Username, Useremail: testUser.Email}
+	testMail := model.Mail{Type: "greeting", Username: testUser.Username, Useremail: testUser.Email}
 	testMailPromo := model.Mail{Type: "promocode", Username: testUser.Username, Useremail: testUser.Email, Promocode: testPromocode}
 
 	//ok
@@ -158,10 +158,10 @@ func TestSignUp(t *testing.T) {
 	userUsecaseMock.EXPECT().SetSession(testUser.Email).Return(testsessID, nil)
 	userUsecaseMock.EXPECT().GenPromocode(testUserID).Return(testPromocode)
 	wg := sync.WaitGroup{}
-	wg.Add(1)
-	// userUsecaseMock.EXPECT().SendMail(testMail).Do(func(arg1 interface{}) {
-	// 	defer wg.Done()
-	// })
+	wg.Add(2)
+	userUsecaseMock.EXPECT().SendMail(testMail).Do(func(arg1 interface{}) {
+		defer wg.Done()
+	})
 	//wg.Add(1)
 	// userUsecaseMock.EXPECT().GenPromocode(testUserID).Do(func(arg1 interface{}) {
 	// 	defer wg.Done()
