@@ -149,7 +149,7 @@ func TestSignUp(t *testing.T) {
 	testMailPromo := model.Mail{Type: "promocode", Username: testUser.Username, Useremail: testUser.Email, Promocode: testPromocode}
 
 	//ok
-	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{}, nil)
+	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(model.UserDB{}, nil)
 	userUsecaseMock.EXPECT().AddUser(&testUser2).Return(testUserID, nil)
 	userUsecaseMock.EXPECT().SetSession(testUser.Email).Return(testsessID, nil)
 	userUsecaseMock.EXPECT().GenPromocode(testUserID).Return(testPromocode)
@@ -180,7 +180,7 @@ func TestSignUp(t *testing.T) {
 	assert.Equal(t, 400, rr.Code)
 
 	//err 500 db err
-	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{}, baseErrors.ErrServerError500)
+	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(model.UserDB{}, baseErrors.ErrServerError500)
 	url = conf.PathLogin
 	data, _ = json.Marshal(testUser)
 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
@@ -193,7 +193,7 @@ func TestSignUp(t *testing.T) {
 	assert.Equal(t, 500, rr.Code)
 
 	//err 409 user exists
-	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{Email: testUser.Email}, nil)
+	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(model.UserDB{Email: testUser.Email}, nil)
 	url = conf.PathLogin
 	data, _ = json.Marshal(testUser)
 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
@@ -207,7 +207,7 @@ func TestSignUp(t *testing.T) {
 
 	//err 401 err validation
 	testUser3 := model.UserCreateParams{Email: "a", Username: "art", Password: "12345678"}
-	userUsecaseMock.EXPECT().GetUserByUsername(testUser3.Email).Return(*&model.UserDB{}, nil)
+	userUsecaseMock.EXPECT().GetUserByUsername(testUser3.Email).Return(model.UserDB{}, nil)
 	url = conf.PathLogin
 
 	data, _ = json.Marshal(testUser3)
@@ -221,7 +221,7 @@ func TestSignUp(t *testing.T) {
 	assert.Equal(t, 401, rr.Code)
 
 	//err 401 err validation
-	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{}, nil)
+	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(model.UserDB{}, nil)
 	url = conf.PathLogin
 	testUser3 = model.UserCreateParams{Email: "art@art", Username: "art", Password: "1"}
 	data, _ = json.Marshal(testUser3)

@@ -42,7 +42,7 @@ func TestGetOrders(t *testing.T) {
 	orderUsecaseMock.EXPECT().GetOrdersAddress(testOrdersSlice[0].AddressID).Return(*testAddr, nil)
 	orderUsecaseMock.EXPECT().GetOrdersPayment(testOrdersSlice[0].PaymentcardID).Return(*testPaym, nil)
 
-	orderHandler.GetOrders(context.Background(), testUserID)
+	_, err = orderHandler.GetOrders(context.Background(), testUserID)
 	assert.NoError(t, err)
 
 	// err 500
@@ -82,7 +82,7 @@ func TestMakeOrder(t *testing.T) {
 
 	//ok
 	orderUsecaseMock.EXPECT().MakeOrder(context.Background(), testOrder).Return(nil)
-	orderHandler.MakeOrder(context.Background(), testOrder)
+	_, err = orderHandler.MakeOrder(context.Background(), testOrder)
 	assert.NoError(t, err)
 
 	// err 500
