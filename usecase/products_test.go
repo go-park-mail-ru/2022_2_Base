@@ -51,6 +51,7 @@ func TestGetProducts(t *testing.T) {
 	testProductsSlice = testProducts[:]
 	for _, testProd := range testProductsSlice {
 		testProd.Category = "phones"
+		testProd.Properties = testProd.Properties[:2]
 	}
 	assert.NoError(t, err)
 	prodStoreMock.EXPECT().GetProductsWithCategoryFromStore("phones", mockLastItemID, mockCount, mockSort).Return(testProductsSlice, nil)
@@ -81,6 +82,9 @@ func TestGetProductsByIDAndBySearch(t *testing.T) {
 	testProductsSlice := testProducts[:]
 	search := testProductsSlice[0].Name
 	assert.NoError(t, err)
+	for _, testProd := range testProductsSlice {
+		testProd.Properties = testProd.Properties[:2]
+	}
 
 	//by id
 	prodStoreMock.EXPECT().GetProductFromStoreByID(testProductsSlice[0].ID).Return(testProductsSlice[0], nil)
