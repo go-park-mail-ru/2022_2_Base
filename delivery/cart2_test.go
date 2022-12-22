@@ -62,7 +62,7 @@ func TestGetOrders(t *testing.T) {
 }
 
 func TestMakeOrder(t *testing.T) {
-	//t.Parallel()
+	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -82,10 +82,10 @@ func TestMakeOrder(t *testing.T) {
 	testOrder.DeliveryDate = time.Unix(1, 10)
 	testOrderID := 1
 	testMail := model.Mail{Type: "orderstatus", Username: testUserProfile.Username, Useremail: testUserProfile.Email, OrderID: testOrderID, OrderStatus: "created"}
+	//RegisterMail := model.Mail{Type: "orderstatus", Username: oldUserData.Username, Useremail: oldUserData.Email, OrderID: orderID, OrderStatus: "created"}
 
 	//ok
 	productUsecaseMock.EXPECT().MakeOrder(testOrder).Return(testOrderID, nil)
-
 	userUsecaseMock.EXPECT().SendMail(testMail).Return(nil)
 
 	url := "/api/v1/" + "cart/makeorder"
