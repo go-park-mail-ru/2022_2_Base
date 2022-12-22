@@ -1,8 +1,10 @@
 name: CI/CD
 
 on:
-  push:
+  pull_request:
     branches: [main]
+  # push:
+  #   branches: [main]
 
 jobs:
   linter:
@@ -81,5 +83,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
+            ls
             cd back
+            ls
             make build
