@@ -1,4 +1,4 @@
-![Website](https://img.shields.io/website?up_color=red&up_message=down&url=http%3A%2F%2F89.208.198.137%3A8081%2F) ![GitHub repo size](https://img.shields.io/github/repo-size/frontend-park-mail-ru/2022_2_Base)
+![GitHub repo size](https://img.shields.io/github/repo-size/frontend-park-mail-ru/2022_2_Base)
 
 # Ozon
 
