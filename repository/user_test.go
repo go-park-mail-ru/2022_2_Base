@@ -121,7 +121,7 @@ func TestGetUserByUsernameFromDB(t *testing.T) {
 	}
 }
 
-func TestGetUserByIDFromDB(t *testing.T) {
+func TestGetUsernameAndAvatarByIDFromDB(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("cant create mock: %s", err)
@@ -134,13 +134,13 @@ func TestGetUserByIDFromDB(t *testing.T) {
 		ExpectQuery("SELECT").
 		WithArgs(id).
 		WillReturnRows(func() *sqlmock.Rows {
-			rr := sqlmock.NewRows([]string{"username"}).AddRow("art")
+			rr := sqlmock.NewRows([]string{"username", "avatar"}).AddRow("art", "s")
 			return rr
 		}())
 	repo := &UserStore{
 		db: db,
 	}
-	username, err := repo.GetUsernameByIDFromDB(id)
+	username, _, err := repo.GetUsernameAndAvatarByIDFromDB(id)
 	if err != nil {
 		t.Errorf("unexpected err: %s", err)
 		return
@@ -158,10 +158,10 @@ func TestGetUserByIDFromDB(t *testing.T) {
 		ExpectQuery("SELECT").
 		WithArgs(id).
 		WillReturnRows(func() *sqlmock.Rows {
-			rr := sqlmock.NewRows([]string{"id", "password"}).AddRow(1, "s")
+			rr := sqlmock.NewRows([]string{"id"}).AddRow(1)
 			return rr
 		}())
-	_, err = repo.GetUsernameByIDFromDB(id)
+	_, _, err = repo.GetUsernameAndAvatarByIDFromDB(id)
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 		return

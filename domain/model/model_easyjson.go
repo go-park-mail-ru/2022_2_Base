@@ -574,6 +574,8 @@ func easyjsonC80ae7adDecodeServDomainModel6(in *jlexer.Lexer, out *Comment) {
 			out.UserID = int(in.Int())
 		case "username":
 			out.Username = string(in.String())
+		case "avatar":
+			out.UserAvatar = string(in.String())
 		case "pros":
 			out.Pros = string(in.String())
 		case "cons":
@@ -605,6 +607,11 @@ func easyjsonC80ae7adEncodeServDomainModel6(out *jwriter.Writer, in Comment) {
 		const prefix string = ",\"username\":"
 		out.RawString(prefix)
 		out.String(string(in.Username))
+	}
+	if in.UserAvatar != "" {
+		const prefix string = ",\"avatar\":"
+		out.RawString(prefix)
+		out.String(string(in.UserAvatar))
 	}
 	if in.Pros != "" {
 		const prefix string = ",\"pros\":"

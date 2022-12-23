@@ -28,12 +28,13 @@ type CommentDB struct {
 }
 
 type Comment struct {
-	UserID   int     `json:"userid"`
-	Username string  `json:"username"`
-	Pros     string  `json:"pros,omitempty"`
-	Cons     string  `json:"cons,omitempty"`
-	Comment  string  `json:"comment,omitempty"`
-	Rating   float64 `json:"rating"`
+	UserID     int     `json:"userid"`
+	Username   string  `json:"username"`
+	UserAvatar string  `json:"avatar,omitempty"`
+	Pros       string  `json:"pros,omitempty"`
+	Cons       string  `json:"cons,omitempty"`
+	Comment    string  `json:"comment,omitempty"`
+	Rating     float64 `json:"rating"`
 }
 
 type Promocode struct {
