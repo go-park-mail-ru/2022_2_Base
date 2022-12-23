@@ -27,6 +27,7 @@ func TestGetProducts(t *testing.T) {
 	mockLastItemID := 0
 	mockCount := 1
 	mockSort := ""
+	mockUserID := 0
 	testProducts := new([3]*model.Product)
 	err := faker.FakeData(testProducts)
 	testProductsSlice := testProducts[:]
@@ -38,12 +39,12 @@ func TestGetProducts(t *testing.T) {
 	for _, testProd := range testProductsSlice {
 		prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProd.ID).Return(testProd.Rating, *testProd.CommentsCount, nil)
 	}
-	products, err := prodUsecase.GetProducts(mockLastItemID, mockCount, mockSort)
+	products, err := prodUsecase.GetProducts(mockLastItemID, mockCount, mockSort, mockUserID)
 	assert.NoError(t, err)
 	assert.Equal(t, testProductsSlice, products)
 	// error
 	prodStoreMock.EXPECT().GetProductsFromStore(mockLastItemID, mockCount, mockSort).Return(nil, baseErrors.ErrServerError500)
-	_, err = prodUsecase.GetProducts(mockLastItemID, mockCount, mockSort)
+	_, err = prodUsecase.GetProducts(mockLastItemID, mockCount, mockSort, mockUserID)
 	assert.Equal(t, baseErrors.ErrServerError500, err)
 
 	//GetProductsWithCategory
@@ -61,12 +62,12 @@ func TestGetProducts(t *testing.T) {
 		prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProd.ID).Return(testProd.Rating, *testProd.CommentsCount, nil)
 		prodStoreMock.EXPECT().GetProductPropertiesFromStore(testProd.ID, testProd.Category).Return(testProd.Properties, nil)
 	}
-	products, err = prodUsecase.GetProductsWithCategory("phones", mockLastItemID, mockCount, mockSort)
+	products, err = prodUsecase.GetProductsWithCategory("phones", mockLastItemID, mockCount, mockSort, mockUserID)
 	assert.NoError(t, err)
 	assert.Equal(t, testProductsSlice, products)
 	// error
 	prodStoreMock.EXPECT().GetProductsWithCategoryFromStore("phones", mockLastItemID, mockCount, mockSort).Return(nil, baseErrors.ErrServerError500)
-	_, err = prodUsecase.GetProductsWithCategory("phones", mockLastItemID, mockCount, mockSort)
+	_, err = prodUsecase.GetProductsWithCategory("phones", mockLastItemID, mockCount, mockSort, mockUserID)
 	assert.Equal(t, baseErrors.ErrServerError500, err)
 }
 
@@ -91,19 +92,20 @@ func TestGetProductsByIDAndBySearch(t *testing.T) {
 	for _, testProd := range testProductsSlice {
 		testProd.Properties = testPropertiesSlice
 	}
+	mockUserID := 0
 
 	//by id
 	prodStoreMock.EXPECT().GetProductFromStoreByID(testProductsSlice[0].ID).Return(testProductsSlice[0], nil)
 	prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProductsSlice[0].ID).Return(testProductsSlice[0].Rating, *testProductsSlice[0].CommentsCount, nil)
 	prodStoreMock.EXPECT().GetProductPropertiesFromStore(testProductsSlice[0].ID, testProductsSlice[0].Category).Return(testProductsSlice[0].Properties, nil)
 
-	product, err := prodUsecase.GetProductByID(testProductsSlice[0].ID)
+	product, err := prodUsecase.GetProductByID(testProductsSlice[0].ID, mockUserID)
 	assert.NoError(t, err)
 	assert.Equal(t, testProductsSlice[0], product)
 
 	// error
 	prodStoreMock.EXPECT().GetProductFromStoreByID(testProductsSlice[0].ID).Return(nil, baseErrors.ErrServerError500)
-	_, err = prodUsecase.GetProductByID(testProductsSlice[0].ID)
+	_, err = prodUsecase.GetProductByID(testProductsSlice[0].ID, mockUserID)
 	assert.Equal(t, baseErrors.ErrServerError500, err)
 
 	//by searh
@@ -111,13 +113,13 @@ func TestGetProductsByIDAndBySearch(t *testing.T) {
 	prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProductsSlice[0].ID).Return(testProductsSlice[0].Rating, *testProductsSlice[0].CommentsCount, nil)
 	prodStoreMock.EXPECT().GetProductPropertiesFromStore(testProductsSlice[0].ID, testProductsSlice[0].Category).Return(testProductsSlice[0].Properties, nil)
 
-	products, err := prodUsecase.GetProductsBySearch(search)
+	products, err := prodUsecase.GetProductsBySearch(search, mockUserID)
 	assert.NoError(t, err)
 	assert.Equal(t, []*model.Product{testProductsSlice[0]}, products)
 
 	// error
 	prodStoreMock.EXPECT().GetProductsBySearchFromStore(search).Return(nil, baseErrors.ErrServerError500)
-	_, err = prodUsecase.GetProductsBySearch(search)
+	_, err = prodUsecase.GetProductsBySearch(search, mockUserID)
 	assert.Equal(t, baseErrors.ErrServerError500, err)
 }
 
@@ -134,6 +136,7 @@ func TestGetCart(t *testing.T) {
 	testCart := new(model.Order)
 	err := faker.FakeData(testCart)
 	assert.NoError(t, err)
+	testCart.Items = []*model.OrderItem{}
 
 	//exist cart
 	prodStoreMock.EXPECT().GetCart(testCart.UserID).Return(testCart, nil)
@@ -402,17 +405,18 @@ func TestGetRecommendationProducts(t *testing.T) {
 	for _, testProd := range testProductsSlice {
 		testProd.Category = "phones"
 	}
+	mockUserID := 0
 	assert.NoError(t, err)
 	prodStoreMock.EXPECT().GetRecommendationProductsFromStore(mockItemID).Return(testProductsSlice, nil)
 	for _, testProd := range testProductsSlice {
 		prodStoreMock.EXPECT().GetProductsRatingAndCommsCountFromStore(testProd.ID).Return(testProd.Rating, *testProd.CommentsCount, nil)
 	}
-	products, err := prodUsecase.GetRecommendationProducts(mockItemID)
+	products, err := prodUsecase.GetRecommendationProducts(mockItemID, mockUserID)
 	assert.NoError(t, err)
 	assert.Equal(t, testProductsSlice, products)
 	// error
 	prodStoreMock.EXPECT().GetRecommendationProductsFromStore(mockItemID).Return(nil, baseErrors.ErrServerError500)
-	_, err = prodUsecase.GetRecommendationProducts(mockItemID)
+	_, err = prodUsecase.GetRecommendationProducts(mockItemID, mockUserID)
 	assert.Equal(t, baseErrors.ErrServerError500, err)
 }
 
@@ -432,6 +436,7 @@ func TestGetFavorites(t *testing.T) {
 	testProducts := new([3]*model.Product)
 	err := faker.FakeData(testProducts)
 	testProductsSlice := testProducts[:]
+	assert.NoError(t, err)
 	testProperties := new([6]*model.Property)
 	err = faker.FakeData(testProperties)
 	testPropertiesSlice := testProperties[:]

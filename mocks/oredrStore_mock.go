@@ -35,6 +35,20 @@ func (m *MockOrderStoreInterface) EXPECT() *MockOrderStoreInterfaceMockRecorder 
         return m.recorder
 }
 
+// ChangeOrderStatus mocks base method.
+func (m *MockOrderStoreInterface) ChangeOrderStatus(in *orders.ChangeOrderStatusType) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "ChangeOrderStatus", in)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// ChangeOrderStatus indicates an expected call of ChangeOrderStatus.
+func (mr *MockOrderStoreInterfaceMockRecorder) ChangeOrderStatus(in interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeOrderStatus", reflect.TypeOf((*MockOrderStoreInterface)(nil).ChangeOrderStatus), in)
+}
+
 // GetOrderItemsFromStore mocks base method.
 func (m *MockOrderStoreInterface) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
         m.ctrl.T.Helper()

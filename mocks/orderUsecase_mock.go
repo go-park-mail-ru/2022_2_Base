@@ -36,6 +36,20 @@ func (m *MockOrderUsecaseInterface) EXPECT() *MockOrderUsecaseInterfaceMockRecor
         return m.recorder
 }
 
+// ChangeOrderStatus mocks base method.
+func (m *MockOrderUsecaseInterface) ChangeOrderStatus(ctx context.Context, in *orders.ChangeOrderStatusType) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "ChangeOrderStatus", ctx, in)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// ChangeOrderStatus indicates an expected call of ChangeOrderStatus.
+func (mr *MockOrderUsecaseInterfaceMockRecorder) ChangeOrderStatus(ctx, in interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeOrderStatus", reflect.TypeOf((*MockOrderUsecaseInterface)(nil).ChangeOrderStatus), ctx, in)
+}
+
 // GetOrders mocks base method.
 func (m *MockOrderUsecaseInterface) GetOrders(userID int) ([]*model.Order, error) {
         m.ctrl.T.Helper()

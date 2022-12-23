@@ -28,7 +28,7 @@ func TestGetCart(t *testing.T) {
 	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
 	userHandler := NewUserHandler(userUsecaseMock)
-	productHandler := NewProductHandler(productUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	orderHandler := NewOrderHandler(userHandler, productHandler)
 
 	testUserProfile := new(model.UserProfile)
@@ -80,7 +80,7 @@ func TestUpdateCart(t *testing.T) {
 	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
 	userHandler := NewUserHandler(userUsecaseMock)
-	productHandler := NewProductHandler(productUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	orderHandler := NewOrderHandler(userHandler, productHandler)
 
 	testUserProfile := new(model.UserProfile)
@@ -161,7 +161,7 @@ func TestAddItemToCart(t *testing.T) {
 	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
 	userHandler := NewUserHandler(userUsecaseMock)
-	productHandler := NewProductHandler(productUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	orderHandler := NewOrderHandler(userHandler, productHandler)
 
 	testUserProfile := new(model.UserProfile)
@@ -223,7 +223,7 @@ func TestDeleteItemFromCart(t *testing.T) {
 	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
 	userHandler := NewUserHandler(userUsecaseMock)
-	productHandler := NewProductHandler(productUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	orderHandler := NewOrderHandler(userHandler, productHandler)
 
 	testUserProfile := new(model.UserProfile)

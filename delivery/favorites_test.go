@@ -26,7 +26,8 @@ func TestAddItemToFavorites(t *testing.T) {
 	defer ctrl.Finish()
 
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
-	productHandler := NewProductHandler(productUsecaseMock)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 
 	testUserProfile := new(model.UserProfile)
 	err := faker.FakeData(testUserProfile)
@@ -85,7 +86,8 @@ func TestDeleteItemFromFavorites(t *testing.T) {
 	defer ctrl.Finish()
 
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
-	productHandler := NewProductHandler(productUsecaseMock)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 
 	testUserProfile := new(model.UserProfile)
 	err := faker.FakeData(testUserProfile)
@@ -144,6 +146,8 @@ func TestGetFavorites(t *testing.T) {
 	defer ctrl.Finish()
 
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 
 	testProducts := new([2]*model.Product)
 	err := faker.FakeData(testProducts)
@@ -164,11 +168,8 @@ func TestGetFavorites(t *testing.T) {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	productHandler := NewProductHandler(productUsecaseMock)
 	productHandler.GetFavorites(rr, req.WithContext(WithUser(req.Context(), testUserProfile)))
 	assert.Equal(t, http.StatusOK, rr.Code)
-	//expectedstr, err := json.Marshal(&model.Response{Body: testProducts})
-	//assert.Equal(t, rr.Body.String(), string(expectedstr)+"\n")
 
 	//err 500 db
 	productUsecaseMock.EXPECT().GetFavorites(testUserProfile.ID, mockLastItemID, mockCount, mockSort).Return(nil, baseErrors.ErrServerError500)

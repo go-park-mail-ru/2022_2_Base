@@ -49,6 +49,20 @@ func (mr *MockProductUsecaseInterfaceMockRecorder) AddToOrder(userID, itemID int
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddToOrder", reflect.TypeOf((*MockProductUsecaseInterface)(nil).AddToOrder), userID, itemID)
 }
 
+// ChangeOrderStatus mocks base method.
+func (m *MockProductUsecaseInterface) ChangeOrderStatus(userID int, in *model.ChangeOrderStatus) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "ChangeOrderStatus", userID, in)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// ChangeOrderStatus indicates an expected call of ChangeOrderStatus.
+func (mr *MockProductUsecaseInterfaceMockRecorder) ChangeOrderStatus(userID, in interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeOrderStatus", reflect.TypeOf((*MockProductUsecaseInterface)(nil).ChangeOrderStatus), userID, in)
+}
+
 // CreateComment mocks base method.
 func (m *MockProductUsecaseInterface) CreateComment(in *model.CreateComment) error {
         m.ctrl.T.Helper()
@@ -89,6 +103,21 @@ func (m *MockProductUsecaseInterface) DeleteItemFromFavorites(userID, itemID int
 func (mr *MockProductUsecaseInterfaceMockRecorder) DeleteItemFromFavorites(userID, itemID interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteItemFromFavorites", reflect.TypeOf((*MockProductUsecaseInterface)(nil).DeleteItemFromFavorites), userID, itemID)
+}
+
+// GetBestProductInCategory mocks base method.
+func (m *MockProductUsecaseInterface) GetBestProductInCategory(category string, userID int) (*model.Product, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "GetBestProductInCategory", category, userID)
+        ret0, _ := ret[0].(*model.Product)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// GetBestProductInCategory indicates an expected call of GetBestProductInCategory.
+func (mr *MockProductUsecaseInterfaceMockRecorder) GetBestProductInCategory(category, userID interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBestProductInCategory", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetBestProductInCategory), category, userID)
 }
 
 // GetCart mocks base method.
@@ -152,93 +181,93 @@ func (mr *MockProductUsecaseInterfaceMockRecorder) GetOrders(userID interface{})
 }
 
 // GetProductByID mocks base method.
-func (m *MockProductUsecaseInterface) GetProductByID(id int) (*model.Product, error) {
+func (m *MockProductUsecaseInterface) GetProductByID(id, userID int) (*model.Product, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetProductByID", id)
+        ret := m.ctrl.Call(m, "GetProductByID", id, userID)
         ret0, _ := ret[0].(*model.Product)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetProductByID indicates an expected call of GetProductByID.
-func (mr *MockProductUsecaseInterfaceMockRecorder) GetProductByID(id interface{}) *gomock.Call {
+func (mr *MockProductUsecaseInterfaceMockRecorder) GetProductByID(id, userID interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductByID", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProductByID), id)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductByID", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProductByID), id, userID)
 }
 
 // GetProducts mocks base method.
-func (m *MockProductUsecaseInterface) GetProducts(lastitemid, count int, sort string) ([]*model.Product, error) {
+func (m *MockProductUsecaseInterface) GetProducts(lastitemid, count int, sort string, userID int) ([]*model.Product, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetProducts", lastitemid, count, sort)
+        ret := m.ctrl.Call(m, "GetProducts", lastitemid, count, sort, userID)
         ret0, _ := ret[0].([]*model.Product)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetProducts indicates an expected call of GetProducts.
-func (mr *MockProductUsecaseInterfaceMockRecorder) GetProducts(lastitemid, count, sort interface{}) *gomock.Call {
+func (mr *MockProductUsecaseInterfaceMockRecorder) GetProducts(lastitemid, count, sort, userID interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProducts", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProducts), lastitemid, count, sort)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProducts", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProducts), lastitemid, count, sort, userID)
 }
 
 // GetProductsBySearch mocks base method.
-func (m *MockProductUsecaseInterface) GetProductsBySearch(search string) ([]*model.Product, error) {
+func (m *MockProductUsecaseInterface) GetProductsBySearch(search string, userID int) ([]*model.Product, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetProductsBySearch", search)
+        ret := m.ctrl.Call(m, "GetProductsBySearch", search, userID)
         ret0, _ := ret[0].([]*model.Product)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetProductsBySearch indicates an expected call of GetProductsBySearch.
-func (mr *MockProductUsecaseInterfaceMockRecorder) GetProductsBySearch(search interface{}) *gomock.Call {
+func (mr *MockProductUsecaseInterfaceMockRecorder) GetProductsBySearch(search, userID interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsBySearch", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProductsBySearch), search)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsBySearch", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProductsBySearch), search, userID)
 }
 
 // GetProductsWithBiggestDiscount mocks base method.
-func (m *MockProductUsecaseInterface) GetProductsWithBiggestDiscount(lastitemid, count int) ([]*model.Product, error) {
+func (m *MockProductUsecaseInterface) GetProductsWithBiggestDiscount(lastitemid, count, userID int) ([]*model.Product, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetProductsWithBiggestDiscount", lastitemid, count)
+        ret := m.ctrl.Call(m, "GetProductsWithBiggestDiscount", lastitemid, count, userID)
         ret0, _ := ret[0].([]*model.Product)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetProductsWithBiggestDiscount indicates an expected call of GetProductsWithBiggestDiscount.
-func (mr *MockProductUsecaseInterfaceMockRecorder) GetProductsWithBiggestDiscount(lastitemid, count interface{}) *gomock.Call {
+func (mr *MockProductUsecaseInterfaceMockRecorder) GetProductsWithBiggestDiscount(lastitemid, count, userID interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsWithBiggestDiscount", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProductsWithBiggestDiscount), lastitemid, count)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsWithBiggestDiscount", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProductsWithBiggestDiscount), lastitemid, count, userID)
 }
 
 // GetProductsWithCategory mocks base method.
-func (m *MockProductUsecaseInterface) GetProductsWithCategory(cat string, lastitemid, count int, sort string) ([]*model.Product, error) {
+func (m *MockProductUsecaseInterface) GetProductsWithCategory(cat string, lastitemid, count int, sort string, userID int) ([]*model.Product, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetProductsWithCategory", cat, lastitemid, count, sort)
+        ret := m.ctrl.Call(m, "GetProductsWithCategory", cat, lastitemid, count, sort, userID)
         ret0, _ := ret[0].([]*model.Product)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetProductsWithCategory indicates an expected call of GetProductsWithCategory.
-func (mr *MockProductUsecaseInterfaceMockRecorder) GetProductsWithCategory(cat, lastitemid, count, sort interface{}) *gomock.Call {
+func (mr *MockProductUsecaseInterfaceMockRecorder) GetProductsWithCategory(cat, lastitemid, count, sort, userID interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsWithCategory", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProductsWithCategory), cat, lastitemid, count, sort)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProductsWithCategory", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetProductsWithCategory), cat, lastitemid, count, sort, userID)
 }
 
 // GetRecommendationProducts mocks base method.
-func (m *MockProductUsecaseInterface) GetRecommendationProducts(itemID int) ([]*model.Product, error) {
+func (m *MockProductUsecaseInterface) GetRecommendationProducts(itemID, userID int) ([]*model.Product, error) {
         m.ctrl.T.Helper()
-        ret := m.ctrl.Call(m, "GetRecommendationProducts", itemID)
+        ret := m.ctrl.Call(m, "GetRecommendationProducts", itemID, userID)
         ret0, _ := ret[0].([]*model.Product)
         ret1, _ := ret[1].(error)
         return ret0, ret1
 }
 
 // GetRecommendationProducts indicates an expected call of GetRecommendationProducts.
-func (mr *MockProductUsecaseInterfaceMockRecorder) GetRecommendationProducts(itemID interface{}) *gomock.Call {
+func (mr *MockProductUsecaseInterfaceMockRecorder) GetRecommendationProducts(itemID, userID interface{}) *gomock.Call {
         mr.mock.ctrl.T.Helper()
-        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecommendationProducts", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetRecommendationProducts), itemID)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRecommendationProducts", reflect.TypeOf((*MockProductUsecaseInterface)(nil).GetRecommendationProducts), itemID, userID)
 }
 
 // GetSuggestions mocks base method.
