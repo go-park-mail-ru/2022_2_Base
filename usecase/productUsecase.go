@@ -23,6 +23,7 @@ type ProductUsecaseInterface interface {
 	GetProductsWithBiggestDiscount(lastitemid int, count int, userID int) ([]*model.Product, error)
 	GetProductByID(id int, userID int) (*model.Product, error)
 	GetProductsBySearch(search string, userID int) ([]*model.Product, error)
+	GetBestProductInCategory(category string, userID int) (*model.Product, error)
 	GetSuggestions(search string) ([]string, error)
 	GetCart(userID int) (*model.Order, error)
 	UpdateOrder(userID int, items *[]int) error
@@ -152,6 +153,35 @@ func (api *ProductUsecase) GetProductByID(id int, userID int) (*model.Product, e
 		return nil, err
 	}
 	product.Properties = properties
+	if userID != 0 {
+		isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.IsFavorite = isFav
+	}
+
+	return product, nil
+}
+
+func (api *ProductUsecase) GetBestProductInCategory(category string, userID int) (*model.Product, error) {
+	products, err := api.store.GetProductsWithCategoryFromStore(category, 0, 10, "ratingdown")
+	if err != nil {
+		return nil, err
+	}
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+	randitemID := r1.Intn(10)
+	product := products[randitemID]
+	rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	product.Rating = math.Round(rating*100) / 100
+	product.CommentsCount = &commsCount
+
+	product.Properties = []*model.Property{}
 	if userID != 0 {
 		isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
 		if err != nil {

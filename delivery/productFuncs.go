@@ -460,3 +460,55 @@ func (api *ProductHandler) GetRecommendations(w http.ResponseWriter, r *http.Req
 		return
 	}
 }
+
+// GetBestProductInCategory godoc
+// @Summary Gets random from 10 best products in category
+// @Description  Gets random from 10 best products in category
+// @ID GetBestProductInCategory
+// @Accept  json
+// @Produce  json
+// @Tags Products
+// @Param category path string true "The category of products"
+// @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /bestproduct/{category} [get]
+func (api *ProductHandler) GetBestProductInCategory(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	s := strings.Split(r.URL.Path, "/")
+	category := s[len(s)-1]
+	var userID int = 0
+	session, err := r.Cookie("session_id")
+	if err == nil {
+		usName, err := api.userUsecase.CheckSession(session.Value)
+		if err == nil {
+			user, err := api.userUsecase.GetUserByUsername(usName)
+			if err == nil {
+				userID = user.ID
+			}
+		}
+	}
+	product, err := api.usecase.GetBestProductInCategory(category, userID)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	if product.Imgsrc != nil {
+		*product.Imgsrc = sanitizer.Sanitize(*product.Imgsrc)
+	}
+	product.Name = sanitizer.Sanitize(product.Name)
+	product.Category = sanitizer.Sanitize(product.Category)
+	if product.NominalPrice == product.Price {
+		product.Price = 0
+	}
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: product}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+}

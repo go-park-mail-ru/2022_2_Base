@@ -248,6 +248,37 @@ info:
   title: Reozon API
   version: "1.0"
 paths:
+  /bestproduct/{category}:
+    get:
+      consumes:
+      - application/json
+      description: Gets random from 10 best products in category
+      operationId: GetBestProductInCategory
+      parameters:
+      - description: The category of products
+        in: path
+        name: category
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Product'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: Gets random from 10 best products in category
+      tags:
+      - Products
   /cart:
     get:
       consumes:
