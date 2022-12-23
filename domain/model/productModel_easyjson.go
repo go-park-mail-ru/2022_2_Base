@@ -579,7 +579,7 @@ func easyjsonA532a84DecodeServDomainModel5(in *jlexer.Lexer, out *OrderModelGetO
 			(out.Address).UnmarshalEasyJSON(in)
 		case "card":
 			(out.Paymentcard).UnmarshalEasyJSON(in)
-		case "creationDate":
+		case "creationdate":
 			if in.IsNull() {
 				in.Skip()
 				out.CreationDate = nil
@@ -591,7 +591,7 @@ func easyjsonA532a84DecodeServDomainModel5(in *jlexer.Lexer, out *OrderModelGetO
 					in.AddError((*out.CreationDate).UnmarshalJSON(data))
 				}
 			}
-		case "deliveryDate":
+		case "deliverydate":
 			if in.IsNull() {
 				in.Skip()
 				out.DeliveryDate = nil
@@ -670,7 +670,7 @@ func easyjsonA532a84EncodeServDomainModel5(out *jwriter.Writer, in OrderModelGet
 		(in.Paymentcard).MarshalEasyJSON(out)
 	}
 	{
-		const prefix string = ",\"creationDate\":"
+		const prefix string = ",\"creationdate\":"
 		out.RawString(prefix)
 		if in.CreationDate == nil {
 			out.RawString("null")
@@ -679,7 +679,7 @@ func easyjsonA532a84EncodeServDomainModel5(out *jwriter.Writer, in OrderModelGet
 		}
 	}
 	{
-		const prefix string = ",\"deliveryDate\":"
+		const prefix string = ",\"deliverydate\":"
 		out.RawString(prefix)
 		if in.DeliveryDate == nil {
 			out.RawString("null")
@@ -872,7 +872,7 @@ func easyjsonA532a84DecodeServDomainModel7(in *jlexer.Lexer, out *Order) {
 			out.AddressID = int(in.Int())
 		case "card":
 			out.PaymentcardID = int(in.Int())
-		case "creationDate":
+		case "creationdate":
 			if in.IsNull() {
 				in.Skip()
 				out.CreationDate = nil
@@ -884,7 +884,7 @@ func easyjsonA532a84DecodeServDomainModel7(in *jlexer.Lexer, out *Order) {
 					in.AddError((*out.CreationDate).UnmarshalJSON(data))
 				}
 			}
-		case "deliveryDate":
+		case "deliverydate":
 			if in.IsNull() {
 				in.Skip()
 				out.DeliveryDate = nil
@@ -971,7 +971,7 @@ func easyjsonA532a84EncodeServDomainModel7(out *jwriter.Writer, in Order) {
 		out.Int(int(in.PaymentcardID))
 	}
 	{
-		const prefix string = ",\"creationDate\":"
+		const prefix string = ",\"creationdate\":"
 		out.RawString(prefix)
 		if in.CreationDate == nil {
 			out.RawString("null")
@@ -980,7 +980,7 @@ func easyjsonA532a84EncodeServDomainModel7(out *jwriter.Writer, in Order) {
 		}
 	}
 	{
-		const prefix string = ",\"deliveryDate\":"
+		const prefix string = ",\"deliverydate\":"
 		out.RawString(prefix)
 		if in.DeliveryDate == nil {
 			out.RawString("null")
@@ -1067,7 +1067,7 @@ func easyjsonA532a84DecodeServDomainModel8(in *jlexer.Lexer, out *MakeOrder) {
 			out.AddressID = int(in.Int())
 		case "card":
 			out.PaymentcardID = int(in.Int())
-		case "deliveryDate":
+		case "deliverydate":
 			if data := in.Raw(); in.Ok() {
 				in.AddError((out.DeliveryDate).UnmarshalJSON(data))
 			}
@@ -1117,7 +1117,7 @@ func easyjsonA532a84EncodeServDomainModel8(out *jwriter.Writer, in MakeOrder) {
 		out.Int(int(in.PaymentcardID))
 	}
 	{
-		const prefix string = ",\"deliveryDate\":"
+		const prefix string = ",\"deliverydate\":"
 		out.RawString(prefix)
 		out.Raw((in.DeliveryDate).MarshalJSON())
 	}

@@ -143,6 +143,7 @@ func (ps *ProductStore) GetProductsWithBiggestDiscountFromStore(lastitemid int, 
 	if lastitemid == 0 {
 		lastProduct.Price = 1
 		lastProduct.NominalPrice = 1
+		lastProduct.ID = 1e9
 	}
 	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (1 - price/nominalprice, id) < ($1, $2) ORDER BY (1 - price/nominalprice, id) DESC LIMIT $3;`, 1-lastProduct.Price/lastProduct.NominalPrice, lastProduct.ID, count)
 	if err != nil {

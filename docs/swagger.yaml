@@ -92,7 +92,7 @@ definitions:
         type: integer
       card:
         type: integer
-      deliveryDate:
+      deliverydate:
         type: string
       items:
         items:
@@ -107,9 +107,9 @@ definitions:
         $ref: '#/definitions/model.Address'
       card:
         $ref: '#/definitions/model.PaymentMethod'
-      creationDate:
+      creationdate:
         type: string
-      deliveryDate:
+      deliverydate:
         type: string
       id:
         type: integer

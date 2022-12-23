@@ -100,6 +100,7 @@ func main() {
 
 	grcpConnMail, err := grpc.Dial(
 		"mail:8084",
+		//"localhost:8084",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
 		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),

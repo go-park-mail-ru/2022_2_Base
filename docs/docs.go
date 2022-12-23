@@ -1511,7 +1511,7 @@ const docTemplate = `{
                 "card": {
                     "type": "integer"
                 },
-                "deliveryDate": {
+                "deliverydate": {
                     "type": "string"
                 },
                 "items": {
@@ -1534,10 +1534,10 @@ const docTemplate = `{
                 "card": {
                     "$ref": "#/definitions/model.PaymentMethod"
                 },
-                "creationDate": {
+                "creationdate": {
                     "type": "string"
                 },
-                "deliveryDate": {
+                "deliverydate": {
                     "type": "string"
                 },
                 "id": {
