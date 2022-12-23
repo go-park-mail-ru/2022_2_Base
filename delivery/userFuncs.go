@@ -170,7 +170,7 @@ func (api *UserHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
-	fileName := "https://img.reazon.ru/avatar" + strconv.FormatUint(uint64(oldUserData.ID), 10) + ".jpg"
+	fileName := "avatar" + strconv.FormatUint(uint64(oldUserData.ID), 10) + ".jpg"
 	newUserData := model.UserProfile{Avatar: fileName}
 
 	err = api.usecase.ChangeUser(oldUserData, &newUserData)
