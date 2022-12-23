@@ -65,8 +65,15 @@ message UserID {
   int32 UserID = 1;
 }
 
+message ChangeOrderStatusType {
+  int32 UserID = 1;
+  int32 OrderID = 2;
+  string OrderStatus = 3;
+}
+
 // grpc-сервис для работы с заказами
 service OrdersWorker {
     rpc MakeOrder (MakeOrderType) returns (Nothing) {}
     rpc GetOrders (UserID) returns (OrdersResponse) {}
+    rpc ChangeOrderStatus (ChangeOrderStatusType) returns (Nothing) {}
 }

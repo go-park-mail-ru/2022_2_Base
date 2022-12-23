@@ -45,6 +45,15 @@ definitions:
       price:
         type: number
     type: object
+  model.ChangeOrderStatus:
+    properties:
+      orderid:
+        type: integer
+      orderstatus:
+        type: string
+      userid:
+        type: integer
+    type: object
   model.ChangePassword:
     properties:
       newpassword:
@@ -341,6 +350,42 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: updates user's cart
+      tags:
+      - Order
+  /cart/changeorderstatus:
+    post:
+      consumes:
+      - application/json
+      description: changess order's status
+      operationId: ChangeOrderStatus
+      parameters:
+      - description: SetOrderStatus params
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/model.ChangeOrderStatus'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: Bad request - Problem with the request
+          schema:
+            $ref: '#/definitions/model.Error'
+        "401":
+          description: Unauthorized - Access token is missing or invalid
+          schema:
+            $ref: '#/definitions/model.Error'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: changess order's status
       tags:
       - Order
   /cart/deletefromcart:

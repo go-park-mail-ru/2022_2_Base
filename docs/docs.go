@@ -163,6 +163,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/cart/changeorderstatus": {
+            "post": {
+                "description": "changess order's status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "changess order's status",
+                "operationId": "ChangeOrderStatus",
+                "parameters": [
+                    {
+                        "description": "SetOrderStatus params",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ChangeOrderStatus"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/cart/deletefromcart": {
             "post": {
                 "description": "Deletes Item From cart",
@@ -1481,6 +1534,20 @@ const docTemplate = `{
                 },
                 "price": {
                     "type": "number"
+                }
+            }
+        },
+        "model.ChangeOrderStatus": {
+            "type": "object",
+            "properties": {
+                "orderid": {
+                    "type": "integer"
+                },
+                "orderstatus": {
+                    "type": "string"
+                },
+                "userid": {
+                    "type": "integer"
                 }
             }
         },

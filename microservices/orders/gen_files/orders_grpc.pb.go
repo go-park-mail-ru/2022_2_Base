@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type OrdersWorkerClient interface {
 	MakeOrder(ctx context.Context, in *MakeOrderType, opts ...grpc.CallOption) (*Nothing, error)
 	GetOrders(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*OrdersResponse, error)
+	ChangeOrderStatus(ctx context.Context, in *ChangeOrderStatusType, opts ...grpc.CallOption) (*Nothing, error)
 }
 
 type ordersWorkerClient struct {
@@ -52,12 +53,22 @@ func (c *ordersWorkerClient) GetOrders(ctx context.Context, in *UserID, opts ...
 	return out, nil
 }
 
+func (c *ordersWorkerClient) ChangeOrderStatus(ctx context.Context, in *ChangeOrderStatusType, opts ...grpc.CallOption) (*Nothing, error) {
+	out := new(Nothing)
+	err := c.cc.Invoke(ctx, "/orders.OrdersWorker/ChangeOrderStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrdersWorkerServer is the server API for OrdersWorker service.
 // All implementations must embed UnimplementedOrdersWorkerServer
 // for forward compatibility
 type OrdersWorkerServer interface {
 	MakeOrder(context.Context, *MakeOrderType) (*Nothing, error)
 	GetOrders(context.Context, *UserID) (*OrdersResponse, error)
+	ChangeOrderStatus(context.Context, *ChangeOrderStatusType) (*Nothing, error)
 	mustEmbedUnimplementedOrdersWorkerServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedOrdersWorkerServer) MakeOrder(context.Context, *MakeOrderType
 }
 func (UnimplementedOrdersWorkerServer) GetOrders(context.Context, *UserID) (*OrdersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOrders not implemented")
+}
+func (UnimplementedOrdersWorkerServer) ChangeOrderStatus(context.Context, *ChangeOrderStatusType) (*Nothing, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeOrderStatus not implemented")
 }
 func (UnimplementedOrdersWorkerServer) mustEmbedUnimplementedOrdersWorkerServer() {}
 
@@ -120,6 +134,24 @@ func _OrdersWorker_GetOrders_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OrdersWorker_ChangeOrderStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangeOrderStatusType)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrdersWorkerServer).ChangeOrderStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/orders.OrdersWorker/ChangeOrderStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrdersWorkerServer).ChangeOrderStatus(ctx, req.(*ChangeOrderStatusType))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OrdersWorker_ServiceDesc is the grpc.ServiceDesc for OrdersWorker service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var OrdersWorker_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetOrders",
 			Handler:    _OrdersWorker_GetOrders_Handler,
+		},
+		{
+			MethodName: "ChangeOrderStatus",
+			Handler:    _OrdersWorker_ChangeOrderStatus_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -378,6 +378,67 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ChangeOrderStatus godoc
+// @Summary changess order's status
+// @Description changess order's status
+// @ID ChangeOrderStatus
+// @Accept  json
+// @Produce  json
+// @Tags Order
+// @Param order body model.ChangeOrderStatus true "SetOrderStatus params"
+// @Success 200 {object} model.Response "OK"
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /cart/changeorderstatus [post]
+func (api *OrderHandler) ChangeOrderStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	var req model.ChangeOrderStatus
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	oldUserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
+
+	if oldUserData.ID != req.UserID {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
+		return
+	}
+
+	err = api.prHandler.usecase.ChangeOrderStatus(&req)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	Mail := model.Mail{Type: "orderstatus", Username: oldUserData.Username, Useremail: oldUserData.Email, OrderID: req.OrderID, OrderStatus: req.OrderStatus}
+
+	err = api.usHandler.usecase.SendMail(Mail)
+	if err != nil {
+		log.Println("error sending email ", err)
+	}
+
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+}
+
 // GetOrders godoc
 // @Summary gets user's orders
 // @Description gets user's orders

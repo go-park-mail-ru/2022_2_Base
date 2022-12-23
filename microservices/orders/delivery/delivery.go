@@ -29,6 +29,16 @@ func (sm *OrderManager) MakeOrder(ctx context.Context, in *orders.MakeOrderType)
 	return &orders.Nothing{IsSuccessful: true}, nil
 }
 
+func (sm *OrderManager) ChangeOrderStatus(ctx context.Context, in *orders.ChangeOrderStatusType) (*orders.Nothing, error) {
+	log.Println("call MakeOrder ", in)
+	err := sm.usecase.ChangeOrderStatus(ctx, in)
+	if err != nil {
+		log.Println("error ", err)
+		return &orders.Nothing{IsSuccessful: false}, err
+	}
+	return &orders.Nothing{IsSuccessful: true}, nil
+}
+
 func (om *OrderManager) GetOrders(ctx context.Context, userID *orders.UserID) (*orders.OrdersResponse, error) {
 	log.Println("call GetOrders ", userID)
 	ordersArr, err := om.usecase.GetOrders(int(userID.UserID))

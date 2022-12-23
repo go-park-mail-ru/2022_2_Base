@@ -72,6 +72,12 @@ type MakeOrder struct {
 	DeliveryDate  time.Time `json:"deliverydate"`
 }
 
+type ChangeOrderStatus struct {
+	UserID      int    `json:"userid"`
+	OrderID     int    `json:"orderid"`
+	OrderStatus string `json:"orderstatus"`
+}
+
 type OrderModelGetOrders struct {
 	ID            int            `json:"id"`
 	UserID        int            `json:"userid"`

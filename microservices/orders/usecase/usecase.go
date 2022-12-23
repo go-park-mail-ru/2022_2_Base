@@ -10,6 +10,7 @@ import (
 
 type OrderUsecaseInterface interface {
 	MakeOrder(ctx context.Context, in *orders.MakeOrderType) error
+	ChangeOrderStatus(ctx context.Context, in *orders.ChangeOrderStatusType) error
 	GetOrders(userID int) ([]*model.Order, error)
 	GetOrdersAddress(addressID int) (model.Address, error)
 	GetOrdersPayment(paymentID int) (model.PaymentMethod, error)
@@ -28,6 +29,11 @@ func NewOrderUsecase(os orderst.OrderStoreInterface) OrderUsecaseInterface {
 func (om *OrderUsecase) MakeOrder(ctx context.Context, in *orders.MakeOrderType) error {
 	log.Println("call MakeOrder usecase")
 	return om.store.MakeOrder(in)
+}
+
+func (om *OrderUsecase) ChangeOrderStatus(ctx context.Context, in *orders.ChangeOrderStatusType) error {
+	log.Println("call ChangeOrderStatus usecase")
+	return om.store.ChangeOrderStatus(in)
 }
 
 func (api *OrderUsecase) GetOrders(userID int) ([]*model.Order, error) {

@@ -163,6 +163,7 @@ func main() {
 	cartRouter.HandleFunc(conf.PathMakeOrder, orderHandler.MakeOrder).Methods(http.MethodPost, http.MethodOptions)
 	cartRouter.HandleFunc(conf.PathGetOrders, orderHandler.GetOrders).Methods(http.MethodGet, http.MethodOptions)
 	cartRouter.HandleFunc(conf.PathPromo, orderHandler.SetPromocode).Methods(http.MethodPost, http.MethodOptions)
+	cartRouter.HandleFunc(conf.PathChangeOrderStatus, orderHandler.ChangeOrderStatus).Methods(http.MethodPost, http.MethodOptions)
 
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	myRouter.Use(loggingAndCORSHeadersMiddleware)

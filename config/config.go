@@ -29,6 +29,7 @@ var PathCart = "/cart"
 var PathAddItemToCart = "/insertintocart"
 var PathDeleteItemFromCart = "/deletefromcart"
 var PathMakeOrder = "/makeorder"
+var PathChangeOrderStatus = "/changeorderstatus"
 var PathGetOrders = "/orders"
 var PathPromo = "/setpromocode"
 
