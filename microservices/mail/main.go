@@ -35,6 +35,13 @@ func main() {
 	grpc_prometheus.Register(server)
 	mail.RegisterMailServiceServer(server, NewMailManager())
 	http.Handle("/metrics", promhttp.Handler())
+	go func() {
+		log.Println("starting collect mectrics :8094")
+		err = http.ListenAndServe(":8094", nil)
+		if err != nil {
+			log.Println("cant serve metrics", err)
+		}
+	}()
 	log.Println("starting server at :8084")
 	err = server.Serve(lis)
 	if err != nil {
