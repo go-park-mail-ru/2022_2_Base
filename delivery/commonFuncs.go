@@ -92,7 +92,7 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		prodCart.Promocode = *cart.Promocode
 	}
 	for _, prod := range cart.Items {
-		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, NominalPrice: prod.Item.NominalPrice, Imgsrc: prod.Item.Imgsrc})
+		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, NominalPrice: prod.Item.NominalPrice, Imgsrc: prod.Item.Imgsrc, IsFavorite: prod.IsFavorite})
 	}
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(prodCart, w)
 	if err != nil {

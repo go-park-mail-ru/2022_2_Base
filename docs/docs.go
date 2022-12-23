@@ -1425,6 +1425,9 @@ const docTemplate = `{
                 "imgsrc": {
                     "type": "string"
                 },
+                "isfavorite": {
+                    "type": "boolean"
+                },
                 "lowprice": {
                     "type": "number"
                 },
@@ -1594,6 +1597,9 @@ const docTemplate = `{
                 },
                 "imgsrc": {
                     "type": "string"
+                },
+                "isfavorite": {
+                    "type": "boolean"
                 },
                 "lowprice": {
                     "type": "number"

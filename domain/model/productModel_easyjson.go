@@ -410,6 +410,8 @@ func easyjsonA532a84DecodeServDomainModel4(in *jlexer.Lexer, out *Product) {
 				}
 				in.Delim(']')
 			}
+		case "isfavorite":
+			out.IsFavorite = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -483,6 +485,11 @@ func easyjsonA532a84EncodeServDomainModel4(out *jwriter.Writer, in Product) {
 			}
 			out.RawByte(']')
 		}
+	}
+	{
+		const prefix string = ",\"isfavorite\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.IsFavorite))
 	}
 	out.RawByte('}')
 }
@@ -742,6 +749,8 @@ func easyjsonA532a84DecodeServDomainModel6(in *jlexer.Lexer, out *OrderItem) {
 				}
 				(*out.Item).UnmarshalEasyJSON(in)
 			}
+		case "isfavorite":
+			out.IsFavorite = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -769,6 +778,11 @@ func easyjsonA532a84EncodeServDomainModel6(out *jwriter.Writer, in OrderItem) {
 		} else {
 			(*in.Item).MarshalEasyJSON(out)
 		}
+	}
+	{
+		const prefix string = ",\"isfavorite\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.IsFavorite))
 	}
 	out.RawByte('}')
 }
@@ -1172,6 +1186,8 @@ func easyjsonA532a84DecodeServDomainModel9(in *jlexer.Lexer, out *CartProduct) {
 				}
 				*out.Imgsrc = string(in.String())
 			}
+		case "isfavorite":
+			out.IsFavorite = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -1215,6 +1231,11 @@ func easyjsonA532a84EncodeServDomainModel9(out *jwriter.Writer, in CartProduct) 
 		const prefix string = ",\"imgsrc\":"
 		out.RawString(prefix)
 		out.String(string(*in.Imgsrc))
+	}
+	{
+		const prefix string = ",\"isfavorite\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.IsFavorite))
 	}
 	out.RawByte('}')
 }

@@ -59,6 +59,7 @@ var (
 
 func main() {
 	myRouter := mux.NewRouter()
+	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
 	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	log.Println("conn: ", urlDB)
 	db, err := sql.Open("pgx", urlDB)
@@ -71,6 +72,7 @@ func main() {
 
 	grcpConnAuth, err := grpc.Dial(
 		"auth:8082",
+		//"localhost:8082",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
 		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
@@ -84,6 +86,7 @@ func main() {
 
 	grcpConnOrders, err := grpc.Dial(
 		"orders:8083",
+		//"localhost:8083",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
 		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
@@ -120,7 +123,7 @@ func main() {
 
 	userHandler := deliv.NewUserHandler(userUsecase)
 	sessionHandler := deliv.NewSessionHandler(userUsecase)
-	productHandler := deliv.NewProductHandler(productUsecase)
+	productHandler := deliv.NewProductHandler(productUsecase, userUsecase)
 
 	orderHandler := deliv.NewOrderHandler(userHandler, productHandler)
 

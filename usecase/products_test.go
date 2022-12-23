@@ -432,9 +432,13 @@ func TestGetFavorites(t *testing.T) {
 	testProducts := new([3]*model.Product)
 	err := faker.FakeData(testProducts)
 	testProductsSlice := testProducts[:]
+	testProperties := new([6]*model.Property)
+	err = faker.FakeData(testProperties)
+	testPropertiesSlice := testProperties[:]
+	assert.NoError(t, err)
 	for _, testProd := range testProductsSlice {
 		testProd.Category = "phones"
-		//testProd.
+		testProd.Properties = testPropertiesSlice
 	}
 	assert.NoError(t, err)
 	prodStoreMock.EXPECT().GetFavoritesDB(mockItemID, mockLastItemID, mockCount, mockSort).Return(testProductsSlice, nil)

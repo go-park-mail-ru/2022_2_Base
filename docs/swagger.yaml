@@ -36,6 +36,8 @@ definitions:
         type: integer
       imgsrc:
         type: string
+      isfavorite:
+        type: boolean
       lowprice:
         type: number
       name:
@@ -147,6 +149,8 @@ definitions:
         type: integer
       imgsrc:
         type: string
+      isfavorite:
+        type: boolean
       lowprice:
         type: number
       name:
