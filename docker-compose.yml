@@ -141,7 +141,7 @@ services:
       - postgres:postgres
     volumes:
       - ./:/app
-      - /home/ubuntu/front-next/dist/img:/avatars
+      - /home/ubuntu/img/general:/avatars
     depends_on:
       - "postgres"
       - "session"
