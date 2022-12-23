@@ -1545,9 +1545,6 @@ const docTemplate = `{
                 },
                 "orderstatus": {
                     "type": "string"
-                },
-                "userid": {
-                    "type": "integer"
                 }
             }
         },

@@ -1166,8 +1166,6 @@ func easyjsonA532a84DecodeServDomainModel9(in *jlexer.Lexer, out *ChangeOrderSta
 			continue
 		}
 		switch key {
-		case "userid":
-			out.UserID = int(in.Int())
 		case "orderid":
 			out.OrderID = int(in.Int())
 		case "orderstatus":
@@ -1187,13 +1185,8 @@ func easyjsonA532a84EncodeServDomainModel9(out *jwriter.Writer, in ChangeOrderSt
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"userid\":"
-		out.RawString(prefix[1:])
-		out.Int(int(in.UserID))
-	}
-	{
 		const prefix string = ",\"orderid\":"
-		out.RawString(prefix)
+		out.RawString(prefix[1:])
 		out.Int(int(in.OrderID))
 	}
 	{

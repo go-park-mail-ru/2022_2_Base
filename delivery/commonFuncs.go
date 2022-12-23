@@ -411,13 +411,7 @@ func (api *OrderHandler) ChangeOrderStatus(w http.ResponseWriter, r *http.Reques
 	}
 	oldUserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
-	if oldUserData.ID != req.UserID {
-		log.Println(err)
-		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
-		return
-	}
-
-	err = api.prHandler.usecase.ChangeOrderStatus(&req)
+	err = api.prHandler.usecase.ChangeOrderStatus(oldUserData.ID, &req)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)

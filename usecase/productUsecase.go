@@ -30,7 +30,7 @@ type ProductUsecaseInterface interface {
 	AddToOrder(userID int, itemID int) error
 	DeleteFromOrder(userID int, itemID int) error
 	MakeOrder(in *model.MakeOrder) (int, error)
-	ChangeOrderStatus(in *model.ChangeOrderStatus) error
+	ChangeOrderStatus(userID int, in *model.ChangeOrderStatus) error
 	GetOrders(userID int) (*orders.OrdersResponse, error)
 	GetComments(productID int) ([]*model.CommentDB, error)
 	CreateComment(in *model.CreateComment) error
@@ -424,12 +424,12 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) (int, error) {
 	return cart.ID, api.store.UpdateCart(in.UserID, &remainedItemsIDs)
 }
 
-func (api *ProductUsecase) ChangeOrderStatus(in *model.ChangeOrderStatus) error {
+func (api *ProductUsecase) ChangeOrderStatus(userID int, in *model.ChangeOrderStatus) error {
 
 	_, err := api.ordersManager.ChangeOrderStatus(
 		context.Background(),
 		&orders.ChangeOrderStatusType{
-			UserID:      int32(in.UserID),
+			UserID:      int32(userID),
 			OrderID:     int32(in.OrderID),
 			OrderStatus: in.OrderStatus,
 		})

@@ -51,8 +51,6 @@ definitions:
         type: integer
       orderstatus:
         type: string
-      userid:
-        type: integer
     type: object
   model.ChangePassword:
     properties:

@@ -1538,9 +1538,6 @@
                 },
                 "orderstatus": {
                     "type": "string"
-                },
-                "userid": {
-                    "type": "integer"
                 }
             }
         },

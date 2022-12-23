@@ -73,7 +73,6 @@ type MakeOrder struct {
 }
 
 type ChangeOrderStatus struct {
-	UserID      int    `json:"userid"`
 	OrderID     int    `json:"orderid"`
 	OrderStatus string `json:"orderstatus"`
 }
