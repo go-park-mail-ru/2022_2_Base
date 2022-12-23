@@ -141,7 +141,7 @@ func (ps *ProductStore) GetProductsWithBiggestDiscountFromStore(lastitemid int, 
 		return nil, err
 	}
 	if lastitemid == 0 {
-		lastProduct.Price = 1
+		lastProduct.Price = 0
 		lastProduct.NominalPrice = 1
 		lastProduct.ID = 1e9
 	}
