@@ -473,6 +473,7 @@ func (api *ProductUsecase) GetRecommendationProducts(itemID int, userID int) ([]
 	if err != nil {
 		return nil, err
 	}
+	ansproducts := []*model.Product{}
 	// shuffle
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(products), func(i, j int) { products[i], products[j] = products[j], products[i] })
@@ -491,8 +492,11 @@ func (api *ProductUsecase) GetRecommendationProducts(itemID int, userID int) ([]
 			}
 			product.IsFavorite = isFav
 		}
+		if product.ID != itemID {
+			ansproducts = append(ansproducts, product)
+		}
 	}
-	return products, nil
+	return ansproducts, nil
 }
 
 func (api *ProductUsecase) GetFavorites(userID int, lastitemid int, count int, sort string) ([]*model.Product, error) {
