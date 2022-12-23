@@ -95,7 +95,10 @@ func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, c
 		if err != nil {
 			return nil, err
 		}
-		product.Properties = properties[:4]
+		product.Properties = properties
+		if len(properties) > 4 {
+			product.Properties = properties[:4]
+		}
 
 		if userID != 0 {
 			isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
@@ -177,7 +180,10 @@ func (api *ProductUsecase) GetProductsBySearch(search string, userID int) ([]*mo
 		if err != nil {
 			return nil, err
 		}
-		product.Properties = properties[:4]
+		product.Properties = properties
+		if len(properties) > 4 {
+			product.Properties = properties[:4]
+		}
 
 		if userID != 0 {
 			isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
@@ -459,7 +465,10 @@ func (api *ProductUsecase) GetFavorites(userID int, lastitemid int, count int, s
 		if err != nil {
 			return nil, err
 		}
-		product.Properties = properties[:4]
+		product.Properties = properties
+		if len(properties) > 4 {
+			product.Properties = properties[:4]
+		}
 		if userID != 0 {
 			isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
 			if err != nil {
