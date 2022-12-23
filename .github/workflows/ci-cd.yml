@@ -45,17 +45,17 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
-            cd back
-            make stop && make stop && make stop
+            cd back-next && make stop && make stop && make stop
+            cd ../back && make stop && make stop && make stop
 
       - name: download service
-        uses: appleboy/scp-action@master
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
-          source: "."
-          target: "/home/ubuntu/back"
+          script: |
+            cd back && git fetch && git checkout main && git pull
 
       - name: create env
         uses: appleboy/ssh-action@master
