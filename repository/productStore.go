@@ -62,9 +62,9 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort str
 			lastProduct.Price = 1e10
 		}
 		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) < ($1, $2) ORDER BY (price, id) DESC LIMIT $3;`, lastProduct.Price, lastitemid, count)
-	} else if sort == "ratingup" {
-		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) > ($1, $2) ORDER BY (rating, id) ASC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
 	} else if sort == "ratingdown" {
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) > ($1, $2) ORDER BY (rating, id) ASC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
+	} else if sort == "ratingup" {
 		if lastitemid == 0 {
 			lastitemid = 1e9
 			lastProduct.Rating = 10
@@ -105,9 +105,9 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 			lastProduct.Price = 1e10
 		}
 		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (price, id) < ($2, $3) ORDER BY (price, id) DESC LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
-	} else if sort == "ratingup" {
-		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) > ($2, $3) ORDER BY (rating, id) ASC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
 	} else if sort == "ratingdown" {
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) > ($2, $3) ORDER BY (rating, id) ASC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
+	} else if sort == "ratingup" {
 		if lastitemid == 0 {
 			lastitemid = 1e9
 			lastProduct.Rating = 10
