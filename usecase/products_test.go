@@ -303,7 +303,6 @@ func TestGetOrders(t *testing.T) {
 
 	mailManager := mocks.NewMockMailServiceClient(ctrl)
 	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager, mailManager)
-	//testOrders := new(orders.OrdersResponse)
 	testOrders := new([3]*orders.Order)
 	err := faker.FakeData(testOrders)
 	assert.NoError(t, err)

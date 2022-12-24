@@ -17,7 +17,6 @@ import (
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	mocks "serv/mocks"
-	//"github.com/mailru/easyjson/jwriter"
 )
 
 func TestGetHomePage(t *testing.T) {
@@ -154,8 +153,6 @@ func TestGetProductByID(t *testing.T) {
 	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	productHandler.GetProductByID(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
-	//expectedstr, err := json.Marshal(&model.Response{Body: testProduct})
-	//assert.Equal(t, rr.Body.String(), string(expectedstr)+"\n")
 
 	//err 500
 	productUsecaseMock.EXPECT().GetProductByID(mockItemID, mockUserID).Return(nil, baseErrors.ErrServerError500)

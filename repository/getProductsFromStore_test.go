@@ -82,13 +82,13 @@ func TestGetProductsFromStore(t *testing.T) {
 	}
 
 	mock.
-		ExpectQuery("SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id").
+		ExpectQuery("SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE").
 		WithArgs(driver.Value(0)).
 		WillReturnRows(func() *sqlmock.Rows {
 			rr := sqlmock.NewRows([]string{"id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(0, "", "", 0, 0, 0, nil)
 			return rr
 		}())
-	mock.ExpectQuery("SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id >").WithArgs(driver.Value(0), driver.Value(1)).WillReturnRows(func() *sqlmock.Rows {
+	mock.ExpectQuery("SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE").WithArgs(driver.Value(0), driver.Value(1)).WillReturnRows(func() *sqlmock.Rows {
 		rr := sqlmock.NewRows([]string{"id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(1, "IPhone", "phones", 50000, 50000, 0, nil)
 		return rr
 	}())
@@ -171,7 +171,7 @@ func TestGetProductsFromStoreSortings(t *testing.T) {
 			}
 
 			mock.
-				ExpectQuery("SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id").
+				ExpectQuery("SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE").
 				WithArgs(driver.Value(0)).
 				WillReturnRows(func() *sqlmock.Rows {
 					rr := sqlmock.NewRows([]string{"id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(0, "", "", 0, 0, 0, nil)
@@ -218,7 +218,7 @@ func TestGetProductsWithCategoryFromStore(t *testing.T) {
 	var category string = "phones"
 
 	mock.
-		ExpectQuery("SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id").
+		ExpectQuery("SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE").
 		WithArgs(driver.Value(0)).
 		WillReturnRows(func() *sqlmock.Rows {
 			rr := sqlmock.NewRows([]string{"id", "name", "category", "price", "nominalprice", "rating", "imgsrc"}).AddRow(0, "", "", 0, 0, 0, nil)

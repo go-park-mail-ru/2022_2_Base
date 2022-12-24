@@ -272,7 +272,6 @@ func (api *UserUsecase) ChangeUserPassword(userID int, newPass string) error {
 }
 
 func (api *UserUsecase) SetAvatar(usedID int, file multipart.File) error {
-	//fileName := "./img/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
 	fileName := "/avatars/avatar" + strconv.FormatUint(uint64(usedID), 10) + ".jpg"
 	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
