@@ -80,9 +80,9 @@ func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothi
 		fp = filepath.Join("microservices", "mail", "mails_templates", "mail_orderstatus", "index.html")
 		switch *in.OrderStatus {
 		case "created":
-			i.OrderText = "Заказ №" + fmt.Sprintf("%d", *in.OrderID) + "оформлен!"
+			i.OrderText = "Заказ №" + fmt.Sprintf("%d", *in.OrderID) + " оформлен!"
 		case "canceled":
-			i.OrderText = "Заказ №" + fmt.Sprintf("%d", *in.OrderID) + "отменен."
+			i.OrderText = "Заказ №" + fmt.Sprintf("%d", *in.OrderID) + " отменен."
 		}
 	case "promocode":
 		header = "Получен новый промокод"

@@ -172,7 +172,7 @@ func (api *ProductUsecase) GetBestProductInCategory(category string, userID int)
 	}
 	s1 := rand.NewSource(time.Now().UnixNano())
 	r1 := rand.New(s1)
-	randitemID := r1.Intn(10)
+	randitemID := r1.Intn(int(math.Min(10, float64(len(products)))))
 	product := products[randitemID]
 	rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
 	if err != nil {
