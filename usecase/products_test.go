@@ -397,7 +397,7 @@ func TestGetRecommendationProducts(t *testing.T) {
 	ordersManager := mocks.NewMockOrdersWorkerClient(ctrl)
 	mailManager := mocks.NewMockMailServiceClient(ctrl)
 	prodUsecase := NewProductUsecase(prodStoreMock, ordersManager, mailManager)
-	mockItemID := 0
+	mockItemID := -5
 	testProducts := new([3]*model.Product)
 	err := faker.FakeData(testProducts)
 	testProductsSlice := testProducts[:]
