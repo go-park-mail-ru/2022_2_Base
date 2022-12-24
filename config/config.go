@@ -16,6 +16,7 @@ var PathSeacrh = BasePath + "/search"
 var PathSuggestions = BasePath + "/suggestions"
 var PathRecommendations = BasePath + "/recommendations/{id}"
 var PathBestProductCategory = BasePath + "/bestproduct/{category}"
+var PathRecalculateRatings = BasePath + "/recalculateratings/{count}"
 
 var PathProfile = "/profile"
 var PathAvatar = "/avatar"

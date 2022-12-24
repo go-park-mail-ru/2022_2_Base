@@ -98,6 +98,7 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 	if err != nil {
 		return nil, err
 	}
+
 	if sort == "priceup" {
 		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (price, id) > ($2, $3) ORDER BY (price, id) LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
 	} else if sort == "pricedown" {

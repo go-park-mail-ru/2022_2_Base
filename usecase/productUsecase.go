@@ -40,6 +40,7 @@ type ProductUsecaseInterface interface {
 	GetFavorites(userID int, lastitemid int, count int, sort string) ([]*model.Product, error)
 	InsertItemIntoFavorites(userID int, itemID int) error
 	DeleteItemFromFavorites(userID int, itemID int) error
+	RecalculateRatingsForInitscriptProducts(count int) error
 }
 
 type ProductUsecase struct {
@@ -537,4 +538,14 @@ func (api *ProductUsecase) InsertItemIntoFavorites(userID int, itemID int) error
 
 func (api *ProductUsecase) DeleteItemFromFavorites(userID int, itemID int) error {
 	return api.store.DeleteItemFromFavoritesDB(userID, itemID)
+}
+
+func (api *ProductUsecase) RecalculateRatingsForInitscriptProducts(count int) error {
+	for i := 1; i <= count; i++ {
+		err := api.store.UpdateProductRatingInStore(i)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

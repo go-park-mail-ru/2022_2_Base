@@ -512,3 +512,42 @@ func (api *ProductHandler) GetBestProductInCategory(w http.ResponseWriter, r *ht
 		return
 	}
 }
+
+// RecalculateRatingsForInitscriptProducts godoc
+// @Summary RecalculateRatingsForInitscriptProducts
+// @Description RecalculateRatingsForInitscriptProducts
+// @ID RecalculateRatingsForInitscriptProducts
+// @Accept  json
+// @Produce  json
+// @Tags Products
+// @Param count path int true "Amount of products"
+// @Success 200 {object} model.Response
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /recalculateratings/{count} [post]
+func (api *ProductHandler) RecalculateRatingsForInitscriptProducts(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	s := strings.Split(r.URL.Path, "/")
+	countS := s[len(s)-1]
+	count, err := strconv.Atoi(countS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	err = api.usecase.RecalculateRatingsForInitscriptProducts(count)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+}

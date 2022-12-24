@@ -134,6 +134,7 @@ func main() {
 	myRouter.HandleFunc(conf.PathRecommendations, productHandler.GetRecommendations).Methods(http.MethodGet, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathProductsWithDiscount, productHandler.GetProductsWithBiggestDiscount).Methods(http.MethodGet, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathBestProductCategory, productHandler.GetBestProductInCategory).Methods(http.MethodGet, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathRecalculateRatings, productHandler.RecalculateRatingsForInitscriptProducts).Methods(http.MethodPost, http.MethodOptions)
 
 	userRouter.HandleFunc(conf.PathProfile, userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathProfile, userHandler.ChangeProfile).Methods(http.MethodPost, http.MethodOptions)

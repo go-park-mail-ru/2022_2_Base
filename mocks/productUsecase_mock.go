@@ -328,6 +328,20 @@ func (mr *MockProductUsecaseInterfaceMockRecorder) RecalculatePrices(userID, pro
         return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecalculatePrices", reflect.TypeOf((*MockProductUsecaseInterface)(nil).RecalculatePrices), userID, promocode)
 }
 
+// RecalculateRatingsForInitscriptProducts mocks base method.
+func (m *MockProductUsecaseInterface) RecalculateRatingsForInitscriptProducts(count int) error {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "RecalculateRatingsForInitscriptProducts", count)
+        ret0, _ := ret[0].(error)
+        return ret0
+}
+
+// RecalculateRatingsForInitscriptProducts indicates an expected call of RecalculateRatingsForInitscriptProducts.
+func (mr *MockProductUsecaseInterfaceMockRecorder) RecalculateRatingsForInitscriptProducts(count interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecalculateRatingsForInitscriptProducts", reflect.TypeOf((*MockProductUsecaseInterface)(nil).RecalculateRatingsForInitscriptProducts), count)
+}
+
 // SetPromocode mocks base method.
 func (m *MockProductUsecaseInterface) SetPromocode(userID int, promocode string) error {
         m.ctrl.T.Helper()

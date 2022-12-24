@@ -61,6 +61,8 @@ definitions:
     type: object
   model.Comment:
     properties:
+      avatar:
+        type: string
       comment:
         type: string
       cons:
@@ -812,6 +814,33 @@ paths:
           schema:
             $ref: '#/definitions/model.Error'
       summary: Gets products with biggest discount for main page
+      tags:
+      - Products
+  /recalculateratings/{count}:
+    post:
+      consumes:
+      - application/json
+      description: RecalculateRatingsForInitscriptProducts
+      operationId: RecalculateRatingsForInitscriptProducts
+      parameters:
+      - description: Amount of products
+        in: path
+        name: count
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "500":
+          description: Internal Server Error - Request is valid but operation failed
+            at server side
+          schema:
+            $ref: '#/definitions/model.Error'
+      summary: RecalculateRatingsForInitscriptProducts
       tags:
       - Products
   /recommendations/{id}:

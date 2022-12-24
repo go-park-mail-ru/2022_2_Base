@@ -842,6 +842,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/recalculateratings/{count}": {
+            "post": {
+                "description": "RecalculateRatingsForInitscriptProducts",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "RecalculateRatingsForInitscriptProducts",
+                "operationId": "RecalculateRatingsForInitscriptProducts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Amount of products",
+                        "name": "count",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/recommendations/{id}": {
             "get": {
                 "description": "Gets recommendations for product by id",
@@ -1562,6 +1601,9 @@ const docTemplate = `{
         "model.Comment": {
             "type": "object",
             "properties": {
+                "avatar": {
+                    "type": "string"
+                },
                 "comment": {
                     "type": "string"
                 },
