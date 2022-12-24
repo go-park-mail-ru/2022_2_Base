@@ -34,12 +34,6 @@ func loggingAndCORSHeadersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println(r.RequestURI, r.Method)
 
-		//for local tests
-		origin := r.Header.Get("Origin")
-		if origin == "http://89.208.198.137:8081" || origin == "http://127.0.0.1:8081" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-		}
-
 		for header := range conf.Headers {
 			w.Header().Set(header, conf.Headers[header])
 		}
@@ -120,7 +114,7 @@ func main() {
 
 	userHandler := deliv.NewUserHandler(userUsecase)
 	sessionHandler := deliv.NewSessionHandler(userUsecase)
-	productHandler := deliv.NewProductHandler(productUsecase)
+	productHandler := deliv.NewProductHandler(productUsecase, userUsecase)
 
 	orderHandler := deliv.NewOrderHandler(userHandler, productHandler)
 
@@ -139,6 +133,8 @@ func main() {
 	myRouter.HandleFunc(conf.PathSuggestions, productHandler.GetSuggestions).Methods(http.MethodPost, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathRecommendations, productHandler.GetRecommendations).Methods(http.MethodGet, http.MethodOptions)
 	myRouter.HandleFunc(conf.PathProductsWithDiscount, productHandler.GetProductsWithBiggestDiscount).Methods(http.MethodGet, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathBestProductCategory, productHandler.GetBestProductInCategory).Methods(http.MethodGet, http.MethodOptions)
+	myRouter.HandleFunc(conf.PathRecalculateRatings, productHandler.RecalculateRatingsForInitscriptProducts).Methods(http.MethodPost, http.MethodOptions)
 
 	userRouter.HandleFunc(conf.PathProfile, userHandler.GetUser).Methods(http.MethodGet, http.MethodOptions)
 	userRouter.HandleFunc(conf.PathProfile, userHandler.ChangeProfile).Methods(http.MethodPost, http.MethodOptions)
@@ -158,6 +154,7 @@ func main() {
 	cartRouter.HandleFunc(conf.PathMakeOrder, orderHandler.MakeOrder).Methods(http.MethodPost, http.MethodOptions)
 	cartRouter.HandleFunc(conf.PathGetOrders, orderHandler.GetOrders).Methods(http.MethodGet, http.MethodOptions)
 	cartRouter.HandleFunc(conf.PathPromo, orderHandler.SetPromocode).Methods(http.MethodPost, http.MethodOptions)
+	cartRouter.HandleFunc(conf.PathChangeOrderStatus, orderHandler.ChangeOrderStatus).Methods(http.MethodPost, http.MethodOptions)
 
 	myRouter.PathPrefix(conf.PathDocs).Handler(httpSwagger.WrapHandler)
 	myRouter.Use(loggingAndCORSHeadersMiddleware)

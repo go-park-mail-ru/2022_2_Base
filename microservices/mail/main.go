@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	mail "serv/microservices/mail/gen_files"
@@ -34,6 +35,13 @@ func main() {
 	grpc_prometheus.Register(server)
 	mail.RegisterMailServiceServer(server, NewMailManager())
 	http.Handle("/metrics", promhttp.Handler())
+	go func() {
+		log.Println("starting collect mectrics :8094")
+		err = http.ListenAndServe(":8094", nil)
+		if err != nil {
+			log.Println("cant serve metrics", err)
+		}
+	}()
 	log.Println("starting server at :8084")
 	err = server.Serve(lis)
 	if err != nil {
@@ -53,6 +61,7 @@ type info struct {
 	Usename         string
 	Promocode       string
 	OrderID         string
+	OrderText       string
 	BigImgSrc       string
 	ImgEmailLogoSrc string
 	ImgTGLogoSrc    string
@@ -67,11 +76,13 @@ func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothi
 	switch in.Type {
 	case "orderstatus":
 		header = "Изменение статуса заказа"
+		i.BigImgSrc = "https://email.reazon.ru/delivery-img.png"
+		fp = filepath.Join("microservices", "mail", "mails_templates", "mail_orderstatus", "index.html")
 		switch *in.OrderStatus {
 		case "created":
-			i.BigImgSrc = "https://email.reazon.ru/delivery-img.png"
-			i.OrderID = fmt.Sprintf("%d", *in.OrderID)
-			fp = filepath.Join("microservices", "mail", "mails_templates", "mail_orderstatus", "index.html")
+			i.OrderText = "Заказ №" + fmt.Sprintf("%d", *in.OrderID) + " оформлен!"
+		case "canceled":
+			i.OrderText = "Заказ №" + fmt.Sprintf("%d", *in.OrderID) + " отменен."
 		}
 	case "promocode":
 		header = "Получен новый промокод"
@@ -101,8 +112,7 @@ func (mm *MailManager) SendMail(ctx context.Context, in *mail.Mail) (*mail.Nothi
 	msg.SetHeader("To", in.Useremail)
 	msg.SetHeader("Subject", header)
 	msg.SetBody("text/html", result)
-	//msg.Attach("/home/User/cat.jpg")
-	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", "AdJzNDNvc6b4MmDH07f0")
+	n := gomail.NewDialer("smtp.mail.ru", 587, "Musicialbaum@mail.ru", os.Getenv("MAIL_PASSWORD"))
 	//Send the email
 	if err := n.DialAndSend(msg); err != nil {
 		log.Println(err)

@@ -36,7 +36,7 @@ func main() {
 
 	orderUsecase := orderuc.NewOrderUsecase(orderStore)
 
-	ordersManager := orderdl.NewOrdersManager(*orderUsecase)
+	ordersManager := orderdl.NewOrdersManager(orderUsecase)
 
 	server := grpc.NewServer(
 		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
@@ -46,6 +46,13 @@ func main() {
 	orders.RegisterOrdersWorkerServer(server, ordersManager)
 
 	http.Handle("/metrics", promhttp.Handler())
+	go func() {
+		log.Println("starting collect mectrics :8093")
+		err = http.ListenAndServe(":8093", nil)
+		if err != nil {
+			log.Println("cant serve metrics", err)
+		}
+	}()
 
 	log.Println("starting server at :8083")
 	err = server.Serve(lis)

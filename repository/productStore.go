@@ -16,6 +16,7 @@ type ProductStoreInterface interface {
 	GetProductFromStoreByID(itemsID int) (*model.Product, error)
 	GetProductsRatingAndCommsCountFromStore(itemsID int) (float64, int, error)
 	GetProductPropertiesFromStore(itemID int, itemCategory string) ([]*model.Property, error)
+	CheckIsProductInFavoritesDB(userID int, itemID int) (bool, error)
 	GetProductsBySearchFromStore(search string) ([]*model.Product, error)
 	GetSuggestionsFromStore(search string) ([]string, error)
 	GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error)
@@ -70,7 +71,7 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort str
 		}
 		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) < ($1, $2) ORDER BY (rating, id) DESC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
 	} else {
-		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id > $1 ORDER BY id LIMIT $2;`, lastitemid, count)
 	}
 
 	if err != nil {
@@ -97,6 +98,7 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 	if err != nil {
 		return nil, err
 	}
+
 	if sort == "priceup" {
 		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (price, id) > ($2, $3) ORDER BY (price, id) LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
 	} else if sort == "pricedown" {
@@ -140,8 +142,9 @@ func (ps *ProductStore) GetProductsWithBiggestDiscountFromStore(lastitemid int, 
 		return nil, err
 	}
 	if lastitemid == 0 {
-		lastProduct.Price = 1
+		lastProduct.Price = 0
 		lastProduct.NominalPrice = 1
+		lastProduct.ID = 1e9
 	}
 	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (1 - price/nominalprice, id) < ($1, $2) ORDER BY (1 - price/nominalprice, id) DESC LIMIT $3;`, 1-lastProduct.Price/lastProduct.NominalPrice, lastProduct.ID, count)
 	if err != nil {
@@ -239,6 +242,26 @@ func (ps *ProductStore) GetProductPropertiesFromStore(itemID int, itemCategory s
 		properties = append(properties, &propertiesDB[0], &propertiesDB[1], &propertiesDB[2], &propertiesDB[3], &propertiesDB[4], &propertiesDB[5])
 	}
 	return properties, nil
+}
+
+func (ps *ProductStore) CheckIsProductInFavoritesDB(userID int, itemID int) (bool, error) {
+	rows, err := ps.db.Query(`SELECT id FROM favorites WHERE userid = $1 AND itemid = $2;`, userID, itemID)
+	if err != nil {
+		log.Println("err get rows: ", err)
+		return false, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		err := rows.Scan(&id)
+		if err != nil {
+			return false, err
+		}
+		if id != 0 {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Product, error) {

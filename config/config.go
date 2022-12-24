@@ -15,6 +15,8 @@ var PathComments = BasePath + "/products/comments/{id}"
 var PathSeacrh = BasePath + "/search"
 var PathSuggestions = BasePath + "/suggestions"
 var PathRecommendations = BasePath + "/recommendations/{id}"
+var PathBestProductCategory = BasePath + "/bestproduct/{category}"
+var PathRecalculateRatings = BasePath + "/recalculateratings/{count}"
 
 var PathProfile = "/profile"
 var PathAvatar = "/avatar"
@@ -28,11 +30,12 @@ var PathCart = "/cart"
 var PathAddItemToCart = "/insertintocart"
 var PathDeleteItemFromCart = "/deletefromcart"
 var PathMakeOrder = "/makeorder"
+var PathChangeOrderStatus = "/changeorderstatus"
 var PathGetOrders = "/orders"
 var PathPromo = "/setpromocode"
 
 var Headers = map[string]string{
-	//"Access-Control-Allow-Origin":      "http://89.208.198.137:8081",
+	"Access-Control-Allow-Origin":      "http://89.208.198.137:8081",
 	"Access-Control-Allow-Credentials": "true",
 	"Access-Control-Allow-Headers":     "Origin, Content-Type, accept, csrf",
 	"Access-Control-Allow-Methods":     "GET, POST, DELETE, OPTIONS",

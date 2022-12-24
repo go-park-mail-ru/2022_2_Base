@@ -17,7 +17,6 @@ import (
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	mocks "serv/mocks"
-	//"github.com/mailru/easyjson/jwriter"
 )
 
 func TestGetHomePage(t *testing.T) {
@@ -26,6 +25,7 @@ func TestGetHomePage(t *testing.T) {
 	defer ctrl.Finish()
 
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
 	testProducts := new([1]*model.Product)
 	err := faker.FakeData(testProducts)
 	assert.NoError(t, err)
@@ -33,16 +33,17 @@ func TestGetHomePage(t *testing.T) {
 	mockLastItemID := 0
 	mockCount := 10
 	mockSort := ""
+	mockUserID := 0
 
 	//default sort
-	productUsecaseMock.EXPECT().GetProducts(mockLastItemID, mockCount, mockSort).Return(testProductsSlice, nil)
+	productUsecaseMock.EXPECT().GetProducts(mockLastItemID, mockCount, mockSort, mockUserID).Return(testProductsSlice, nil)
 	url := conf.PathMain + "?lastitemid=" + fmt.Sprint(mockLastItemID) + "&count=" + fmt.Sprint(mockCount) + "&sort=" + mockSort
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	productHandler := NewProductHandler(productUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	productHandler.GetHomePage(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 	//expectedstr, err := easyjson.Marshal(&model.Response{Body: testProducts})
@@ -51,7 +52,7 @@ func TestGetHomePage(t *testing.T) {
 	//assert.Equal(t, rr.Body.String(), string(expectedstr)+"\n")
 
 	//err 500
-	productUsecaseMock.EXPECT().GetProducts(mockLastItemID, mockCount, mockSort).Return(nil, baseErrors.ErrServerError500)
+	productUsecaseMock.EXPECT().GetProducts(mockLastItemID, mockCount, mockSort, mockUserID).Return(nil, baseErrors.ErrServerError500)
 	url = conf.PathMain + "?lastitemid=" + fmt.Sprint(mockLastItemID) + "&count=" + fmt.Sprint(mockCount) + "&sort=" + mockSort
 	req, err = http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -78,6 +79,7 @@ func TestGetProductsByCategory(t *testing.T) {
 	defer ctrl.Finish()
 
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
 	testProducts := new([10]*model.Product)
 	err := faker.FakeData(testProducts)
 	assert.NoError(t, err)
@@ -85,27 +87,28 @@ func TestGetProductsByCategory(t *testing.T) {
 	mockLastItemID := 0
 	mockCount := 10
 	mockSort := ""
+	mockUserID := 0
 	mockCategory := "phones"
 	for _, testProductsSliceIt := range testProductsSlice {
 		testProductsSliceIt.Category = "phones"
 	}
 
 	//default sort
-	productUsecaseMock.EXPECT().GetProductsWithCategory(mockCategory, mockLastItemID, mockCount, mockSort).Return(testProductsSlice, nil)
+	productUsecaseMock.EXPECT().GetProductsWithCategory(mockCategory, mockLastItemID, mockCount, mockSort, mockUserID).Return(testProductsSlice, nil)
 	url := conf.BasePath + "/category/" + mockCategory + "?lastitemid=" + fmt.Sprint(mockLastItemID) + "&count=" + fmt.Sprint(mockCount) + "&sort=" + mockSort
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	productHandler := NewProductHandler(productUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	productHandler.GetProductsByCategory(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 	//expectedstr, err := json.Marshal(&model.Response{Body: testProducts})
 	//assert.Equal(t, rr.Body.String(), string(expectedstr)+"\n")
 
 	//err 500
-	productUsecaseMock.EXPECT().GetProductsWithCategory(mockCategory, mockLastItemID, mockCount, mockSort).Return(nil, baseErrors.ErrServerError500)
+	productUsecaseMock.EXPECT().GetProductsWithCategory(mockCategory, mockLastItemID, mockCount, mockSort, mockUserID).Return(nil, baseErrors.ErrServerError500)
 	url = conf.BasePath + "/category/" + mockCategory + "?lastitemid=" + fmt.Sprint(mockLastItemID) + "&count=" + fmt.Sprint(mockCount) + "&sort=" + mockSort
 	req, err = http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -132,27 +135,27 @@ func TestGetProductByID(t *testing.T) {
 	defer ctrl.Finish()
 
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+	mockUserID := 0
 	testProduct := new(model.Product)
 	err := faker.FakeData(testProduct)
 	assert.NoError(t, err)
 	mockItemID := 1
 
 	//ok
-	productUsecaseMock.EXPECT().GetProductByID(mockItemID).Return(testProduct, nil)
+	productUsecaseMock.EXPECT().GetProductByID(mockItemID, mockUserID).Return(testProduct, nil)
 	url := conf.PathMain + "/" + fmt.Sprint(mockItemID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	productHandler := NewProductHandler(productUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	productHandler.GetProductByID(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
-	//expectedstr, err := json.Marshal(&model.Response{Body: testProduct})
-	//assert.Equal(t, rr.Body.String(), string(expectedstr)+"\n")
 
 	//err 500
-	productUsecaseMock.EXPECT().GetProductByID(mockItemID).Return(nil, baseErrors.ErrServerError500)
+	productUsecaseMock.EXPECT().GetProductByID(mockItemID, mockUserID).Return(nil, baseErrors.ErrServerError500)
 	url = conf.PathMain + "/" + fmt.Sprint(mockItemID)
 	req, err = http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -179,6 +182,7 @@ func TestGetProductsBySearch(t *testing.T) {
 	defer ctrl.Finish()
 
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
 	testProducts := new([10]*model.Product)
 	err := faker.FakeData(testProducts)
 	assert.NoError(t, err)
@@ -186,9 +190,10 @@ func TestGetProductsBySearch(t *testing.T) {
 	for _, testProductsSliceIt := range testProductsSlice {
 		testProductsSliceIt.Name = "item" + fmt.Sprint(1)
 	}
+	mockUserID := 0
 
 	//ok
-	productUsecaseMock.EXPECT().GetProductsBySearch("item").Return(testProductsSlice, nil)
+	productUsecaseMock.EXPECT().GetProductsBySearch("item", mockUserID).Return(testProductsSlice, nil)
 	url := conf.PathSeacrh
 	data, _ := json.Marshal(&model.Search{Search: "item"})
 	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
@@ -196,14 +201,12 @@ func TestGetProductsBySearch(t *testing.T) {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	productHandler := NewProductHandler(productUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	productHandler.GetProductsBySearch(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
-	//expectedstr, err := json.Marshal(&model.Response{Body: testProducts})
-	//assert.Equal(t, rr.Body.String(), string(expectedstr)+"\n")
 
 	//err 500
-	productUsecaseMock.EXPECT().GetProductsBySearch("item").Return(nil, baseErrors.ErrServerError500)
+	productUsecaseMock.EXPECT().GetProductsBySearch("item", mockUserID).Return(nil, baseErrors.ErrServerError500)
 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
 	if err != nil {
 		t.Fatal(err)
@@ -229,6 +232,7 @@ func TestGetSuggestions(t *testing.T) {
 	defer ctrl.Finish()
 
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
 	testProducts := new([3]*model.Product)
 	err := faker.FakeData(testProducts)
 	assert.NoError(t, err)
@@ -248,11 +252,9 @@ func TestGetSuggestions(t *testing.T) {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	productHandler := NewProductHandler(productUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	productHandler.GetSuggestions(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
-	//expected, err := json.Marshal(&model.Response{Body: expstrings})
-	//assert.Equal(t, rr.Body.String(), string(expected)+"\n")
 
 	//err 500
 	productUsecaseMock.EXPECT().GetSuggestions("item").Return(nil, baseErrors.ErrServerError500)
@@ -281,29 +283,29 @@ func TestGetProductsWithBiggestDiscount(t *testing.T) {
 	defer ctrl.Finish()
 
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
 	testProducts := new([10]*model.Product)
 	err := faker.FakeData(testProducts)
 	assert.NoError(t, err)
 	testProductsSlice := testProducts[:]
 	mockLastItemID := 0
 	mockCount := 10
+	mockUserID := 0
 
 	//ok
-	productUsecaseMock.EXPECT().GetProductsWithBiggestDiscount(mockLastItemID, mockCount).Return(testProductsSlice, nil)
+	productUsecaseMock.EXPECT().GetProductsWithBiggestDiscount(mockLastItemID, mockCount, mockUserID).Return(testProductsSlice, nil)
 	url := conf.PathProductsWithDiscount + "?lastitemid=" + fmt.Sprint(mockLastItemID) + "&count=" + fmt.Sprint(mockCount)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	productHandler := NewProductHandler(productUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	productHandler.GetProductsWithBiggestDiscount(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
-	//expectedstr, err := json.Marshal(&model.Response{Body: testProducts})
-	//assert.Equal(t, rr.Body.String(), string(expectedstr)+"\n")
 
 	//err 500
-	productUsecaseMock.EXPECT().GetProductsWithBiggestDiscount(mockLastItemID, mockCount).Return(nil, baseErrors.ErrServerError500)
+	productUsecaseMock.EXPECT().GetProductsWithBiggestDiscount(mockLastItemID, mockCount, mockUserID).Return(nil, baseErrors.ErrServerError500)
 	req, err = http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -329,28 +331,28 @@ func TestGetRecommendations(t *testing.T) {
 	defer ctrl.Finish()
 
 	productUsecaseMock := mocks.NewMockProductUsecaseInterface(ctrl)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
 	testProducts := new([10]*model.Product)
 	err := faker.FakeData(testProducts)
 	assert.NoError(t, err)
 	testProductsSlice := testProducts[:]
 	mockItemID := 1
+	mockUserID := 0
 
 	//ok
-	productUsecaseMock.EXPECT().GetRecommendationProducts(mockItemID).Return(testProductsSlice, nil)
+	productUsecaseMock.EXPECT().GetRecommendationProducts(mockItemID, mockUserID).Return(testProductsSlice, nil)
 	url := conf.PathRecommendations + "/" + fmt.Sprint(mockItemID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	productHandler := NewProductHandler(productUsecaseMock)
+	productHandler := NewProductHandler(productUsecaseMock, userUsecaseMock)
 	productHandler.GetRecommendations(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
-	//expectedstr, err := json.Marshal(&model.Response{Body: testProducts})
-	//assert.Equal(t, rr.Body.String(), string(expectedstr)+"\n")
 
 	//err 500
-	productUsecaseMock.EXPECT().GetRecommendationProducts(mockItemID).Return(nil, baseErrors.ErrServerError500)
+	productUsecaseMock.EXPECT().GetRecommendationProducts(mockItemID, mockUserID).Return(nil, baseErrors.ErrServerError500)
 	req, err = http.NewRequest("GET", url, nil)
 	if err != nil {
 		t.Fatal(err)

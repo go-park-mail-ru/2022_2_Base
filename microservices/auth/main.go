@@ -30,7 +30,15 @@ func main() {
 	)
 	grpc_prometheus.Register(server)
 	session.RegisterAuthCheckerServer(server, NewSessionManager())
+	grpc_prometheus.Register(server)
 	http.Handle("/metrics", promhttp.Handler())
+	go func() {
+		log.Println("starting collect mectrics :8092")
+		err = http.ListenAndServe(":8092", nil)
+		if err != nil {
+			log.Println("cant serve metrics", err)
+		}
+	}()
 	log.Println("starting server at :8082")
 	err = server.Serve(lis)
 	if err != nil {

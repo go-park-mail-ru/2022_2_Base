@@ -14,12 +14,14 @@ import (
 )
 
 type ProductHandler struct {
-	usecase usecase.ProductUsecaseInterface
+	usecase     usecase.ProductUsecaseInterface
+	userUsecase usecase.UserUsecaseInterface
 }
 
-func NewProductHandler(puc usecase.ProductUsecaseInterface) *ProductHandler {
+func NewProductHandler(puc usecase.ProductUsecaseInterface, uuc usecase.UserUsecaseInterface) *ProductHandler {
 	return &ProductHandler{
-		usecase: puc,
+		usecase:     puc,
+		userUsecase: uuc,
 	}
 }
 
@@ -57,7 +59,20 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	products, err := api.usecase.GetProducts(lastitemid, count, sort)
+
+	var userID int = 0
+	session, err := r.Cookie("session_id")
+	if err == nil {
+		usName, err := api.userUsecase.CheckSession(session.Value)
+		if err == nil {
+			user, err := api.userUsecase.GetUserByUsername(usName)
+			if err == nil {
+				userID = user.ID
+			}
+		}
+	}
+
+	products, err := api.usecase.GetProducts(lastitemid, count, sort, userID)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -119,7 +134,19 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 		return
 	}
 
-	products, err := api.usecase.GetProductsWithCategory(category, lastitemid, count, sort)
+	var userID int = 0
+	session, err := r.Cookie("session_id")
+	if err == nil {
+		usName, err := api.userUsecase.CheckSession(session.Value)
+		if err == nil {
+			user, err := api.userUsecase.GetUserByUsername(usName)
+			if err == nil {
+				userID = user.ID
+			}
+		}
+	}
+
+	products, err := api.usecase.GetProductsWithCategory(category, lastitemid, count, sort, userID)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -176,7 +203,20 @@ func (api *ProductHandler) GetProductsWithBiggestDiscount(w http.ResponseWriter,
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	products, err := api.usecase.GetProductsWithBiggestDiscount(lastitemid, count)
+
+	var userID int = 0
+	session, err := r.Cookie("session_id")
+	if err == nil {
+		usName, err := api.userUsecase.CheckSession(session.Value)
+		if err == nil {
+			user, err := api.userUsecase.GetUserByUsername(usName)
+			if err == nil {
+				userID = user.ID
+			}
+		}
+	}
+
+	products, err := api.usecase.GetProductsWithBiggestDiscount(lastitemid, count, userID)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -226,7 +266,19 @@ func (api *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	product, err := api.usecase.GetProductByID(id)
+	var userID int = 0
+	session, err := r.Cookie("session_id")
+	if err == nil {
+		usName, err := api.userUsecase.CheckSession(session.Value)
+		if err == nil {
+			user, err := api.userUsecase.GetUserByUsername(usName)
+			if err == nil {
+				userID = user.ID
+			}
+		}
+	}
+
+	product, err := api.usecase.GetProductByID(id, userID)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -273,7 +325,19 @@ func (api *ProductHandler) GetProductsBySearch(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	products, err := api.usecase.GetProductsBySearch(req.Search)
+	var userID int = 0
+	session, err := r.Cookie("session_id")
+	if err == nil {
+		usName, err := api.userUsecase.CheckSession(session.Value)
+		if err == nil {
+			user, err := api.userUsecase.GetUserByUsername(usName)
+			if err == nil {
+				userID = user.ID
+			}
+		}
+	}
+
+	products, err := api.usecase.GetProductsBySearch(req.Search, userID)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -361,7 +425,19 @@ func (api *ProductHandler) GetRecommendations(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	products, err := api.usecase.GetRecommendationProducts(id)
+	var userID int = 0
+	session, err := r.Cookie("session_id")
+	if err == nil {
+		usName, err := api.userUsecase.CheckSession(session.Value)
+		if err == nil {
+			user, err := api.userUsecase.GetUserByUsername(usName)
+			if err == nil {
+				userID = user.ID
+			}
+		}
+	}
+
+	products, err := api.usecase.GetRecommendationProducts(id, userID)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -378,6 +454,97 @@ func (api *ProductHandler) GetRecommendations(w http.ResponseWriter, r *http.Req
 		}
 	}
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: products}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+}
+
+// GetBestProductInCategory godoc
+// @Summary Gets random from 10 best products in category
+// @Description  Gets random from 10 best products in category
+// @ID GetBestProductInCategory
+// @Accept  json
+// @Produce  json
+// @Tags Products
+// @Param category path string true "The category of products"
+// @Success 200 {object} model.Product
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /bestproduct/{category} [get]
+func (api *ProductHandler) GetBestProductInCategory(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+	sanitizer := bluemonday.UGCPolicy()
+	s := strings.Split(r.URL.Path, "/")
+	category := s[len(s)-1]
+	var userID int = 0
+	session, err := r.Cookie("session_id")
+	if err == nil {
+		usName, err := api.userUsecase.CheckSession(session.Value)
+		if err == nil {
+			user, err := api.userUsecase.GetUserByUsername(usName)
+			if err == nil {
+				userID = user.ID
+			}
+		}
+	}
+	product, err := api.usecase.GetBestProductInCategory(category, userID)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	if product.Imgsrc != nil {
+		*product.Imgsrc = sanitizer.Sanitize(*product.Imgsrc)
+	}
+	product.Name = sanitizer.Sanitize(product.Name)
+	product.Category = sanitizer.Sanitize(product.Category)
+	if product.NominalPrice == product.Price {
+		product.Price = 0
+	}
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{Body: product}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+}
+
+// RecalculateRatingsForInitscriptProducts godoc
+// @Summary RecalculateRatingsForInitscriptProducts
+// @Description RecalculateRatingsForInitscriptProducts
+// @ID RecalculateRatingsForInitscriptProducts
+// @Accept  json
+// @Produce  json
+// @Tags Products
+// @Param count path int true "Amount of products"
+// @Success 200 {object} model.Response
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /recalculateratings/{count} [post]
+func (api *ProductHandler) RecalculateRatingsForInitscriptProducts(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	s := strings.Split(r.URL.Path, "/")
+	countS := s[len(s)-1]
+	count, err := strconv.Atoi(countS)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	err = api.usecase.RecalculateRatingsForInitscriptProducts(count)
+	if err != nil {
+		log.Println("error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
 	if err != nil {
 		log.Println("serialize error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)

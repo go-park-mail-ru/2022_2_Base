@@ -17,6 +17,7 @@ type Product struct {
 	Imgsrc        *string     `json:"imgsrc,omitempty"`
 	CommentsCount *int        `json:"commentscount,omitempty"`
 	Properties    []*Property `json:"properties"`
+	IsFavorite    bool        `json:"isfavorite"`
 }
 
 type ProductCart struct {
@@ -28,8 +29,9 @@ type ProductCartItem struct {
 }
 
 type OrderItem struct {
-	Count int      `json:"count"`
-	Item  *Product `json:"item"`
+	Count      int      `json:"count"`
+	Item       *Product `json:"item"`
+	IsFavorite bool     `json:"isfavorite"`
 }
 
 type Order struct {
@@ -40,8 +42,8 @@ type Order struct {
 	PaymentStatus string       `json:"paymentstatus"`
 	AddressID     int          `json:"address"`
 	PaymentcardID int          `json:"card"`
-	CreationDate  *time.Time   `json:"creationDate"`
-	DeliveryDate  *time.Time   `json:"deliveryDate"`
+	CreationDate  *time.Time   `json:"creationdate"`
+	DeliveryDate  *time.Time   `json:"deliverydate"`
 	Promocode     *string      `json:"promo,omitempty"`
 }
 
@@ -52,6 +54,7 @@ type CartProduct struct {
 	Price        float64 `json:"lowprice,omitempty"`
 	NominalPrice float64 `json:"price"`
 	Imgsrc       *string `json:"imgsrc,omitempty"`
+	IsFavorite   bool    `json:"isfavorite"`
 }
 
 type Cart struct {
@@ -66,7 +69,12 @@ type MakeOrder struct {
 	Items         []int     `json:"items"`
 	AddressID     int       `json:"address"`
 	PaymentcardID int       `json:"card"`
-	DeliveryDate  time.Time `json:"deliveryDate"`
+	DeliveryDate  time.Time `json:"deliverydate"`
+}
+
+type ChangeOrderStatus struct {
+	OrderID     int    `json:"orderid"`
+	OrderStatus string `json:"orderstatus"`
 }
 
 type OrderModelGetOrders struct {
@@ -77,8 +85,8 @@ type OrderModelGetOrders struct {
 	PaymentStatus string         `json:"paymentstatus"`
 	Address       Address        `json:"address"`
 	Paymentcard   PaymentMethod  `json:"card"`
-	CreationDate  *time.Time     `json:"creationDate"`
-	DeliveryDate  *time.Time     `json:"deliveryDate"`
+	CreationDate  *time.Time     `json:"creationdate"`
+	DeliveryDate  *time.Time     `json:"deliverydate"`
 	Promocode     string         `json:"promocode,omitempty"`
 }
 

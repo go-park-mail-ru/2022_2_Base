@@ -10,10 +10,10 @@ import (
 type OrderManager struct {
 	orders.UnimplementedOrdersWorkerServer
 
-	usecase orderuc.OrderUsecase
+	usecase orderuc.OrderUsecaseInterface
 }
 
-func NewOrdersManager(ouc orderuc.OrderUsecase) *OrderManager {
+func NewOrdersManager(ouc orderuc.OrderUsecaseInterface) *OrderManager {
 	return &OrderManager{
 		usecase: ouc,
 	}
@@ -22,6 +22,16 @@ func NewOrdersManager(ouc orderuc.OrderUsecase) *OrderManager {
 func (sm *OrderManager) MakeOrder(ctx context.Context, in *orders.MakeOrderType) (*orders.Nothing, error) {
 	log.Println("call MakeOrder ", in)
 	err := sm.usecase.MakeOrder(ctx, in)
+	if err != nil {
+		log.Println("error ", err)
+		return &orders.Nothing{IsSuccessful: false}, err
+	}
+	return &orders.Nothing{IsSuccessful: true}, nil
+}
+
+func (sm *OrderManager) ChangeOrderStatus(ctx context.Context, in *orders.ChangeOrderStatusType) (*orders.Nothing, error) {
+	log.Println("call MakeOrder ", in)
+	err := sm.usecase.ChangeOrderStatus(ctx, in)
 	if err != nil {
 		log.Println("error ", err)
 		return &orders.Nothing{IsSuccessful: false}, err

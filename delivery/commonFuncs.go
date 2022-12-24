@@ -92,7 +92,7 @@ func (api *OrderHandler) GetCart(w http.ResponseWriter, r *http.Request) {
 		prodCart.Promocode = *cart.Promocode
 	}
 	for _, prod := range cart.Items {
-		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, NominalPrice: prod.Item.NominalPrice, Imgsrc: prod.Item.Imgsrc})
+		prodCart.Items = append(prodCart.Items, &model.CartProduct{ID: prod.Item.ID, Name: prod.Item.Name, Count: prod.Count, Price: prod.Item.Price, NominalPrice: prod.Item.NominalPrice, Imgsrc: prod.Item.Imgsrc, IsFavorite: prod.IsFavorite})
 	}
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(prodCart, w)
 	if err != nil {
@@ -364,14 +364,66 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	RegisterMail := model.Mail{Type: "orderstatus", Username: oldUserData.Username, Useremail: oldUserData.Email, OrderID: orderID, OrderStatus: "created"}
-	go func() {
-		err = api.usHandler.usecase.SendMail(RegisterMail)
-		if err != nil {
-			log.Println("error sending email ", err)
-			//ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
-			//return
-		}
-	}()
+
+	err = api.usHandler.usecase.SendMail(RegisterMail)
+	if err != nil {
+		log.Println("error sending email ", err)
+	}
+
+	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
+	if err != nil {
+		log.Println("serialize error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+}
+
+// ChangeOrderStatus godoc
+// @Summary changess order's status
+// @Description changess order's status
+// @ID ChangeOrderStatus
+// @Accept  json
+// @Produce  json
+// @Tags Order
+// @Param order body model.ChangeOrderStatus true "SetOrderStatus params"
+// @Success 200 {object} model.Response "OK"
+// @Failure 400 {object} model.Error "Bad request - Problem with the request"
+// @Failure 401 {object} model.Error "Unauthorized - Access token is missing or invalid"
+// @Failure 500 {object} model.Error "Internal Server Error - Request is valid but operation failed at server side"
+// @Router /cart/changeorderstatus [post]
+func (api *OrderHandler) ChangeOrderStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodOptions {
+		return
+	}
+
+	var req model.ChangeOrderStatus
+	err := easyjson.UnmarshalFromReader(r.Body, &req)
+	if err != nil {
+		log.Println(err)
+		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
+		return
+	}
+
+	if r.Context().Value(KeyUserdata{"userdata"}) == nil {
+		log.Println("err get user from context ")
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+	oldUserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
+
+	err = api.prHandler.usecase.ChangeOrderStatus(oldUserData.ID, &req)
+	if err != nil {
+		log.Println("db error: ", err)
+		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
+		return
+	}
+
+	Mail := model.Mail{Type: "orderstatus", Username: oldUserData.Username, Useremail: oldUserData.Email, OrderID: req.OrderID, OrderStatus: req.OrderStatus}
+
+	err = api.usHandler.usecase.SendMail(Mail)
+	if err != nil {
+		log.Println("error sending email ", err)
+	}
 
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
 	if err != nil {

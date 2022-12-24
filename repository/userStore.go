@@ -19,7 +19,7 @@ type UserStoreInterface interface {
 	AddUsersPayment(userID int, in *model.PaymentMethod) error
 	DeleteUsersPayment(paymentID int) error
 	GetUserByUsernameFromDB(userEmail string) (*model.UserDB, error)
-	GetUsernameByIDFromDB(userID int) (string, error)
+	GetUsernameAndAvatarByIDFromDB(userID int) (string, string, error)
 	GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error)
 	GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error)
 }
@@ -126,23 +126,27 @@ func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, e
 	return &user, nil
 }
 
-func (us *UserStore) GetUsernameByIDFromDB(userID int) (string, error) {
-	rows, err := us.db.Query(`SELECT username FROM users WHERE id = $1`, userID)
+func (us *UserStore) GetUsernameAndAvatarByIDFromDB(userID int) (string, string, error) {
+	rows, err := us.db.Query(`SELECT username, avatar FROM users WHERE id = $1`, userID)
 	if err == sql.ErrNoRows {
-		return "", err
+		return "", "", err
 	}
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer rows.Close()
 	var username string
+	var avatar *string
 	for rows.Next() {
-		err := rows.Scan(&username)
+		err := rows.Scan(&username, &avatar)
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 	}
-	return username, nil
+	if avatar == nil {
+		return username, "", nil
+	}
+	return username, *avatar, nil
 }
 
 func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error) {

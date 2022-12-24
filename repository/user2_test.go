@@ -69,7 +69,6 @@ func TestAddUsersAddress(t *testing.T) {
 	}
 	defer db.Close()
 	var userID int = 1
-	//var addrID int = 1
 	mock.
 		ExpectExec("INSERT").
 		WithArgs(userID, "default", "default", "default", "default", false).

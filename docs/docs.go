@@ -25,6 +25,51 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/bestproduct/{category}": {
+            "get": {
+                "description": "Gets random from 10 best products in category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Gets random from 10 best products in category",
+                "operationId": "GetBestProductInCategory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The category of products",
+                        "name": "category",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/cart": {
             "get": {
                 "description": "gets user's cart",
@@ -95,6 +140,59 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.Product"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - Problem with the request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Access token is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/cart/changeorderstatus": {
+            "post": {
+                "description": "changess order's status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "summary": "changess order's status",
+                "operationId": "ChangeOrderStatus",
+                "parameters": [
+                    {
+                        "description": "SetOrderStatus params",
+                        "name": "order",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ChangeOrderStatus"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "400": {
@@ -733,6 +831,45 @@ const docTemplate = `{
                         "description": "Bad request - Problem with the request",
                         "schema": {
                             "$ref": "#/definitions/model.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error - Request is valid but operation failed at server side",
+                        "schema": {
+                            "$ref": "#/definitions/model.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/recalculateratings/{count}": {
+            "post": {
+                "description": "RecalculateRatingsForInitscriptProducts",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "RecalculateRatingsForInitscriptProducts",
+                "operationId": "RecalculateRatingsForInitscriptProducts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Amount of products",
+                        "name": "count",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
                         }
                     },
                     "500": {
@@ -1425,6 +1562,9 @@ const docTemplate = `{
                 "imgsrc": {
                     "type": "string"
                 },
+                "isfavorite": {
+                    "type": "boolean"
+                },
                 "lowprice": {
                     "type": "number"
                 },
@@ -1433,6 +1573,17 @@ const docTemplate = `{
                 },
                 "price": {
                     "type": "number"
+                }
+            }
+        },
+        "model.ChangeOrderStatus": {
+            "type": "object",
+            "properties": {
+                "orderid": {
+                    "type": "integer"
+                },
+                "orderstatus": {
+                    "type": "string"
                 }
             }
         },
@@ -1450,6 +1601,9 @@ const docTemplate = `{
         "model.Comment": {
             "type": "object",
             "properties": {
+                "avatar": {
+                    "type": "string"
+                },
                 "comment": {
                     "type": "string"
                 },
@@ -1508,7 +1662,7 @@ const docTemplate = `{
                 "card": {
                     "type": "integer"
                 },
-                "deliveryDate": {
+                "deliverydate": {
                     "type": "string"
                 },
                 "items": {
@@ -1531,10 +1685,10 @@ const docTemplate = `{
                 "card": {
                     "$ref": "#/definitions/model.PaymentMethod"
                 },
-                "creationDate": {
+                "creationdate": {
                     "type": "string"
                 },
-                "deliveryDate": {
+                "deliverydate": {
                     "type": "string"
                 },
                 "id": {
@@ -1594,6 +1748,9 @@ const docTemplate = `{
                 },
                 "imgsrc": {
                     "type": "string"
+                },
+                "isfavorite": {
+                    "type": "boolean"
                 },
                 "lowprice": {
                     "type": "number"

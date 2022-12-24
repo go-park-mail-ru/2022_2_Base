@@ -16,11 +16,16 @@ scrape_configs:
   - job_name: 'session microservice'
     metrics_path: /metrics
     static_configs:
-      - targets: [ 'auth:8082' ]
+      - targets: [ 'auth:8092' ]
 
   - job_name: 'orders microservice'
     metrics_path: /metrics
     static_configs:
-      - targets: [ 'orders:8083' ]
+      - targets: [ 'orders:8093' ]
+
+  - job_name: 'mail microservice'
+    metrics_path: /metrics
+    static_configs:
+      - targets: [ 'mail:8094' ]
 
   

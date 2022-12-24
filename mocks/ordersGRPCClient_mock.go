@@ -36,6 +36,26 @@ func (m *MockOrdersWorkerClient) EXPECT() *MockOrdersWorkerClientMockRecorder {
         return m.recorder
 }
 
+// ChangeOrderStatus mocks base method.
+func (m *MockOrdersWorkerClient) ChangeOrderStatus(ctx context.Context, in *orders.ChangeOrderStatusType, opts ...grpc.CallOption) (*orders.Nothing, error) {
+        m.ctrl.T.Helper()
+        varargs := []interface{}{ctx, in}
+        for _, a := range opts {
+                varargs = append(varargs, a)
+        }
+        ret := m.ctrl.Call(m, "ChangeOrderStatus", varargs...)
+        ret0, _ := ret[0].(*orders.Nothing)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// ChangeOrderStatus indicates an expected call of ChangeOrderStatus.
+func (mr *MockOrdersWorkerClientMockRecorder) ChangeOrderStatus(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        varargs := append([]interface{}{ctx, in}, opts...)
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeOrderStatus", reflect.TypeOf((*MockOrdersWorkerClient)(nil).ChangeOrderStatus), varargs...)
+}
+
 // GetOrders mocks base method.
 func (m *MockOrdersWorkerClient) GetOrders(ctx context.Context, in *orders.UserID, opts ...grpc.CallOption) (*orders.OrdersResponse, error) {
         m.ctrl.T.Helper()
@@ -97,6 +117,21 @@ func NewMockOrdersWorkerServer(ctrl *gomock.Controller) *MockOrdersWorkerServer 
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockOrdersWorkerServer) EXPECT() *MockOrdersWorkerServerMockRecorder {
         return m.recorder
+}
+
+// ChangeOrderStatus mocks base method.
+func (m *MockOrdersWorkerServer) ChangeOrderStatus(arg0 context.Context, arg1 *orders.ChangeOrderStatusType) (*orders.Nothing, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "ChangeOrderStatus", arg0, arg1)
+        ret0, _ := ret[0].(*orders.Nothing)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// ChangeOrderStatus indicates an expected call of ChangeOrderStatus.
+func (mr *MockOrdersWorkerServerMockRecorder) ChangeOrderStatus(arg0, arg1 interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeOrderStatus", reflect.TypeOf((*MockOrdersWorkerServer)(nil).ChangeOrderStatus), arg0, arg1)
 }
 
 // GetOrders mocks base method.

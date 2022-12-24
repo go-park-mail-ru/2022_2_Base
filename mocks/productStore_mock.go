@@ -34,6 +34,21 @@ func (m *MockProductStoreInterface) EXPECT() *MockProductStoreInterfaceMockRecor
         return m.recorder
 }
 
+// CheckIsProductInFavoritesDB mocks base method.
+func (m *MockProductStoreInterface) CheckIsProductInFavoritesDB(userID, itemID int) (bool, error) {
+        m.ctrl.T.Helper()
+        ret := m.ctrl.Call(m, "CheckIsProductInFavoritesDB", userID, itemID)
+        ret0, _ := ret[0].(bool)
+        ret1, _ := ret[1].(error)
+        return ret0, ret1
+}
+
+// CheckIsProductInFavoritesDB indicates an expected call of CheckIsProductInFavoritesDB.
+func (mr *MockProductStoreInterfaceMockRecorder) CheckIsProductInFavoritesDB(userID, itemID interface{}) *gomock.Call {
+        mr.mock.ctrl.T.Helper()
+        return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckIsProductInFavoritesDB", reflect.TypeOf((*MockProductStoreInterface)(nil).CheckIsProductInFavoritesDB), userID, itemID)
+}
+
 // CheckPromocodeUsage mocks base method.
 func (m *MockProductStoreInterface) CheckPromocodeUsage(userID int, promocode string) error {
         m.ctrl.T.Helper()

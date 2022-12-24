@@ -23,6 +23,9 @@
   }
 
 }
+@media (max-width: 480px) {
+    .padding-for-promocode { padding: 10px 20px !important}
+}
 
 @media (max-width: 620px) {
   .u-row-container {
@@ -75,7 +78,7 @@ a[x-apple-data-detectors='true'] {
   text-decoration: none !important;
 }
 
-table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: underline; } @media (max-width: 480px) { #u_content_heading_1 .v-font-size { font-size: 22px !important; } #u_content_text_1 .v-container-padding-padding { padding: 25px 20px 70px !important; } #u_content_text_1 .v-text-align { text-align: justify !important; } #u_content_text_2 .v-container-padding-padding { padding: 50px 20px 10px !important; } }
+table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: underline; } @media (max-width: 480px) { #u_content_heading_1 .v-font-size { font-size: 22px !important; } #u_content_text_1 .v-container-padding-padding { padding: 25px 20px !important; }  #u_content_text_1 .v-text-align { text-align: justify !important; } #u_content_text_2 .v-container-padding-padding { padding: 50px 20px 10px !important; } }
 
     </style>
 
@@ -185,7 +188,7 @@ table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: under
                                                 align="left">
 
                                                 <h1 class="v-text-align v-font-size"
-                                                    style="margin: 0px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-family: 'Rubik',sans-serif; font-size: 26px;">
+                                                    style="margin: 0px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-family: 'Rubik',sans-serif; font-size: 26px; ">
                                                     Вам подарок!</h1>
 
                                             </td>
@@ -238,13 +241,13 @@ table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: under
                                            cellpadding="0" cellspacing="0" width="100%" border="0">
                                         <tbody>
                                         <tr>
-                                            <td class="v-container-padding-padding"
-                                                style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:'Open Sans',sans-serif;"
-                                                align="left">
+                                            <td id="padding-for-promocode"
+                                                style="overflow-wrap:break-word;word-break:break-word;padding:10px 50px;font-family:'Open Sans',sans-serif;"
+                                                class="v-container-padding-padding padding-for-promocode" align="left">
 
                                                 <h1 class="v-text-align v-font-size"
-                                                    style="margin: 0px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-size: 22px;">
-                                                    Ваш промокод со скидкой 10% для всех товаров на 1 заказ:</h1>
+                                                    style="margin: 0px; color: #ffffff; line-height: 25.6px;  word-wrap: break-word; font-weight: normal; font-size: 16px;">
+                                                    Ваш промокод со скидкой 10% на все товары на один заказ:</h1>
 
                                             </td>
                                         </tr>
@@ -314,7 +317,7 @@ table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: under
 
                                                 <div class="v-text-align" align="center">
                                                     <a href="https://www.reazon.ru/" target="_blank" class="v-button"
-                                                       style="box-sizing: border-box;display: inline-block;font-family:'Open Sans',sans-serif;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #FFFFFF; background-color: #3AAEE0; border-radius: 4px;-webkit-border-radius: 4px; -moz-border-radius: 4px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;">
+                                                       style="box-sizing: border-box;display: inline-block;font-family:'Open Sans',sans-serif;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #333333; background-color: #FFFF; border-radius: 4px;-webkit-border-radius: 4px; -moz-border-radius: 4px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;">
                                                         <span style="display:block;padding:10px 20px;line-height:120%;">За покупками!</span>
                                                     </a>
                                                 </div>
@@ -396,60 +399,27 @@ table, td { color: #000000; } #u_body a { color: #f1c40f; text-decoration: under
                                                 align="left">
 
                                                 <div align="center">
-                                                    <div style="display: table; max-width:140px;">
+                                                    <div style="display: flex; max-width:max-content; gap: 10px; color: #ffffff;">
                                                         <table align="left" border="0" cellspacing="0" cellpadding="0"
                                                                width="32" height="32"
                                                                style="width: 32px !important;height: 32px !important;display: inline-block;border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;margin-right: 15px">
                                                             <tbody>
-                                                            <tr style="vertical-align: top">
+                                                            <tr style="vertical-align: top;">
                                                                 <td align="left" valign="middle"
                                                                     style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-                                                                    <a href="https://email.com/" title="Email"
+                                                                    <a title="Email"
                                                                        target="_blank">
                                                                         <img src={{.ImgEmailLogoSrc}} alt="Email"
                                                                              title="Email" width="32"
                                                                              style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
                                                                     </a>
                                                                 </td>
+                                                                
+                                                                
                                                             </tr>
                                                             </tbody>
                                                         </table>
-                                                        <table align="left" border="0" cellspacing="0" cellpadding="0"
-                                                               width="32" height="32"
-                                                               style="width: 32px !important;height: 32px !important;display: inline-block;border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;margin-right: 15px">
-                                                            <tbody>
-                                                            <tr style="vertical-align: top">
-                                                                <td align="left" valign="middle"
-                                                                    style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-                                                                    <a href="https://telegram.org/" title="Telegram"
-                                                                       target="_blank">
-                                                                        <img src={{.ImgTGLogoSrc}} alt="Telegram"
-                                                                             title="Telegram" width="32"
-                                                                             style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
-                                                                    </a>
-                                                                </td>
-                                                            </tr>
-                                                            </tbody>
-                                                        </table>
-
-                                                        <table align="left" border="0" cellspacing="0" cellpadding="0"
-                                                               width="32" height="32"
-                                                               style="width: 32px !important;height: 32px !important;display: inline-block;border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;margin-right: 0px">
-                                                            <tbody>
-                                                            <tr style="vertical-align: top">
-                                                                <td align="left" valign="middle"
-                                                                    style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-                                                                    <a href="https://github.com/frontend-park-mail-ru/2022_2_Base"
-                                                                       title="GitHub" target="_blank">
-                                                                        <img src={{.ImgGitLogoSrc}} alt="GitHub"
-                                                                             title="GitHub" width="32"
-                                                                             style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;max-width: 32px !important">
-                                                                    </a>
-                                                                </td>
-                                                            </tr>
-                                                            </tbody>
-                                                        </table>
-
+                                                        support@reazon.ru
 
                                                     </div>
                                                 </div>

@@ -127,120 +127,113 @@ func TestLogin(t *testing.T) {
 	assert.Equal(t, 401, rr.Code)
 }
 
-// func TestSignUp(t *testing.T) {
-// 	//t.Parallel()
-// 	ctrl := gomock.NewController(t)
-// 	defer ctrl.Finish()
+func TestSignUp(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-// 	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
+	userUsecaseMock := mocks.NewMockUserUsecaseInterface(ctrl)
 
-// 	testUser := model.UserCreateParams{Email: "art@art", Username: "art", Password: "12345678"}
-// 	testUser2 := model.UserCreateParams{Email: "art@art", Username: "art"}
-// 	salt := []byte("Base2022")
-// 	hashedPass := hashPass(salt, testUser.Password)
-// 	b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
-// 	testUser2.Password = b64Pass
-// 	testsessID := new(auth.SessionID)
-// 	err := faker.FakeData(testsessID)
-// 	assert.NoError(t, err)
-// 	testUserID := 2
-// 	testPromocode := "Az2"
-// 	testMail := model.Mail{Type: "greeting", Username: testUser.Username, Useremail: testUser.Email}
-// 	testMailPromo := model.Mail{Type: "promocode", Username: testUser.Username, Useremail: testUser.Email, Promocode: testPromocode}
+	testUser := model.UserCreateParams{Email: "art@art", Username: "art", Password: "12345678"}
+	testUser2 := model.UserCreateParams{Email: "art@art", Username: "art"}
+	salt := []byte("Base2022")
+	hashedPass := hashPass(salt, testUser.Password)
+	b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
+	testUser2.Password = b64Pass
+	testsessID := new(auth.SessionID)
+	err := faker.FakeData(testsessID)
+	assert.NoError(t, err)
+	testUserID := 2
+	testPromocode := "Az2"
+	testMail := model.Mail{Type: "greeting", Username: testUser.Username, Useremail: testUser.Email}
+	testMailPromo := model.Mail{Type: "promocode", Username: testUser.Username, Useremail: testUser.Email, Promocode: testPromocode}
 
-// 	//ok
-// 	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{}, nil)
-// 	userUsecaseMock.EXPECT().AddUser(&testUser2).Return(testUserID, nil)
-// 	userUsecaseMock.EXPECT().SetSession(testUser.Email).Return(testsessID, nil)
-// 	userUsecaseMock.EXPECT().GenPromocode(testUserID).Return(testPromocode)
-// 	wg := sync.WaitGroup{}
-// 	wg.Add(2)
-// 	userUsecaseMock.EXPECT().SendMail(testMail).Do(func(arg1 interface{}) {
-// 		defer wg.Done()
-// 	})
-// 	userUsecaseMock.EXPECT().SendMail(testMailPromo).Do(func(arg2 interface{}) {
-// 		defer wg.Done()
-// 	})
+	//ok
+	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(model.UserDB{}, nil)
+	userUsecaseMock.EXPECT().AddUser(&testUser2).Return(testUserID, nil)
+	userUsecaseMock.EXPECT().SetSession(testUser.Email).Return(testsessID, nil)
+	userUsecaseMock.EXPECT().GenPromocode(testUserID).Return(testPromocode)
+	userUsecaseMock.EXPECT().SendMail(testMail).Return(nil)
+	userUsecaseMock.EXPECT().SendMail(testMailPromo).Return(nil)
 
-// 	url := conf.PathLogin
-// 	data, _ := json.Marshal(testUser)
-// 	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr := httptest.NewRecorder()
-// 	userHandler := NewSessionHandler(userUsecaseMock)
-// 	userHandler.SignUp(rr, req)
-// 	wg.Wait()
-// 	assert.Equal(t, 201, rr.Code)
+	url := conf.PathLogin
+	data, _ := json.Marshal(testUser)
+	req, err := http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr := httptest.NewRecorder()
+	userHandler := NewSessionHandler(userUsecaseMock)
+	userHandler.SignUp(rr, req)
+	assert.Equal(t, 201, rr.Code)
 
-// 	//err 400 query err
-// 	url = conf.PathLogin
-// 	data, _ = json.Marshal("fsfsf")
-// 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr = httptest.NewRecorder()
-// 	userHandler = NewSessionHandler(userUsecaseMock)
-// 	userHandler.SignUp(rr, req)
-// 	assert.Equal(t, 400, rr.Code)
+	//err 400 query err
+	url = conf.PathLogin
+	data, _ = json.Marshal("fsfsf")
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	userHandler = NewSessionHandler(userUsecaseMock)
+	userHandler.SignUp(rr, req)
+	assert.Equal(t, 400, rr.Code)
 
-// 	//err 500 db err
-// 	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{}, baseErrors.ErrServerError500)
-// 	url = conf.PathLogin
-// 	data, _ = json.Marshal(testUser)
-// 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr = httptest.NewRecorder()
-// 	userHandler = NewSessionHandler(userUsecaseMock)
-// 	userHandler.SignUp(rr, req)
-// 	assert.Equal(t, 500, rr.Code)
+	//err 500 db err
+	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(model.UserDB{}, baseErrors.ErrServerError500)
+	url = conf.PathLogin
+	data, _ = json.Marshal(testUser)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	userHandler = NewSessionHandler(userUsecaseMock)
+	userHandler.SignUp(rr, req)
+	assert.Equal(t, 500, rr.Code)
 
-// 	//err 409 user exists
-// 	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{Email: testUser.Email}, nil)
-// 	url = conf.PathLogin
-// 	data, _ = json.Marshal(testUser)
-// 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr = httptest.NewRecorder()
-// 	userHandler = NewSessionHandler(userUsecaseMock)
-// 	userHandler.SignUp(rr, req)
-// 	assert.Equal(t, 401, rr.Code)
+	//err 409 user exists
+	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(model.UserDB{Email: testUser.Email}, nil)
+	url = conf.PathLogin
+	data, _ = json.Marshal(testUser)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	userHandler = NewSessionHandler(userUsecaseMock)
+	userHandler.SignUp(rr, req)
+	assert.Equal(t, 401, rr.Code)
 
-// 	//err 401 err validation
-// 	testUser3 := model.UserCreateParams{Email: "a", Username: "art", Password: "12345678"}
-// 	userUsecaseMock.EXPECT().GetUserByUsername(testUser3.Email).Return(*&model.UserDB{}, nil)
-// 	url = conf.PathLogin
+	//err 401 err validation
+	testUser3 := model.UserCreateParams{Email: "a", Username: "art", Password: "12345678"}
+	userUsecaseMock.EXPECT().GetUserByUsername(testUser3.Email).Return(model.UserDB{}, nil)
+	url = conf.PathLogin
 
-// 	data, _ = json.Marshal(testUser3)
-// 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr = httptest.NewRecorder()
-// 	userHandler = NewSessionHandler(userUsecaseMock)
-// 	userHandler.SignUp(rr, req)
-// 	assert.Equal(t, 401, rr.Code)
+	data, _ = json.Marshal(testUser3)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	userHandler = NewSessionHandler(userUsecaseMock)
+	userHandler.SignUp(rr, req)
+	assert.Equal(t, 401, rr.Code)
 
-// 	//err 401 err validation
-// 	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(*&model.UserDB{}, nil)
-// 	url = conf.PathLogin
-// 	testUser3 = model.UserCreateParams{Email: "art@art", Username: "art", Password: "1"}
-// 	data, _ = json.Marshal(testUser3)
-// 	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	rr = httptest.NewRecorder()
-// 	userHandler = NewSessionHandler(userUsecaseMock)
-// 	userHandler.SignUp(rr, req)
-// 	assert.Equal(t, 401, rr.Code)
-// }
+	//err 401 err validation
+	userUsecaseMock.EXPECT().GetUserByUsername(testUser.Email).Return(model.UserDB{}, nil)
+	url = conf.PathLogin
+	testUser3 = model.UserCreateParams{Email: "art@art", Username: "art", Password: "1"}
+	data, _ = json.Marshal(testUser3)
+	req, err = http.NewRequest("POST", url, strings.NewReader(string(data)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rr = httptest.NewRecorder()
+	userHandler = NewSessionHandler(userUsecaseMock)
+	userHandler.SignUp(rr, req)
+	assert.Equal(t, 401, rr.Code)
+}
 
 func TestGetSession(t *testing.T) {
 	t.Parallel()

@@ -5,6 +5,7 @@ import (
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	auth "serv/microservices/auth/gen_files"
+	mail "serv/microservices/mail/gen_files"
 	"testing"
 
 	"github.com/bxcodec/faker/v3"
@@ -355,5 +356,35 @@ func TestChangeUser(t *testing.T) {
 	testUser2 := &model.UserProfile{Email: testUser.Email, Username: testUser.Username, Phone: testUser.Phone, Avatar: testUser.Avatar, Address: oldUser.Address, PaymentMethods: oldUser.PaymentMethods}
 	userStoreMock.EXPECT().UpdateUser(oldUser.ID, testUser2).Return(nil)
 	err = userUsecase.ChangeUser(oldUser, testUser)
+	assert.NoError(t, err)
+}
+
+func TestSendMail(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userStoreMock := mocks.NewMockUserStoreInterface(ctrl)
+	sessManager := mocks.NewMockAuthCheckerClient(ctrl)
+	mailManager := mocks.NewMockMailServiceClient(ctrl)
+	userUsecase := NewUserUsecase(userStoreMock, sessManager, mailManager)
+
+	testUser := new(model.UserDB)
+	err := faker.FakeData(testUser)
+	assert.NoError(t, err)
+
+	in := new(model.Mail)
+	err = faker.FakeData(in)
+	assert.NoError(t, err)
+	testUser.ID = 0
+	testUser.Phone = nil
+	testUser.Avatar = nil
+	noth := mail.Nothing{}
+	in.OrderID = 1
+	var OrderID int32 = 1
+
+	//ok
+	mailManager.EXPECT().SendMail(context.Background(), &mail.Mail{Type: in.Type, Username: in.Username, Useremail: in.Useremail, OrderStatus: &in.OrderStatus, Promocode: &in.Promocode, OrderID: &OrderID}).Return(&noth, nil)
+	err = userUsecase.SendMail(*in)
 	assert.NoError(t, err)
 }

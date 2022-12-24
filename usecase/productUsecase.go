@@ -18,26 +18,29 @@ import (
 )
 
 type ProductUsecaseInterface interface {
-	GetProducts(lastitemid int, count int, sort string) ([]*model.Product, error)
-	GetProductsWithCategory(cat string, lastitemid int, count int, sort string) ([]*model.Product, error)
-	GetProductsWithBiggestDiscount(lastitemid int, count int) ([]*model.Product, error)
-	GetProductByID(id int) (*model.Product, error)
-	GetProductsBySearch(search string) ([]*model.Product, error)
+	GetProducts(lastitemid int, count int, sort string, userID int) ([]*model.Product, error)
+	GetProductsWithCategory(cat string, lastitemid int, count int, sort string, userID int) ([]*model.Product, error)
+	GetProductsWithBiggestDiscount(lastitemid int, count int, userID int) ([]*model.Product, error)
+	GetProductByID(id int, userID int) (*model.Product, error)
+	GetProductsBySearch(search string, userID int) ([]*model.Product, error)
+	GetBestProductInCategory(category string, userID int) (*model.Product, error)
 	GetSuggestions(search string) ([]string, error)
 	GetCart(userID int) (*model.Order, error)
 	UpdateOrder(userID int, items *[]int) error
 	AddToOrder(userID int, itemID int) error
 	DeleteFromOrder(userID int, itemID int) error
 	MakeOrder(in *model.MakeOrder) (int, error)
+	ChangeOrderStatus(userID int, in *model.ChangeOrderStatus) error
 	GetOrders(userID int) (*orders.OrdersResponse, error)
 	GetComments(productID int) ([]*model.CommentDB, error)
 	CreateComment(in *model.CreateComment) error
-	GetRecommendationProducts(itemID int) ([]*model.Product, error)
+	GetRecommendationProducts(itemID int, userID int) ([]*model.Product, error)
 	SetPromocode(userID int, promocode string) error
 	RecalculatePrices(userID int, promocode string) error
 	GetFavorites(userID int, lastitemid int, count int, sort string) ([]*model.Product, error)
 	InsertItemIntoFavorites(userID int, itemID int) error
 	DeleteItemFromFavorites(userID int, itemID int) error
+	RecalculateRatingsForInitscriptProducts(count int) error
 }
 
 type ProductUsecase struct {
@@ -54,7 +57,7 @@ func NewProductUsecase(ps rep.ProductStoreInterface, ordersManager orders.Orders
 	}
 }
 
-func (api *ProductUsecase) GetProducts(lastitemid int, count int, sort string) ([]*model.Product, error) {
+func (api *ProductUsecase) GetProducts(lastitemid int, count int, sort string, userID int) ([]*model.Product, error) {
 	products, err := api.store.GetProductsFromStore(lastitemid, count, sort)
 	if err != nil {
 		return nil, err
@@ -67,12 +70,18 @@ func (api *ProductUsecase) GetProducts(lastitemid int, count int, sort string) (
 		product.Rating = math.Round(rating*100) / 100
 		product.CommentsCount = &commsCount
 		product.Properties = []*model.Property{}
-
+		if userID != 0 {
+			isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
+			if err != nil {
+				return nil, err
+			}
+			product.IsFavorite = isFav
+		}
 	}
 	return products, nil
 }
 
-func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, count int, sort string) ([]*model.Product, error) {
+func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, count int, sort string, userID int) ([]*model.Product, error) {
 	products, err := api.store.GetProductsWithCategoryFromStore(cat, lastitemid, count, sort)
 	if err != nil {
 		return nil, err
@@ -89,12 +98,23 @@ func (api *ProductUsecase) GetProductsWithCategory(cat string, lastitemid int, c
 		if err != nil {
 			return nil, err
 		}
-		product.Properties = properties[:4]
+		product.Properties = properties
+		if len(properties) > 4 {
+			product.Properties = properties[:4]
+		}
+
+		if userID != 0 {
+			isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
+			if err != nil {
+				return nil, err
+			}
+			product.IsFavorite = isFav
+		}
 	}
 	return products, nil
 }
 
-func (api *ProductUsecase) GetProductsWithBiggestDiscount(lastitemid int, count int) ([]*model.Product, error) {
+func (api *ProductUsecase) GetProductsWithBiggestDiscount(lastitemid int, count int, userID int) ([]*model.Product, error) {
 	products, err := api.store.GetProductsWithBiggestDiscountFromStore(lastitemid, count)
 	if err != nil {
 		return nil, err
@@ -106,11 +126,19 @@ func (api *ProductUsecase) GetProductsWithBiggestDiscount(lastitemid int, count 
 		}
 		product.Rating = math.Round(rating*100) / 100
 		product.CommentsCount = &commsCount
+
+		if userID != 0 {
+			isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
+			if err != nil {
+				return nil, err
+			}
+			product.IsFavorite = isFav
+		}
 	}
 	return products, nil
 }
 
-func (api *ProductUsecase) GetProductByID(id int) (*model.Product, error) {
+func (api *ProductUsecase) GetProductByID(id int, userID int) (*model.Product, error) {
 	product, err := api.store.GetProductFromStoreByID(id)
 	if err != nil {
 		return nil, err
@@ -127,10 +155,47 @@ func (api *ProductUsecase) GetProductByID(id int) (*model.Product, error) {
 		return nil, err
 	}
 	product.Properties = properties
+	if userID != 0 {
+		isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.IsFavorite = isFav
+	}
+
 	return product, nil
 }
 
-func (api *ProductUsecase) GetProductsBySearch(search string) ([]*model.Product, error) {
+func (api *ProductUsecase) GetBestProductInCategory(category string, userID int) (*model.Product, error) {
+	products, err := api.store.GetProductsWithCategoryFromStore(category, 0, 10, "ratingdown")
+	if err != nil {
+		return nil, err
+	}
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+	randitemID := r1.Intn(int(math.Min(10, float64(len(products)))))
+	product := products[randitemID]
+	rating, commsCount, err := api.store.GetProductsRatingAndCommsCountFromStore(product.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	product.Rating = math.Round(rating*100) / 100
+	product.CommentsCount = &commsCount
+
+	product.Properties = []*model.Property{}
+	if userID != 0 {
+		isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
+		if err != nil {
+			return nil, err
+		}
+		product.IsFavorite = isFav
+	}
+
+	return product, nil
+}
+
+func (api *ProductUsecase) GetProductsBySearch(search string, userID int) ([]*model.Product, error) {
 	products, err := api.store.GetProductsBySearchFromStore(search)
 	if err != nil {
 		return nil, err
@@ -147,7 +212,18 @@ func (api *ProductUsecase) GetProductsBySearch(search string) ([]*model.Product,
 		if err != nil {
 			return nil, err
 		}
-		product.Properties = properties[:4]
+		product.Properties = properties
+		if len(properties) > 4 {
+			product.Properties = properties[:4]
+		}
+
+		if userID != 0 {
+			isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
+			if err != nil {
+				return nil, err
+			}
+			product.IsFavorite = isFav
+		}
 	}
 	return products, nil
 }
@@ -169,6 +245,15 @@ func (api *ProductUsecase) GetCart(userID int) (*model.Order, error) {
 		cart, err = api.store.GetCart(userID)
 		if err != nil {
 			return nil, err
+		}
+	}
+	for _, product := range cart.Items {
+		if userID != 0 {
+			isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.Item.ID)
+			if err != nil {
+				return nil, err
+			}
+			product.IsFavorite = isFav
 		}
 	}
 	return cart, nil
@@ -340,6 +425,22 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) (int, error) {
 	return cart.ID, api.store.UpdateCart(in.UserID, &remainedItemsIDs)
 }
 
+func (api *ProductUsecase) ChangeOrderStatus(userID int, in *model.ChangeOrderStatus) error {
+
+	_, err := api.ordersManager.ChangeOrderStatus(
+		context.Background(),
+		&orders.ChangeOrderStatusType{
+			UserID:      int32(userID),
+			OrderID:     int32(in.OrderID),
+			OrderStatus: in.OrderStatus,
+		})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (api *ProductUsecase) GetOrders(userID int) (*orders.OrdersResponse, error) {
 	ordersResponse, err := api.ordersManager.GetOrders(
 		context.Background(),
@@ -368,11 +469,12 @@ func (api *ProductUsecase) CreateComment(in *model.CreateComment) error {
 	return api.store.UpdateProductRatingInStore(in.ItemID)
 }
 
-func (api *ProductUsecase) GetRecommendationProducts(itemID int) ([]*model.Product, error) {
+func (api *ProductUsecase) GetRecommendationProducts(itemID int, userID int) ([]*model.Product, error) {
 	products, err := api.store.GetRecommendationProductsFromStore(itemID)
 	if err != nil {
 		return nil, err
 	}
+	ansproducts := []*model.Product{}
 	// shuffle
 	rand.Seed(time.Now().UnixNano())
 	rand.Shuffle(len(products), func(i, j int) { products[i], products[j] = products[j], products[i] })
@@ -384,8 +486,18 @@ func (api *ProductUsecase) GetRecommendationProducts(itemID int) ([]*model.Produ
 		}
 		product.Rating = math.Round(rating*100) / 100
 		product.CommentsCount = &commsCount
+		if userID != 0 {
+			isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
+			if err != nil {
+				return nil, err
+			}
+			product.IsFavorite = isFav
+		}
+		if product.ID != itemID {
+			ansproducts = append(ansproducts, product)
+		}
 	}
-	return products, nil
+	return ansproducts, nil
 }
 
 func (api *ProductUsecase) GetFavorites(userID int, lastitemid int, count int, sort string) ([]*model.Product, error) {
@@ -405,7 +517,17 @@ func (api *ProductUsecase) GetFavorites(userID int, lastitemid int, count int, s
 		if err != nil {
 			return nil, err
 		}
-		product.Properties = properties[:4]
+		product.Properties = properties
+		if len(properties) > 4 {
+			product.Properties = properties[:4]
+		}
+		if userID != 0 {
+			isFav, err := api.store.CheckIsProductInFavoritesDB(userID, product.ID)
+			if err != nil {
+				return nil, err
+			}
+			product.IsFavorite = isFav
+		}
 	}
 	return products, nil
 }
@@ -416,4 +538,14 @@ func (api *ProductUsecase) InsertItemIntoFavorites(userID int, itemID int) error
 
 func (api *ProductUsecase) DeleteItemFromFavorites(userID int, itemID int) error {
 	return api.store.DeleteItemFromFavoritesDB(userID, itemID)
+}
+
+func (api *ProductUsecase) RecalculateRatingsForInitscriptProducts(count int) error {
+	for i := 1; i <= count; i++ {
+		err := api.store.UpdateProductRatingInStore(i)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

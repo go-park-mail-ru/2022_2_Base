@@ -12,6 +12,7 @@ import (
 
 type OrderStoreInterface interface {
 	MakeOrder(in *orders.MakeOrderType) error
+	ChangeOrderStatus(in *orders.ChangeOrderStatusType) error
 	GetOrdersFromStore(userID int) ([]*model.Order, error)
 	GetOrdersAddressFromStore(addressID int) (*model.Address, error)
 	GetOrdersPaymentFromStore(paymentID int) (*model.PaymentMethod, error)
@@ -32,6 +33,15 @@ func (os *OrderStore) MakeOrder(in *orders.MakeOrderType) error {
 	log.Println("call MakeOrder store")
 	delivDate := time.Unix(in.DeliveryDate, 0)
 	_, err := os.db.Exec(`UPDATE orders SET orderStatus = $1, paymentStatus = $2, addressID = $3, paymentcardID = $4, creationDate = $5, deliveryDate = $6  WHERE userID = $7 AND orderStatus = $8;`, "created", "not started", in.AddressID, in.PaymentcardID, time.Now().Format("2006.01.02 15:04:05"), delivDate.Format("2006.01.02 15:04:05"), in.UserID, "cart")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (os *OrderStore) ChangeOrderStatus(in *orders.ChangeOrderStatusType) error {
+	log.Println("call ChangeOrderStatus store")
+	_, err := os.db.Exec(`UPDATE orders SET orderStatus = $1 WHERE id = $2;`, in.OrderStatus, in.OrderID)
 	if err != nil {
 		return err
 	}
