@@ -141,8 +141,8 @@ var casesGetProductsFromStoreSortings = []struct {
 }{
 	{0, 1, "priceup", 0, 0},
 	{0, 1, "pricedown", 1e10, 0},
-	{0, 1, "ratingdown", 0, 0},
-	{1e9, 1, "ratingup", 0, 10},
+	{0, 1, "ratingup", 0, 0},
+	{1e9, 1, "ratingdown", 0, 10},
 }
 
 func TestGetProductsFromStoreSortings(t *testing.T) {
@@ -277,8 +277,8 @@ var casesGetProductsWithCategoryFromStoreSortings = []struct {
 }{
 	{"phones", 0, 1, "priceup", 0, 0},
 	{"phones", 0, 1, "pricedown", 1e10, 0},
-	{"phones", 0, 1, "ratingdown", 0, 0},
-	{"phones", 1e9, 1, "ratingup", 0, 10},
+	{"phones", 0, 1, "ratingup", 0, 0},
+	{"phones", 1e9, 1, "ratingdown", 0, 10},
 }
 
 func TestGetProductsWithCategoryFromStoreSortings(t *testing.T) {
