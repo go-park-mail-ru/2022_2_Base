@@ -27,3 +27,15 @@ docker-prune-all:
 
 docker-fix:
 	- sudo killall containerd-shim
+
+create-postgres-user:
+	sudo docker exec -it postgres psql -U spuser -d base
+
+grant-select:create-postgres-user
+	GRANT SELECT ON ALL TABLES IN SCHEMA public TO mainUser;
+
+grant-update-avatar:grant-select
+	GRANT UPDATE ON  IN SCHEMA public TO mainUser;		
+
+edit-psql-conf:docker-postgres-bash
+	vim /var/lib/postgresql/data/postgresql.conf
