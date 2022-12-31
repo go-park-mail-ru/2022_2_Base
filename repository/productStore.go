@@ -6,6 +6,7 @@ import (
 	"math"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
+	"strconv"
 	"strings"
 )
 
@@ -290,6 +291,7 @@ func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Pr
 
 func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error) {
 	suggestions := []string{}
+	search = strconv.Quote(search)
 	searchWords := strings.Split(search, " ")
 	searchString := strings.ToLower(`%` + strings.Join(searchWords, " ") + `%`)
 	rows, err := ps.db.Query(`SELECT name FROM products WHERE LOWER(name) LIKE $1 LIMIT 3;`, searchString)
@@ -366,7 +368,8 @@ func (ps *ProductStore) UpdatePricesOrderItemsInStore(userID int, category strin
 }
 
 func (ps *ProductStore) CheckPromocodeUsage(userID int, promocode string) error {
-	rows, err := ps.db.Query(`SELECT id, userid, promocode FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, promocode)
+	prom := strconv.Quote(promocode)
+	rows, err := ps.db.Query(`SELECT id, userid, promocode FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, prom)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return err
@@ -389,6 +392,7 @@ func (ps *ProductStore) CheckPromocodeUsage(userID int, promocode string) error 
 
 func (ps *ProductStore) SetPromocodeDB(userID int, promocode string) error {
 	cart, err := ps.GetCart(userID)
+	promocode = strconv.Quote(promocode)
 	if err != nil {
 		return err
 	}
@@ -550,7 +554,10 @@ func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.CommentDB,
 }
 
 func (ps *ProductStore) CreateCommentInStore(in *model.CreateComment) error {
-	_, err := ps.db.Exec(`INSERT INTO comments (itemID, userID, pros, cons, comment, rating) VALUES ($1, $2, $3, $4, $5, $6);`, in.ItemID, in.UserID, in.Pros, in.Cons, in.Comment, in.Rating)
+	pros := strconv.Quote(in.Pros)
+	cons := strconv.Quote(in.Cons)
+	comment := strconv.Quote(in.Comment)
+	_, err := ps.db.Exec(`INSERT INTO comments (itemID, userID, pros, cons, comment, rating) VALUES ($1, $2, $3, $4, $5, $6);`, in.ItemID, in.UserID, pros, cons, comment, in.Rating)
 	if err != nil {
 		return err
 	}
