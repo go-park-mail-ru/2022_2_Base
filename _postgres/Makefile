@@ -6,6 +6,3 @@ clone-pgbadger:
 
 install-pgbadger:clone-pgbadger
 	cd pgbadger && perl Makefile.PL && make && sudo make install && cd .. && sudo rm -r pgbadger
-
-lol:
-	date +'%Y-%m-%d-T-%H:%M:%S'	
