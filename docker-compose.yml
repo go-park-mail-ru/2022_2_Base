@@ -65,6 +65,7 @@ services:
       - './_postgres:/docker-entrypoint'
       - 'dbData:/var/lib/postgresql/data'
       - ./_postgres/postgres.conf:/etc/postgresql.conf
+      - ./_postgres/logs:/var/lib/postgresql/data/pg_log
 
   session:
     build:
@@ -157,7 +158,6 @@ volumes:
   .:
     external: true
   dbData:
-
 
 networks:
   mynet:
