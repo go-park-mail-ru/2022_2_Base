@@ -1,15 +1,16 @@
 package main
 
 import (
-	"database/sql"
+	"context"
+	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	_ "serv/docs"
 	"serv/repository"
 
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	muxprom "gitlab.com/msvechla/mux-prometheus/pkg/middleware"
 
@@ -53,9 +54,18 @@ var (
 
 func main() {
 	myRouter := mux.NewRouter()
-	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
+	maxDBCons := 70
+	//urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName
+	//urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
+	urlDB := "postgres://" + conf.DBSPuser + ":" + conf.DBPassword + "@" + conf.DBHost + ":" + conf.DBPort + "/" + conf.DBName + "?pool_max_conns=" + fmt.Sprint(maxDBCons)
 	log.Println("conn: ", urlDB)
-	db, err := sql.Open("pgx", urlDB)
+	//DATABASE_URL := "postgres://useradmin:password@localhost:5432/databasename?sslmode=verify-ca&pool_max_conns=10"
+	config, _ := pgxpool.ParseConfig(urlDB)
+	//conn, _ := pgxpool.ConnectConfig(context.Background(), config)
+	//db, err := sql.Open("pgx", urlDB)
+	db, err := pgxpool.New(context.Background(), config.ConnString())
+	//db, err := pgxpool.New(context.Background(), urlDB)
+
 	if err != nil {
 		log.Println("could not connect to database")
 	} else {
@@ -64,7 +74,8 @@ func main() {
 	defer db.Close()
 
 	grcpConnAuth, err := grpc.Dial(
-		"auth:8082",
+		//"auth:8082",
+		"localhost:8082",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(grpc_prometheus.UnaryClientInterceptor),
 		grpc.WithStreamInterceptor(grpc_prometheus.StreamClientInterceptor),
