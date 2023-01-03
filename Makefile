@@ -2,10 +2,9 @@ test:
 	go test -race -coverpkg=./... -coverprofile cover.out.tmp ./...; cat cover.out.tmp | grep -v "_easyjson.go" > cover1.out.tmp; cat cover1.out.tmp | grep -v ".pb.go" > cover2.out.tmp; cat cover2.out.tmp | grep -v "_mock.go" > cover.out; go tool cover -func cover.out
 
 build:
-	sudo docker-compose up -d --build
-
+	sudo docker-compose up -d --build && make set-service-user
 build-it:
-	sudo docker-compose up --build
+	sudo docker-compose up --build && make set-service-user
 
 stop:docker-fix
 	sudo docker-compose down
@@ -19,7 +18,7 @@ image-prune:
 inspect-postgres:
 	docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' postgres
 
-docker-postgres-bash:
+postgres-bash:
 	sudo docker exec -it postgres bash
 
 docker-prune-all:
@@ -27,3 +26,15 @@ docker-prune-all:
 
 docker-fix:
 	- sudo killall containerd-shim
+
+connect-psql:
+	sudo docker exec -it postgres psql -U spuser -d base
+
+edit-psql-conf:docker-postgres-bash
+	vim /var/lib/postgresql/data/postgresql.conf
+
+set-env:
+	set -a && source .env && set +a
+
+set-service-user:
+	 cd _postgres && make set-up-user

@@ -13,6 +13,7 @@ import (
 	usecase "serv/usecase"
 
 	"github.com/mailru/easyjson"
+	"github.com/microcosm-cc/bluemonday"
 	"golang.org/x/crypto/argon2"
 )
 
@@ -63,7 +64,10 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 		ReturnErrorJSON(w, baseErrors.ErrBadRequest400, 400)
 		return
 	}
-	user, err := api.usecase.GetUserByUsername(req.Email)
+
+	sanitizer := bluemonday.UGCPolicy()
+
+	user, err := api.usecase.GetUserByUsername(sanitizer.Sanitize(req.Email))
 	if err != nil {
 		log.Println("get GetUserByUsername ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -88,7 +92,7 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sess, err := api.usecase.SetSession(user.Email)
+	sess, err := api.usecase.SetSession(sanitizer.Sanitize(user.Email))
 	if err != nil {
 		log.Println("error with auth microservice: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -190,7 +194,9 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := api.usecase.GetUserByUsername(req.Email)
+	sanitizer := bluemonday.UGCPolicy()
+
+	user, err := api.usecase.GetUserByUsername(sanitizer.Sanitize(req.Email))
 	if err != nil && err != baseErrors.ErrNotFound404 {
 		log.Println("error ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -229,7 +235,7 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sess, err := api.usecase.SetSession(req.Email)
+	sess, err := api.usecase.SetSession(sanitizer.Sanitize(req.Email))
 
 	if err != nil {
 		log.Println("error with auth microservice: ", err)

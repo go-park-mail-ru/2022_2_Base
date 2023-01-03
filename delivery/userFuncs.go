@@ -109,6 +109,8 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sanitizer := bluemonday.UGCPolicy()
+
 	err = api.usecase.ChangeUser(oldUserData, &req)
 	if err != nil {
 		log.Println(err)
@@ -117,7 +119,7 @@ func (api *UserHandler) ChangeProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.Email != "" {
-		err = api.usecase.ChangeEmail(session.Value, req.Email)
+		err = api.usecase.ChangeEmail(session.Value, sanitizer.Sanitize(req.Email))
 		if err != nil {
 			log.Println("error with auth microservice: ", err)
 			ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -226,7 +228,9 @@ func (api *UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := api.usecase.GetUserByUsername(oldUserData.Email)
+	sanitizer := bluemonday.UGCPolicy()
+
+	user, err := api.usecase.GetUserByUsername(sanitizer.Sanitize(oldUserData.Email))
 	if err != nil {
 		log.Println("get GetUserByUsername ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)

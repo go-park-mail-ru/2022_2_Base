@@ -72,7 +72,7 @@ func (api *ProductHandler) GetHomePage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	products, err := api.usecase.GetProducts(lastitemid, count, sort, userID)
+	products, err := api.usecase.GetProducts(lastitemid, count, sanitizer.Sanitize(sort), userID)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -146,7 +146,7 @@ func (api *ProductHandler) GetProductsByCategory(w http.ResponseWriter, r *http.
 		}
 	}
 
-	products, err := api.usecase.GetProductsWithCategory(category, lastitemid, count, sort, userID)
+	products, err := api.usecase.GetProductsWithCategory(sanitizer.Sanitize(category), lastitemid, count, sanitizer.Sanitize(sort), userID)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -337,7 +337,7 @@ func (api *ProductHandler) GetProductsBySearch(w http.ResponseWriter, r *http.Re
 		}
 	}
 
-	products, err := api.usecase.GetProductsBySearch(req.Search, userID)
+	products, err := api.usecase.GetProductsBySearch(sanitizer.Sanitize(req.Search), userID)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -385,7 +385,9 @@ func (api *ProductHandler) GetSuggestions(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	suggestions, err := api.usecase.GetSuggestions(req.Search)
+	sanitizer := bluemonday.UGCPolicy()
+
+	suggestions, err := api.usecase.GetSuggestions(sanitizer.Sanitize(req.Search))
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -491,7 +493,7 @@ func (api *ProductHandler) GetBestProductInCategory(w http.ResponseWriter, r *ht
 			}
 		}
 	}
-	product, err := api.usecase.GetBestProductInCategory(category, userID)
+	product, err := api.usecase.GetBestProductInCategory(sanitizer.Sanitize(category), userID)
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)

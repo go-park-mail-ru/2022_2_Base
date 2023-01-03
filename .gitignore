@@ -11,3 +11,5 @@ _oldtests/
 auth
 orders
 cover.out*
+_postgres/logs
+_postgres/reports
