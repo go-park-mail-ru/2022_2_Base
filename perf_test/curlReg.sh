@@ -22,3 +22,4 @@ curl -sSL -D - 'https://www.reazon.ru/api/v1/signup' \
 
   echo "mail: ${mail}" >> tempCurl.txt
   echo "pwd: ${pwd}" >> tempCurl.txt
+  

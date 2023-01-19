@@ -8,7 +8,6 @@ do
     export csrf=$(cat tempCurl.txt | grep csrf: | cut -b 7-)
     echo $csrf > ./apiRequests/users/user$file.txt
     export cookie=$(cat tempCurl.txt | grep cookie: | cut -b 13- | cut -f 1 -d";")
-    cookie="${cookie%;*}"
     echo $cookie >> ./apiRequests/users/user$file.txt
     export mail=$(cat tempCurl.txt | grep mail: | cut -b 9-)
     echo $mail >> ./apiRequests/users/user$file.txt
@@ -19,3 +18,5 @@ do
 done
 
 rm tempCurl.txt
+rm tempAddress.txt
+rm tempAddressID.txt
