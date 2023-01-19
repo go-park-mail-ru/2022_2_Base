@@ -8,8 +8,6 @@ docker.sh
 *.out
 *.tmp
 _oldtests/
-auth
-orders
 cover.out*
 perf_test/*.json
 perf_test/*.html
