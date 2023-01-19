@@ -5,18 +5,18 @@
 Далее запрашиваем созданные заказы GET запросом с помощью той же утилиты и [genGetTest.sh](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/genGetTest.sh). Генерация пользователей происходит с помощью [genUser.sh](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/genUsers.sh), добавление адреса доставки с использванием [curlAddAddress.sh](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/curlAddAddress.sh), получение ID адреса с выполнением [curlGetAddressID.sh](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/curlGetAddressID.sh).
 
 Для подготовки данных
-```
+```console
 $ bash genItems.sh
 $ bash genUsers.sh
 ```
 
 Для запуска POST makeorder тестирования
-```
+```console
 $ make run-post-test
 ```
 
 Для запуска GET order тестирования
-```
+```console
 $ make run-get-test
 ```
 ## Первая итерация
