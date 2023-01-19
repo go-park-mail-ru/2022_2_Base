@@ -1,4 +1,4 @@
-userNum=$(($RANDOM % $(ls ./apiRequests/users | wc -l)))
+userNum=$(($RANDOM % $(ls ./apiRequests/users | wc -l))
 cookie=$(cat ./apiRequests/users/user${userNum}.txt | tail +2 | head -n 1)
 csrf=$(cat ./apiRequests/users/user${userNum}.txt | tail +1 | head -n 1)
 
