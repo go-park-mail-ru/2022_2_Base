@@ -1,0 +1,11 @@
+POST https://www.reazon.ru/api/v1/cart/insertintocart
+Content-Type: application/json
+cookie: session_id=527a65c1-57cf-403f-9093-be243079c80a
+csrf: 2c7a9a27ffeb5897e8a6797953d5e455e16625d32cd517c92cff66caf3076008:1674192578
+@./apiRequests/insertIntoCart.json
+
+POST https://www.reazon.ru/api/v1/cart/makeorder
+Content-Type: application/json
+cookie: session_id=527a65c1-57cf-403f-9093-be243079c80a
+csrf: 2c7a9a27ffeb5897e8a6797953d5e455e16625d32cd517c92cff66caf3076008:1674192578
+@./apiRequests/makeorder.json
