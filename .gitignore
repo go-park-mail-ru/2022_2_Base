@@ -11,6 +11,6 @@ _oldtests/
 auth
 orders
 cover.out*
-pref_test/*.json
-pref_test/*.html
-pref_test/*.bin
+perf_test/*.json
+perf_test/*.html
+perf_test/*.bin
