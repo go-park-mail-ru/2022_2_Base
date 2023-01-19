@@ -14,4 +14,5 @@ cover.out*
 perf_test/*.json
 perf_test/*.html
 perf_test/*.bin
-perf_test/items
+perf_test/apiRequests
+perf_test/*.txt

@@ -14,7 +14,7 @@ do
     echo "${outString}csrf:${csrf}" >> res.txt
     currItem=$(($RANDOM % $itemsCount + 1))
     items="${items}, ${currItem}"
-    echo -e "${outString}@./items/${fileName}${currItem}.json\n" >> res.txt
+    echo -e "${outString}@./apiRequests/items/${fileName}${currItem}.json\n" >> res.txt
 done
 
 echo -e "{

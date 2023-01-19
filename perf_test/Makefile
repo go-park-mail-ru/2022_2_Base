@@ -20,4 +20,5 @@ live-report:run-test
         bytes_in.sum+bytes_out.sum	
   	
 gen-user:
-	jq -ncM 'while(true; .+1) | {method: "POST", url: "https://reazon.ru/api/v1/signup", body: {"email": [.]} | @base64, header: {"Content-Type": ["application/json"]} }'	
+	jq -ncM 'while(true; .+1) | {method: "POST", url: "https://reazon.ru/api/v1/signup", body: {"email": [.]} | @base64, header: {"Content-Type": ["application/json"]} }'
+	

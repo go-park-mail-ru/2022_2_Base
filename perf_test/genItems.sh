@@ -1,6 +1,6 @@
-mkdir -p items
-rm ./items/*
-cd items
+mkdir -p apiRequests/items
+rm ./apiRequests/items/*
+cd apiRequests/items
 
 fileName="itemsToAdd"
 
