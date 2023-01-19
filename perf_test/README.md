@@ -5,8 +5,8 @@
 Далее запрашиваем созданные заказы GET запросом с помощью той же утилиты.
 ## Первая итерация
 #### Результаты
-[хистограмма](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/hist-1.png)
-[график](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/plot-1.png)
+![image](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/hist-1.jpg)
+![image](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/plot-1.png)
 RPS: 100, время выполнения: 28 минут
 #### Анализ
 #### Изменения
