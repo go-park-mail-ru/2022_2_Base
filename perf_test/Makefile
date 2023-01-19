@@ -1,5 +1,5 @@
 run-test:
-	bash genTestCase.sh | vegeta attack -duration=10s -rate=infinity -max-workers=5000 -http2 | tee results.bin | vegeta report
+	bash genTestCase.sh | vegeta attack -duration=10100s -rate=100 -max-workers=1000 -http2 | tee results.bin | vegeta report
 
 run-test-static:
 	vegeta attack -duration=1s -rate=5 -http2 -targets=targets.txt | tee results.bin | vegeta report
@@ -7,7 +7,7 @@ run-test-static:
 get-report:run-test
 	vegeta report -type=json results.bin > metrics.json && \
 	cat results.bin | vegeta plot > plot.html && \
-	cat results.bin | vegeta report -type="hist[0,100ms,200ms,300ms]"
+	cat results.bin | vegeta report -type="hist[0,100ms,200ms,300ms, 500ms, 800ms, 1000ms]"
 
 live-report:run-test
 	jaggr @count=rps \
@@ -19,4 +19,3 @@ live-report:run-test
         latency.p95+latency.p50+latency.p25 \
         bytes_in.sum+bytes_out.sum	
   	
-	
