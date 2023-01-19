@@ -9,6 +9,8 @@ docker.sh
 *.tmp
 _oldtests/
 cover.out*
+auth
+orders
 perf_test/*.json
 perf_test/*.html
 perf_test/*.bin
