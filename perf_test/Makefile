@@ -19,6 +19,4 @@ live-report:run-test
         latency.p95+latency.p50+latency.p25 \
         bytes_in.sum+bytes_out.sum	
   	
-gen-user:
-	jq -ncM 'while(true; .+1) | {method: "POST", url: "https://reazon.ru/api/v1/signup", body: {"email": [.]} | @base64, header: {"Content-Type": ["application/json"]} }'
 	

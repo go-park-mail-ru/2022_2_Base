@@ -1,4 +1,4 @@
-![GitHub repo size](https://img.shields.io/github/repo-size/frontend-park-mail-ru/2022_2_Base)
+![GitHub repo size](https://img.shields.io/github/repo-size/go-park-mail-ru/2022_2_Base)
 
 # Ozon
 
