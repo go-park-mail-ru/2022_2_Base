@@ -1,5 +1,5 @@
 userNum=$(($RANDOM % $(ls ./apiRequests/users | wc -l)))
-cookie=$(cat ./apiRequests/users/user${userNum}.txt | tail +2 | head -n 1)  #"session_id=527a65c1-57cf-403f-9093-be243079c80a"
+cookie=$(cat ./apiRequests/users/user${userNum}.txt | tail +2 | head -n 1)
 csrf=$(cat ./apiRequests/users/user${userNum}.txt | tail +1 | head -n 1)
 
 echo "" > res.txt
