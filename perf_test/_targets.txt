@@ -1,5 +1,0 @@
-POST https://reazon.ru/api/v1/male
-Content-Type: application/json
-Сookie: session_id=527a65c1-57cf-403f-9093-be243079c80a
-csrf: f6dbd9ccc7c608fc58581c6731c97b5393db95d3e25ddaa9174ef35d61c64185:1674192305
-@./apiRequests/signup.json
