@@ -166,10 +166,10 @@ func (us *UserStore) GetUsernameByIDFromDB(userID int) (string, error) {
 func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error) {
 	adresses := []*model.Address{}
 	rows, err := us.db.Query(context.Background(), `SELECT address.id, city, street, house, flat, priority FROM address JOIN users ON address.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		dat := model.Address{}
 		err := rows.Scan(&dat.ID, &dat.City, &dat.Street, &dat.House, &dat.Flat, &dat.Priority)
@@ -185,10 +185,10 @@ func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, e
 func (us *UserStore) GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error) {
 	payments := []*model.PaymentMethod{}
 	rows, err := us.db.Query(context.Background(), `SELECT payment.id, paymentType, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	for rows.Next() {
 		dat := model.PaymentMethod{}
 		err := rows.Scan(&dat.ID, &dat.PaymentType, &dat.Number, &dat.ExpiryDate, &dat.Priority)
