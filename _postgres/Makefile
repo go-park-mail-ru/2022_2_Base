@@ -11,9 +11,11 @@ install-pgbadger:clone-pgbadger
 set-up-user:
 	sudo docker cp ./setUpServiceUser.sql postgres:/ && \
 	sudo docker exec -it postgres psql -U ${DB_USER} -d base -a -f \
-	./setUpServiceUser.sql -v user=${TEST_DB_USER} -v passwrd=${TEST_DB_PASSWORD}
+	./setUpServiceUser.sql -v user=${TEST_DB_USER} -v passwrd=${TEST_DB_PASSWORD} \
+	-v dbname=${TEST_DB_NAME}
 
 set-docker-user:
 	@sudo docker exec -it postgres psql -U ${DB_USER} -d base -a -f \
 	/docker-entrypoint/setUpServiceUser.sql \
-	-v user=${TEST_DB_USER} -v passwrd=${TEST_DB_PASSWORD}	
+	-v user=${TEST_DB_USER} -v passwrd=${TEST_DB_PASSWORD} \
+	-v dbname=${TEST_DB_NAME}

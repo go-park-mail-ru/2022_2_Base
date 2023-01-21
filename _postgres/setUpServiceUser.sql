@@ -14,3 +14,6 @@ UPDATE
   usedpromocodes, 
   users, 
   payment TO :user;
+
+GRANT CONNECT ON DATABASE :dbname TO :user;
+GRANT USAGE ON SCHEMA public TO :user;
