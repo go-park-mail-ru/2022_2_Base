@@ -19,3 +19,4 @@ set-docker-user:
 	/docker-entrypoint/setUpServiceUser.sql \
 	-v user=${TEST_DB_USER} -v passwrd=${TEST_DB_PASSWORD} \
 	-v dbname=${TEST_DB_NAME}
+

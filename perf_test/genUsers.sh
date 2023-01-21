@@ -1,7 +1,7 @@
 mkdir -p apiRequests/users
 rm ./apiRequests/users/*
 
-for file in {0..10}
+for file in {0..1000}
 do
     bash curlReg.sh
     export file
