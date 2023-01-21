@@ -52,6 +52,7 @@ services:
   postgres:
     container_name: postgres
     image: postgres:latest
+    command: postgres -c config_file=/docker-entrypoint/postgresql.conf
     environment:
       - POSTGRES_USER=${TEST_DB_USER}
       - POSTGRES_PASSWORD=${TEST_DB_PASSWORD}
@@ -63,6 +64,7 @@ services:
     volumes:
       - './_postgres:/docker-entrypoint'
       - 'dbData:/var/lib/postgresql/data'
+      - ./_postgres/logs:/var/lib/postgresql/data/pg_log
 
   session:
     build:
@@ -156,8 +158,7 @@ volumes:
     external: true
   dbData:
 
-
 networks:
   mynet:
     driver: bridge
-    
+

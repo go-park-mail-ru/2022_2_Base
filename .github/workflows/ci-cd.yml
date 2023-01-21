@@ -73,6 +73,8 @@ jobs:
             echo TEST_DB_NAME=${{ secrets.TEST_DB_NAME }} >> .env
             echo TEST_DB_PORT=${{ secrets.TEST_DB_PORT }} >> .env
             echo MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} >> .env
+            echo DB_USER=${{ secrets.DB_USER }} >> .env
+            echo DB_USER_PASSWORD=${{ secrets.DB_USER_PASSWORD }} >> .env
 
       - name: deploy service
         uses: appleboy/ssh-action@master

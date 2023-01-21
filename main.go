@@ -1,7 +1,7 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -10,6 +10,7 @@ import (
 	"serv/repository"
 
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	muxprom "gitlab.com/msvechla/mux-prometheus/pkg/middleware"
 
@@ -54,8 +55,10 @@ var (
 func main() {
 	myRouter := mux.NewRouter()
 	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
-	log.Println("conn: ", urlDB)
-	db, err := sql.Open("pgx", urlDB)
+	config, _ := pgxpool.ParseConfig(urlDB)
+	config.MaxConns = 70
+	db, err := pgxpool.New(context.Background(), config.ConnString())
+
 	if err != nil {
 		log.Println("could not connect to database")
 	} else {

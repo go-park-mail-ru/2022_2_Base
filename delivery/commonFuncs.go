@@ -659,7 +659,7 @@ func (api *ProductHandler) GetFavorites(w http.ResponseWriter, r *http.Request) 
 	}
 	UserData := r.Context().Value(KeyUserdata{"userdata"}).(*model.UserProfile)
 
-	products, err := api.usecase.GetFavorites(UserData.ID, lastitemid, count, sort)
+	products, err := api.usecase.GetFavorites(UserData.ID, lastitemid, count, sanitizer.Sanitize(sort))
 	if err != nil {
 		log.Println("error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
