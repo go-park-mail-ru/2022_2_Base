@@ -40,4 +40,4 @@ set-service-user:
 	 cd _postgres && make set-up-user
 
 fix-gitignore:
-	git rm -rf --cached .	 
+	git rm -rf --cached . && git add -A
