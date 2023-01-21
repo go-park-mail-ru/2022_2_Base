@@ -18,3 +18,6 @@ perf_test/apiRequests
 perf_test/*.txt
 _postgres/logs
 _postgres/reports
+./mail
+./auth
+./ordersgit rm -rf --cached .

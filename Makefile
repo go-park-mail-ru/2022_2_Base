@@ -38,3 +38,6 @@ set-env:
 
 set-service-user:
 	 cd _postgres && make set-up-user
+
+fix-gitignore:
+	git rm -rf --cached .	 
