@@ -55,7 +55,7 @@ services:
     command: postgres -c config_file=/etc/postgresql.conf
     environment:
       - POSTGRES_USER=${DB_USER}
-      - DB_USER_PASSWORD=${DB_USER_PASSWORD}
+      - POSTGRES_PASSWORD=${DB_USER_PASSWORD}
       - POSTGRES_DB=${TEST_DB_NAME}
     networks:
       - mynet
@@ -162,4 +162,4 @@ volumes:
 networks:
   mynet:
     driver: bridge
-    
+
