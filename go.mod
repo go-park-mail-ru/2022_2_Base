@@ -41,7 +41,6 @@ require (
 )
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/bxcodec/faker/v3 v3.8.1
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
