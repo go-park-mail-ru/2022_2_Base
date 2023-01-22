@@ -312,6 +312,30 @@ func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
 		return err
 	}
 	for _, item := range *items {
+		for _, itemCart := range cart.Items {
+			if item == itemCart.Item.ID {
+				for i := 0; i < itemCart.Count; i++ {
+					err = ps.InsertItemIntoCartById(userID, item)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (ps *ProductStore) UpdateCart2(userID int, items *[]int) error {
+	cart, err := ps.GetCart(userID)
+	if err != nil {
+		return err
+	}
+	_, err = ps.db.Exec(context.Background(), `DELETE FROM orderItems WHERE orderID = $1;`, cart.ID)
+	if err != nil {
+		return err
+	}
+	for _, item := range *items {
 		err = ps.InsertItemIntoCartById(userID, item)
 		if err != nil {
 			return err
