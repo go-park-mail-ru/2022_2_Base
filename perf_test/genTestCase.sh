@@ -1,5 +1,11 @@
 fileName="itemsToAdd"
-userNum=$(($RANDOM % $(ls ./apiRequests/users | wc -l))
+
+userNum=$(($RANDOM % $(ls ./apiRequests/users | wc -l)))
+while [ $(head -n 1 ./apiRequests/users/user${userNum}.txt) == "" ]
+do
+  userNum=$(($RANDOM % $(ls ./apiRequests/users | wc -l)))
+done
+
 cookie=$(cat ./apiRequests/users/user${userNum}.txt | tail +2 | head -n 1)
 csrf=$(cat ./apiRequests/users/user${userNum}.txt | tail +1 | head -n 1)
 addressID=$(cat ./apiRequests/users/user${userNum}.txt | tail +5 | head -n 1)

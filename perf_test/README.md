@@ -21,8 +21,18 @@ $ make run-get-test
 ```
 ## Первая итерация
 #### Результаты
-![image](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/hist-1.jpg)
-![image](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/plot-1.png)
-RPS: 100, время выполнения: 28 минут
+![image](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/hist1.png)
+![image](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/plot1.png)
+RPS: 450, время выполнения: 2223 с, запросов выполнено 1000351
+```json
+"status_codes":
+{
+    "0":14279,
+    "200":245660,
+    "400":218,
+    "401":37207,
+    "500":702987
+}
+```
 #### Анализ
 #### Изменения
