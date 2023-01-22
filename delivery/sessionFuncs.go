@@ -87,7 +87,7 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !checkPass(byteUserPass, req.Password) {
-		log.Println("get Password ", err)
+		log.Println("Password is not correct", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}

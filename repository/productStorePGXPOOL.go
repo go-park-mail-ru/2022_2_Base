@@ -6,7 +6,6 @@ import (
 	"math"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
-	"strconv"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
@@ -223,7 +222,6 @@ func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Pr
 
 func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error) {
 	suggestions := []string{}
-	search = strconv.Quote(search)
 	searchWords := strings.Split(search, " ")
 	searchString := strings.ToLower(`%` + strings.Join(searchWords, " ") + `%`)
 	rows, err := ps.db.Query(context.Background(), `SELECT name FROM products WHERE LOWER(name) LIKE $1 LIMIT 3;`, searchString)
@@ -418,8 +416,7 @@ func (ps *ProductStore) UpdateProductRatingInStore(itemID int) error {
 }
 
 func (ps *ProductStore) CheckPromocodeUsage(userID int, promocode string) error {
-	prom := strconv.Quote(promocode)
-	rows, err := ps.db.Query(context.Background(), `SELECT id, userid, promocode FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, prom)
+	rows, err := ps.db.Query(context.Background(), `SELECT id, userid, promocode FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, promocode)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return err
@@ -442,7 +439,6 @@ func (ps *ProductStore) CheckPromocodeUsage(userID int, promocode string) error 
 
 func (ps *ProductStore) SetPromocodeDB(userID int, promocode string) error {
 	cart, err := ps.GetCart(userID)
-	promocode = strconv.Quote(promocode)
 	if err != nil {
 		return err
 	}

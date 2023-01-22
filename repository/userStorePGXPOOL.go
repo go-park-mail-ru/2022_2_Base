@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
-	"strconv"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -39,9 +38,7 @@ func NewUserStore(db *pgxpool.Pool) UserStoreInterface {
 
 func (us *UserStore) AddUser(in *model.UserDB) (int, error) {
 	id := 0
-	email := strconv.Quote(in.Email)
-	username := strconv.Quote(in.Username)
-	err := us.db.QueryRow(context.Background(), `INSERT INTO users (email, username, password) VALUES ($1, $2, $3) RETURNING id;`, email, username, in.Password).Scan(&id)
+	err := us.db.QueryRow(context.Background(), `INSERT INTO users (email, username, password) VALUES ($1, $2, $3) RETURNING id;`, in.Email, in.Username, in.Password).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -49,10 +46,7 @@ func (us *UserStore) AddUser(in *model.UserDB) (int, error) {
 }
 
 func (us *UserStore) UpdateUser(userID int, in *model.UserProfile) error {
-	email := strconv.Quote(in.Email)
-	username := strconv.Quote(in.Username)
-	phone := strconv.Quote(in.Phone)
-	_, err := us.db.Exec(context.Background(), `UPDATE users SET email = $1, username = $2, phone = $3, avatar = $4 WHERE id = $5;`, email, username, phone, in.Avatar, userID)
+	_, err := us.db.Exec(context.Background(), `UPDATE users SET email = $1, username = $2, phone = $3, avatar = $4 WHERE id = $5;`, in.Email, in.Username, in.Phone, in.Avatar, userID)
 	if err != nil {
 		return err
 	}
@@ -68,11 +62,7 @@ func (us *UserStore) ChangeUserPasswordDB(userID int, newPass string) error {
 }
 
 func (us *UserStore) UpdateUsersAddress(adressID int, in *model.Address) error {
-	city := strconv.Quote(in.City)
-	street := strconv.Quote(in.Street)
-	house := strconv.Quote(in.House)
-	flat := strconv.Quote(in.Flat)
-	_, err := us.db.Exec(context.Background(), `UPDATE address SET city = $1, street = $2, house = $3, flat = $4, priority = $5 WHERE id = $6;`, city, street, house, flat, in.Priority, adressID)
+	_, err := us.db.Exec(context.Background(), `UPDATE address SET city = $1, street = $2, house = $3, flat = $4, priority = $5 WHERE id = $6;`, in.City, in.Street, in.House, in.Flat, in.Priority, adressID)
 	if err != nil {
 		return err
 	}
@@ -80,11 +70,7 @@ func (us *UserStore) UpdateUsersAddress(adressID int, in *model.Address) error {
 }
 
 func (us *UserStore) AddUsersAddress(userID int, in *model.Address) error {
-	city := strconv.Quote(in.City)
-	street := strconv.Quote(in.Street)
-	house := strconv.Quote(in.House)
-	flat := strconv.Quote(in.Flat)
-	_, err := us.db.Exec(context.Background(), `INSERT INTO address (userid, city, street, house, flat, priority) VALUES ($1, $2, $3, $4, $5, $6);`, userID, city, street, house, flat, in.Priority)
+	_, err := us.db.Exec(context.Background(), `INSERT INTO address (userid, city, street, house, flat, priority) VALUES ($1, $2, $3, $4, $5, $6);`, userID, in.City, in.Street, in.House, in.Flat, in.Priority)
 	if err != nil {
 		return err
 	}
@@ -100,8 +86,7 @@ func (us *UserStore) DeleteUsersAddress(addressID int) error {
 }
 
 func (us *UserStore) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) error {
-	number := strconv.Quote(in.Number)
-	_, err := us.db.Exec(context.Background(), `UPDATE payment SET paymentType = $1, number = $2, expirydate = $3, priority = $4 WHERE id = $5;`, in.PaymentType, number, in.ExpiryDate, in.Priority, paymentID)
+	_, err := us.db.Exec(context.Background(), `UPDATE payment SET paymentType = $1, number = $2, expirydate = $3, priority = $4 WHERE id = $5;`, in.PaymentType, in.Number, in.ExpiryDate, in.Priority, paymentID)
 	if err != nil {
 		return err
 	}
@@ -109,8 +94,7 @@ func (us *UserStore) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) 
 }
 
 func (us *UserStore) AddUsersPayment(userID int, in *model.PaymentMethod) error {
-	number := strconv.Quote(in.Number)
-	_, err := us.db.Exec(context.Background(), `INSERT INTO payment (userid, paymentType, number, expirydate, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.PaymentType, number, in.ExpiryDate, in.Priority)
+	_, err := us.db.Exec(context.Background(), `INSERT INTO payment (userid, paymentType, number, expirydate, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.PaymentType, in.Number, in.ExpiryDate, in.Priority)
 	if err != nil {
 		return err
 	}
