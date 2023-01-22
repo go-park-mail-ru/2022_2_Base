@@ -21,7 +21,7 @@ $ make run-get-test
 ```
 ## Первая итерация
 #### Результаты
-![image](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/hist1.jpg)
+![image](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/hist1.png)
 ![image](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/plot1.png)
 RPS: 450, время выполнения: 2223 с, запросов выполнено 1000351
 '''json
