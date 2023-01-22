@@ -554,9 +554,6 @@ package repository
 // }
 
 // func (ps *ProductStore) CreateCommentInStore(in *model.CreateComment) error {
-// 	pros := strconv.Quote(in.Pros)
-// 	cons := strconv.Quote(in.Cons)
-// 	comment := strconv.Quote(in.Comment)
 // 	_, err := ps.db.Exec(`INSERT INTO comments (itemID, userID, pros, cons, comment, rating) VALUES ($1, $2, $3, $4, $5, $6);`, in.ItemID, in.UserID, pros, cons, comment, in.Rating)
 // 	if err != nil {
 // 		return err

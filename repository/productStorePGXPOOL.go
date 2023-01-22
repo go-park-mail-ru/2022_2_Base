@@ -244,7 +244,7 @@ func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error)
 
 func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
-	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, pr.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
+	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	if err != nil {
 		return nil, err
 	}
@@ -271,14 +271,14 @@ func (ps *ProductStore) CreateCart(userID int) error {
 }
 
 func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
-	rows, err := ps.db.Query(context.Background(), `SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
+	rows, err := ps.db.Query(context.Background(), `SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate, promocode  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	cart := &model.Order{}
 	for rows.Next() {
-		err := rows.Scan(&cart.ID, &cart.UserID, &cart.OrderStatus, &cart.PaymentStatus, &cart.AddressID, &cart.PaymentcardID, &cart.CreationDate, &cart.DeliveryDate)
+		err := rows.Scan(&cart.ID, &cart.UserID, &cart.OrderStatus, &cart.PaymentStatus, &cart.AddressID, &cart.PaymentcardID, &cart.CreationDate, &cart.DeliveryDate, &cart.Promocode)
 		if err != nil {
 			return nil, err
 		}
@@ -325,11 +325,7 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
-	orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
-	if err != nil {
-		return err
-	}
-	for _, prod := range orderItems {
+	for _, prod := range cart.Items {
 		if prod.Item.ID == itemID {
 			_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
 			if err != nil {
@@ -338,7 +334,11 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
 			return nil
 		}
 	}
-	_, err = ps.db.Exec(context.Background(), `INSERT INTO orderItems (itemID, orderID, count) VALUES ($1, $2, $3);`, itemID, cart.ID, 1)
+	product, err := ps.GetProductFromStoreByID(itemID)
+	if err != nil {
+		return nil
+	}
+	_, err = ps.db.Exec(context.Background(), `INSERT INTO orderItems (itemID, orderID, price, count) VALUES ($1, $2, $3, $4);`, itemID, cart.ID, product.Price, 1)
 	if err != nil {
 		return err
 	}
@@ -350,11 +350,7 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
-	orderItems, err := ps.GetOrderItemsFromStore(cart.ID)
-	if err != nil {
-		return err
-	}
-	for _, prod := range orderItems {
+	for _, prod := range cart.Items {
 		if prod.Item.ID == itemID {
 			if prod.Count != 1 {
 				_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count-1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
