@@ -24,7 +24,7 @@ $ make run-get-test
 ![image](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/hist1.png)
 ![image](https://github.com/go-park-mail-ru/2022_2_Base/blob/Base-5.2_srs_3/perf_test/1/plot1.png)
 RPS: 450, время выполнения: 2223 с, запросов выполнено 1000351
-'''json
+```json
 "status_codes":
 {
     "0":14279,
@@ -33,6 +33,6 @@ RPS: 450, время выполнения: 2223 с, запросов выпол�
     "401":37207,
     "500":702987
 }
-'''
+```
 #### Анализ
 #### Изменения
