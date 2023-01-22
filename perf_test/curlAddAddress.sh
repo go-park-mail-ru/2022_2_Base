@@ -15,4 +15,5 @@ curl 'https://www.reazon.ru/api/v1/user/profile' --http1.1 \
   -H 'sec-fetch-site: same-origin' \
   -H 'sec-gpc: 1' \
   --data-raw '{"username":"kjn","email":"'"${mail}"'","paymentmethods":[],"address":[{"city":"1","street":"2","house":"3","flat":"4","id":-1,"priority":true}]}' \
-  --compressed
+  --compressed \
+    > /dev/null

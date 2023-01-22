@@ -21,3 +21,4 @@ _postgres/reports
 /mail
 /auth
 /orders
+*.bin
