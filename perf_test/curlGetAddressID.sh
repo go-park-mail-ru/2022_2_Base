@@ -18,3 +18,4 @@ curl 'https://www.reazon.ru/api/v1/user/profile' --http1.1 \
   > tempAddressID.txt
 
 cat tempAddressID.txt | jq -r '.address[0].id' >> ./apiRequests/users/user$file.txt
+cat tempAddressID.txt | jq -r '.id' >> ./apiRequests/users/user$file.txt

@@ -56,7 +56,7 @@ func main() {
 	myRouter := mux.NewRouter()
 	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
 	config, _ := pgxpool.ParseConfig(urlDB)
-	config.MaxConns = 120
+	config.MaxConns = 70
 	db, err := pgxpool.New(context.Background(), config.ConnString())
 
 	if err != nil {
