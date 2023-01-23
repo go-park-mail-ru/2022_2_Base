@@ -56,10 +56,13 @@ CREATE TABLE orders (
 CREATE TABLE orderItems (
     id  SERIAL PRIMARY KEY,
     itemID INT REFERENCES products (id) ON DELETE CASCADE,
-    orderID INT NOT NULL,
+    orderID INT REFERENCES orders (id) ON DELETE CASCADE,
     price FLOAT NOT NULL,
     count INT NOT NULL
 );
+
+CREATE INDEX orderitems_idx_itemid ON orderItems (itemID);
+CREATE INDEX orderitems_idx_orderid ON orderItems (orderID);
 
 CREATE TABLE favorites (
     id  SERIAL PRIMARY KEY,
