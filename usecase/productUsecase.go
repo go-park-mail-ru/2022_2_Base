@@ -372,7 +372,7 @@ func (api *ProductUsecase) AddToOrder(userID int, itemID int) error {
 	flag := true
 	for _, prod := range cart.Items {
 		if prod.Item.ID == itemID {
-			err = api.store.InsertItemIntoCartById(userID, itemID, cart.ID, 0, true)
+			err = api.store.InsertItemIntoCartById(userID, itemID, cart.ID, 1, true)
 			if err != nil {
 				return err
 			}
@@ -382,7 +382,7 @@ func (api *ProductUsecase) AddToOrder(userID int, itemID int) error {
 	}
 	// item wasn't in cart
 	if flag {
-		err = api.store.InsertItemIntoCartById(userID, itemID, cart.ID, 0, false)
+		err = api.store.InsertItemIntoCartById(userID, itemID, cart.ID, 1, false)
 		if err != nil {
 			return err
 		}
@@ -399,7 +399,7 @@ func (api *ProductUsecase) DeleteFromOrder(userID int, itemID int) error {
 }
 
 func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) (int, error) {
-	cart, err := api.GetCart(in.UserID)
+	cart, err := api.store.GetCart(in.UserID)
 	if err != nil {
 		return 0, err
 	}
