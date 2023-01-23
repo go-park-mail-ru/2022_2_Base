@@ -61,7 +61,6 @@ func (api *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		paym.PaymentType = sanitizer.Sanitize(paym.PaymentType)
 		paym.Number = sanitizer.Sanitize(paym.Number)
 	}
-	userProfile.ID = 0
 	_, _, err := easyjson.MarshalToHTTPResponseWriter(userProfile, w)
 	if err != nil {
 		log.Println("serialize error: ", err)

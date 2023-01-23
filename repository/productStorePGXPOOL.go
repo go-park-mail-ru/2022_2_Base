@@ -29,7 +29,7 @@ type ProductStoreInterface interface {
 	CreateCart(userID int) error
 	GetCart(userID int) (*model.Order, error)
 	UpdateCart(userID int, items *[]int) error
-	InsertItemIntoCartById(userID int, itemID int) error
+	InsertItemIntoCartById(userID int, itemID int, cartID int, count int, isInCartAlready bool) error
 	DeleteItemFromCartById(userID int, itemID int) error
 	GetCommentsFromStore(productID int) ([]*model.CommentDB, error)
 	CreateCommentInStore(in *model.CreateComment) error
@@ -314,11 +314,9 @@ func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
 	for _, item := range *items {
 		for _, itemCart := range cart.Items {
 			if item == itemCart.Item.ID {
-				for i := 0; i < itemCart.Count; i++ {
-					err = ps.InsertItemIntoCartById(userID, item)
-					if err != nil {
-						return err
-					}
+				err = ps.InsertItemIntoCartById(userID, item, cart.ID, itemCart.Count, true)
+				if err != nil {
+					return err
 				}
 			}
 		}
@@ -326,43 +324,45 @@ func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
 	return nil
 }
 
-func (ps *ProductStore) UpdateCart2(userID int, items *[]int) error {
-	cart, err := ps.GetCart(userID)
-	if err != nil {
-		return err
-	}
-	_, err = ps.db.Exec(context.Background(), `DELETE FROM orderItems WHERE orderID = $1;`, cart.ID)
-	if err != nil {
-		return err
-	}
-	for _, item := range *items {
-		err = ps.InsertItemIntoCartById(userID, item)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
+// func (ps *ProductStore) UpdateCart2(userID int, items *[]int) error {
+// 	cart, err := ps.GetCart(userID)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	_, err = ps.db.Exec(context.Background(), `DELETE FROM orderItems WHERE orderID = $1;`, cart.ID)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	for _, item := range *items {
+// 		err = ps.InsertItemIntoCartById(userID, item)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
 
-func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int) error {
-	cart, err := ps.GetCart(userID)
-	if err != nil {
-		return err
-	}
-	for _, prod := range cart.Items {
-		if prod.Item.ID == itemID {
-			_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
+func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int, cartID int, count int, isInCartAlready bool) error {
+	if isInCartAlready {
+		if count == 0 {
+			_, err := ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cartID, itemID)
 			if err != nil {
 				return err
 			}
-			return nil
+		} else {
+			_, err := ps.db.Exec(context.Background(), `UPDATE orderItems SET count = $1 WHERE orderID = $2 AND itemID = $3;`, count, cartID, itemID)
+			if err != nil {
+				return err
+			}
 		}
+		return nil
 	}
+
 	product, err := ps.GetProductFromStoreByID(itemID)
 	if err != nil {
 		return nil
 	}
-	_, err = ps.db.Exec(context.Background(), `INSERT INTO orderItems (itemID, orderID, price, count) VALUES ($1, $2, $3, $4);`, itemID, cart.ID, product.Price, 1)
+	_, err = ps.db.Exec(context.Background(), `INSERT INTO orderItems (itemID, orderID, price, count) VALUES ($1, $2, $3, $4);`, itemID, cartID, product.Price, 1)
 	if err != nil {
 		return err
 	}

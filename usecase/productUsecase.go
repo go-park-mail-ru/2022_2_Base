@@ -349,10 +349,25 @@ func (api *ProductUsecase) AddToOrder(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
-	err = api.store.InsertItemIntoCartById(userID, itemID)
-	if err != nil {
-		return err
+	flag := true
+	for _, prod := range cart.Items {
+		if prod.Item.ID == itemID {
+			err = api.store.InsertItemIntoCartById(userID, itemID, cart.ID, 0, true)
+			if err != nil {
+				return err
+			}
+			flag = false
+			break
+		}
 	}
+	// item wasn't in cart
+	if flag {
+		err = api.store.InsertItemIntoCartById(userID, itemID, cart.ID, 0, false)
+		if err != nil {
+			return err
+		}
+	}
+
 	if cart.Promocode != nil {
 		return api.RecalculatePrices(userID, *cart.Promocode)
 	}
