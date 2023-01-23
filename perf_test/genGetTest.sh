@@ -1,4 +1,4 @@
-userNum=$(($RANDOM % $(ls ./apiRequests/users | wc -l))
+userNum=$(($RANDOM % $(ls ./apiRequests/users | wc -l)))
 
 userNum=$(($RANDOM % $(ls ./apiRequests/users | wc -l)))
 while [ $(head -n 1 ./apiRequests/users/user${userNum}.txt) == "" ]
