@@ -372,11 +372,11 @@ func (api *ProductUsecase) AddToOrder(userID int, itemID int) error {
 	flag := true
 	for _, prod := range cart.Items {
 		if prod.Item.ID == itemID {
+			flag = false
 			err = api.store.InsertItemIntoCartById(userID, itemID, cart.ID, 1, true)
 			if err != nil {
 				return err
 			}
-			flag = false
 			break
 		}
 	}
@@ -426,15 +426,11 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) (int, error) {
 			}
 		}
 		if flag {
-			for i := 0; i < orderItem.Count; i++ {
-				remainedItemsIDs = append(remainedItemsIDs, orderItem.Item.ID)
-			}
+			remainedItemsIDs = append(remainedItemsIDs, orderItem.Item.ID)
 		}
 		if flag2 {
-			for i := 0; i < orderItem.Count; i++ {
-				boughtItemsIDs = append(boughtItemsIDs, orderItem.Item.ID)
-				boughtItemsIDsINT32 = append(boughtItemsIDsINT32, int32(orderItem.Item.ID))
-			}
+			boughtItemsIDs = append(boughtItemsIDs, orderItem.Item.ID)
+			boughtItemsIDsINT32 = append(boughtItemsIDsINT32, int32(orderItem.Item.ID))
 		}
 	}
 
