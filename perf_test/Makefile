@@ -1,8 +1,8 @@
 run-post-test:
-	bash genTestCase.sh | vegeta attack -duration=2223s -rate=450 -max-workers=1000 -http2 | tee results.bin | vegeta report
+	bash genTestCase.sh | vegeta attack -duration=4000s -rate=250 -max-workers=1000 -http2 | tee results.bin | vegeta report
 
 run-get-test:
-	bash genGetTest.sh | vegeta attack -duration=1s -rate=100 -max-workers=1000 -http2 | tee results.bin | vegeta report
+	bash genGetTest.sh | vegeta attack -duration=2223s -rate=450 -max-workers=1000 -http2 | tee results.bin | vegeta report
 
 run-test-static:
 	vegeta attack -duration=1s -rate=5 -http2 -targets=targets.txt | tee results.bin | vegeta report
