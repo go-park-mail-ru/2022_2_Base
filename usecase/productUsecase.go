@@ -264,6 +264,16 @@ func (api *ProductUsecase) UpdateOrder(userID int, items *[]int) error {
 	if err != nil {
 		return err
 	}
+	if cart == nil || cart.ID == 0 {
+		err = api.store.CreateCart(userID)
+		if err != nil {
+			return err
+		}
+		cart, err = api.store.GetCart(userID)
+		if err != nil {
+			return err
+		}
+	}
 	err = api.store.UpdateCart(userID, items)
 	if err != nil {
 		return err
@@ -349,6 +359,16 @@ func (api *ProductUsecase) AddToOrder(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
+	if cart == nil || cart.ID == 0 {
+		err = api.store.CreateCart(userID)
+		if err != nil {
+			return err
+		}
+		cart, err = api.store.GetCart(userID)
+		if err != nil {
+			return err
+		}
+	}
 	flag := true
 	for _, prod := range cart.Items {
 		if prod.Item.ID == itemID {
@@ -379,9 +399,19 @@ func (api *ProductUsecase) DeleteFromOrder(userID int, itemID int) error {
 }
 
 func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) (int, error) {
-	cart, err := api.store.GetCart(in.UserID)
+	cart, err := api.GetCart(in.UserID)
 	if err != nil {
 		return 0, err
+	}
+	if cart == nil || cart.ID == 0 {
+		err = api.store.CreateCart(in.UserID)
+		if err != nil {
+			return 0, err
+		}
+		cart, err = api.store.GetCart(in.UserID)
+		if err != nil {
+			return 0, err
+		}
 	}
 	remainedItemsIDs := []int{}
 	boughtItemsIDs := []int{}
