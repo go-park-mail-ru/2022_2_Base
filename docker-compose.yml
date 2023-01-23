@@ -63,7 +63,6 @@ services:
     volumes:
       - './_postgres:/docker-entrypoint'
       - 'dbData:/var/lib/postgresql/data'
-      # - ./_postgres/logs:/var/lib/postgresql/data/pg_log
     command: "postgres -c config_file=/docker-entrypoint/postgres.conf"
 
   session:
