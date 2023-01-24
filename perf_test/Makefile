@@ -1,5 +1,5 @@
 run-post-test:
-	bash genTestCase.sh | vegeta attack -duration=4000s -rate=250 -max-workers=1000 -http2 | tee results.bin | vegeta report
+	bash genTestCase.sh | vegeta attack -duration=40s -rate=250 -max-workers=1000 -http2 | tee results.bin | vegeta report
 
 run-get-test:
 	bash genGetTest.sh | vegeta attack -duration=2223s -rate=450 -max-workers=1000 -http2 | tee results.bin | vegeta report
