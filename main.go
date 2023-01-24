@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"os"
@@ -10,7 +9,7 @@ import (
 	"serv/repository"
 
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	muxprom "gitlab.com/msvechla/mux-prometheus/pkg/middleware"
 
@@ -54,13 +53,19 @@ var (
 
 func main() {
 	myRouter := mux.NewRouter()
-	urlDB := "postgres://" + os.Getenv("TEST_POSTGRES_USER") + ":" + os.Getenv("TEST_POSTGRES_PASSWORD") + "@" + os.Getenv("TEST_DATABASE_HOST") + ":" + os.Getenv("DB_PORT") + "/" + os.Getenv("TEST_POSTGRES_DB")
-	config, _ := pgxpool.ParseConfig(urlDB)
-	config.MaxConns = 70
-	db, err := pgxpool.New(context.Background(), config.ConnString())
-
+	connString := "host=" + os.Getenv("TEST_DATABASE_HOST") + " user=" + os.Getenv("TEST_POSTGRES_USER") + " password=" + os.Getenv("TEST_POSTGRES_PASSWORD") + " dbname=" + os.Getenv("TEST_POSTGRES_DB") + " sslmode=disable"
+	conn, err := pgx.ParseConnectionString(connString)
 	if err != nil {
-		log.Println("could not connect to database")
+		log.Println(err)
+	}
+	db, err := pgx.NewConnPool(pgx.ConnPoolConfig{
+		ConnConfig:     conn,
+		MaxConnections: 1000,
+		AfterConnect:   nil,
+		AcquireTimeout: 0,
+	})
+	if err != nil {
+		log.Println("could not connect to database: ", err)
 	} else {
 		log.Println("database is reachable")
 	}

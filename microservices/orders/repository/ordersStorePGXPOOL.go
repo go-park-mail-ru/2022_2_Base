@@ -1,13 +1,13 @@
 package orders
 
 import (
-	"context"
 	"log"
 	"serv/domain/model"
 	orders "serv/microservices/orders/gen_files"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx"
+	_ "github.com/lib/pq"
 )
 
 type OrderStoreInterface interface {
@@ -20,10 +20,10 @@ type OrderStoreInterface interface {
 }
 
 type OrderStore struct {
-	db *pgxpool.Pool
+	db *pgx.ConnPool
 }
 
-func NewOrderStore(db *pgxpool.Pool) OrderStoreInterface {
+func NewOrderStore(db *pgx.ConnPool) OrderStoreInterface {
 	return &OrderStore{
 		db: db,
 	}
@@ -32,7 +32,7 @@ func NewOrderStore(db *pgxpool.Pool) OrderStoreInterface {
 func (os *OrderStore) MakeOrder(in *orders.MakeOrderType) error {
 	log.Println("call MakeOrder store")
 	delivDate := time.Unix(in.DeliveryDate, 0)
-	_, err := os.db.Exec(context.Background(), `UPDATE orders SET orderStatus = $1, paymentStatus = $2, addressID = $3, paymentcardID = $4, creationDate = $5, deliveryDate = $6  WHERE userID = $7 AND orderStatus = $8;`, "created", "not started", in.AddressID, in.PaymentcardID, time.Now().Format("2006.01.02 15:04:05"), delivDate.Format("2006.01.02 15:04:05"), in.UserID, "cart")
+	_, err := os.db.Exec(`UPDATE orders SET orderStatus = $1, paymentStatus = $2, addressID = $3, paymentcardID = $4, creationDate = $5, deliveryDate = $6  WHERE userID = $7 AND orderStatus = $8;`, "created", "not started", in.AddressID, in.PaymentcardID, time.Now().Format("2006.01.02 15:04:05"), delivDate.Format("2006.01.02 15:04:05"), in.UserID, "cart")
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func (os *OrderStore) MakeOrder(in *orders.MakeOrderType) error {
 
 func (os *OrderStore) ChangeOrderStatus(in *orders.ChangeOrderStatusType) error {
 	log.Println("call ChangeOrderStatus store")
-	_, err := os.db.Exec(context.Background(), `UPDATE orders SET orderStatus = $1 WHERE id = $2;`, in.OrderStatus, in.OrderID)
+	_, err := os.db.Exec(`UPDATE orders SET orderStatus = $1 WHERE id = $2;`, in.OrderStatus, in.OrderID)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func (os *OrderStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
 	log.Println("call orders store")
 	orders := []*model.Order{}
 
-	rows, err := os.db.Query(context.Background(), `SELECT id, userid, orderstatus, paymentstatus, addressid, paymentcardid, creationdate, deliverydate, promocode FROM orders WHERE userid = $1 AND orderstatus <> 'cart';`, userID)
+	rows, err := os.db.Query(`SELECT id, userid, orderstatus, paymentstatus, addressid, paymentcardid, creationdate, deliverydate, promocode FROM orders WHERE userid = $1 AND orderstatus <> 'cart';`, userID)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
@@ -82,7 +82,7 @@ func (os *OrderStore) GetOrdersFromStore(userID int) ([]*model.Order, error) {
 
 func (os *OrderStore) GetOrdersAddressFromStore(addressID int) (*model.Address, error) {
 	adress := model.Address{}
-	rows, err := os.db.Query(context.Background(), `SELECT id, city, street, house, flat, priority FROM address WHERE id  = $1`, addressID)
+	rows, err := os.db.Query(`SELECT id, city, street, house, flat, priority FROM address WHERE id  = $1`, addressID)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (os *OrderStore) GetOrdersAddressFromStore(addressID int) (*model.Address, 
 
 func (os *OrderStore) GetOrdersPaymentFromStore(paymentID int) (*model.PaymentMethod, error) {
 	payment := model.PaymentMethod{}
-	rows, err := os.db.Query(context.Background(), `SELECT id, paymentType, number, expiryDate, priority FROM payment WHERE id  = $1`, paymentID)
+	rows, err := os.db.Query(`SELECT id, paymentType, number, expiryDate, priority FROM payment WHERE id  = $1`, paymentID)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (os *OrderStore) GetOrdersPaymentFromStore(paymentID int) (*model.PaymentMe
 
 func (os *OrderStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
-	rows, err := os.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
+	rows, err := os.db.Query(`SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	if err != nil {
 		return nil, err
 	}

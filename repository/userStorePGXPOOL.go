@@ -1,13 +1,12 @@
 package repository
 
 import (
-	"context"
 	"database/sql"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 
-	_ "github.com/jackc/pgx/v4/stdlib"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx"
+	_ "github.com/lib/pq"
 )
 
 type UserStoreInterface interface {
@@ -27,10 +26,10 @@ type UserStoreInterface interface {
 }
 
 type UserStore struct {
-	db *pgxpool.Pool
+	db *pgx.ConnPool
 }
 
-func NewUserStore(db *pgxpool.Pool) UserStoreInterface {
+func NewUserStore(db *pgx.ConnPool) UserStoreInterface {
 	return &UserStore{
 		db: db,
 	}
@@ -38,7 +37,7 @@ func NewUserStore(db *pgxpool.Pool) UserStoreInterface {
 
 func (us *UserStore) AddUser(in *model.UserDB) (int, error) {
 	id := 0
-	err := us.db.QueryRow(context.Background(), `INSERT INTO users (email, username, password) VALUES ($1, $2, $3) RETURNING id;`, in.Email, in.Username, in.Password).Scan(&id)
+	err := us.db.QueryRow(`INSERT INTO users (email, username, password) VALUES ($1, $2, $3) RETURNING id;`, in.Email, in.Username, in.Password).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -46,7 +45,7 @@ func (us *UserStore) AddUser(in *model.UserDB) (int, error) {
 }
 
 func (us *UserStore) UpdateUser(userID int, in *model.UserProfile) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE users SET email = $1, username = $2, phone = $3, avatar = $4 WHERE id = $5;`, in.Email, in.Username, in.Phone, in.Avatar, userID)
+	_, err := us.db.Exec(`UPDATE users SET email = $1, username = $2, phone = $3, avatar = $4 WHERE id = $5;`, in.Email, in.Username, in.Phone, in.Avatar, userID)
 	if err != nil {
 		return err
 	}
@@ -54,7 +53,7 @@ func (us *UserStore) UpdateUser(userID int, in *model.UserProfile) error {
 }
 
 func (us *UserStore) ChangeUserPasswordDB(userID int, newPass string) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE users SET password = $1 WHERE id = $2;`, newPass, userID)
+	_, err := us.db.Exec(`UPDATE users SET password = $1 WHERE id = $2;`, newPass, userID)
 	if err != nil {
 		return err
 	}
@@ -62,7 +61,7 @@ func (us *UserStore) ChangeUserPasswordDB(userID int, newPass string) error {
 }
 
 func (us *UserStore) UpdateUsersAddress(adressID int, in *model.Address) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE address SET city = $1, street = $2, house = $3, flat = $4, priority = $5 WHERE id = $6;`, in.City, in.Street, in.House, in.Flat, in.Priority, adressID)
+	_, err := us.db.Exec(`UPDATE address SET city = $1, street = $2, house = $3, flat = $4, priority = $5 WHERE id = $6;`, in.City, in.Street, in.House, in.Flat, in.Priority, adressID)
 	if err != nil {
 		return err
 	}
@@ -70,7 +69,7 @@ func (us *UserStore) UpdateUsersAddress(adressID int, in *model.Address) error {
 }
 
 func (us *UserStore) AddUsersAddress(userID int, in *model.Address) error {
-	_, err := us.db.Exec(context.Background(), `INSERT INTO address (userid, city, street, house, flat, priority) VALUES ($1, $2, $3, $4, $5, $6);`, userID, in.City, in.Street, in.House, in.Flat, in.Priority)
+	_, err := us.db.Exec(`INSERT INTO address (userid, city, street, house, flat, priority) VALUES ($1, $2, $3, $4, $5, $6);`, userID, in.City, in.Street, in.House, in.Flat, in.Priority)
 	if err != nil {
 		return err
 	}
@@ -78,7 +77,7 @@ func (us *UserStore) AddUsersAddress(userID int, in *model.Address) error {
 }
 
 func (us *UserStore) DeleteUsersAddress(addressID int) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE address SET deleted = true WHERE id = $1;`, addressID)
+	_, err := us.db.Exec(`UPDATE address SET deleted = true WHERE id = $1;`, addressID)
 	if err != nil {
 		return err
 	}
@@ -86,7 +85,7 @@ func (us *UserStore) DeleteUsersAddress(addressID int) error {
 }
 
 func (us *UserStore) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE payment SET paymentType = $1, number = $2, expirydate = $3, priority = $4 WHERE id = $5;`, in.PaymentType, in.Number, in.ExpiryDate, in.Priority, paymentID)
+	_, err := us.db.Exec(`UPDATE payment SET paymentType = $1, number = $2, expirydate = $3, priority = $4 WHERE id = $5;`, in.PaymentType, in.Number, in.ExpiryDate, in.Priority, paymentID)
 	if err != nil {
 		return err
 	}
@@ -94,7 +93,7 @@ func (us *UserStore) UpdateUsersPayment(paymentID int, in *model.PaymentMethod) 
 }
 
 func (us *UserStore) AddUsersPayment(userID int, in *model.PaymentMethod) error {
-	_, err := us.db.Exec(context.Background(), `INSERT INTO payment (userid, paymentType, number, expirydate, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.PaymentType, in.Number, in.ExpiryDate, in.Priority)
+	_, err := us.db.Exec(`INSERT INTO payment (userid, paymentType, number, expirydate, priority) VALUES ($1, $2, $3, $4, $5);`, userID, in.PaymentType, in.Number, in.ExpiryDate, in.Priority)
 	if err != nil {
 		return err
 	}
@@ -102,7 +101,7 @@ func (us *UserStore) AddUsersPayment(userID int, in *model.PaymentMethod) error 
 }
 
 func (us *UserStore) DeleteUsersPayment(paymentID int) error {
-	_, err := us.db.Exec(context.Background(), `UPDATE payment SET deleted = true WHERE id = $1;`, paymentID)
+	_, err := us.db.Exec(`UPDATE payment SET deleted = true WHERE id = $1;`, paymentID)
 	if err != nil {
 		return err
 	}
@@ -110,7 +109,7 @@ func (us *UserStore) DeleteUsersPayment(paymentID int) error {
 }
 
 func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, error) {
-	rows, err := us.db.Query(context.Background(), `SELECT * FROM users WHERE email = $1`, userEmail)
+	rows, err := us.db.Query(`SELECT * FROM users WHERE email = $1`, userEmail)
 	if err == sql.ErrNoRows {
 		return nil, baseErrors.ErrUnauthorized401
 	}
@@ -129,7 +128,7 @@ func (us *UserStore) GetUserByUsernameFromDB(userEmail string) (*model.UserDB, e
 }
 
 func (us *UserStore) GetUsernameByIDFromDB(userID int) (string, error) {
-	rows, err := us.db.Query(context.Background(), `SELECT username FROM users WHERE id = $1`, userID)
+	rows, err := us.db.Query(`SELECT username FROM users WHERE id = $1`, userID)
 	if err == sql.ErrNoRows {
 		return "", err
 	}
@@ -149,7 +148,7 @@ func (us *UserStore) GetUsernameByIDFromDB(userID int) (string, error) {
 
 func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, error) {
 	adresses := []*model.Address{}
-	rows, err := us.db.Query(context.Background(), `SELECT address.id, city, street, house, flat, priority FROM address JOIN users ON address.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
+	rows, err := us.db.Query(`SELECT address.id, city, street, house, flat, priority FROM address JOIN users ON address.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +167,7 @@ func (us *UserStore) GetAddressesByUserIDFromDB(userID int) ([]*model.Address, e
 
 func (us *UserStore) GetPaymentMethodByUserIDFromDB(userID int) ([]*model.PaymentMethod, error) {
 	payments := []*model.PaymentMethod{}
-	rows, err := us.db.Query(context.Background(), `SELECT payment.id, paymentType, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
+	rows, err := us.db.Query(`SELECT payment.id, paymentType, number, expiryDate, priority FROM payment JOIN users ON payment.userid = users.id WHERE users.id  = $1 AND deleted = false`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +185,7 @@ func (us *UserStore) GetPaymentMethodByUserIDFromDB(userID int) ([]*model.Paymen
 }
 
 func (us *UserStore) GetUsernameAndAvatarByIDFromDB(userID int) (string, string, error) {
-	rows, err := us.db.Query(context.Background(), `SELECT username, avatar FROM users WHERE id = $1`, userID)
+	rows, err := us.db.Query(`SELECT username, avatar FROM users WHERE id = $1`, userID)
 	if err == sql.ErrNoRows {
 		return "", "", err
 	}

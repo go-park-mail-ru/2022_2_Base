@@ -1,15 +1,14 @@
 package repository
 
 import (
-	"context"
 	"log"
 	"math"
 	baseErrors "serv/domain/errors"
 	"serv/domain/model"
 	"strings"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx"
+	_ "github.com/lib/pq"
 )
 
 type ProductStoreInterface interface {
@@ -41,10 +40,10 @@ type ProductStoreInterface interface {
 }
 
 type ProductStore struct {
-	db *pgxpool.Pool
+	db *pgx.ConnPool
 }
 
-func NewProductStore(db *pgxpool.Pool) ProductStoreInterface {
+func NewProductStore(db *pgx.ConnPool) ProductStoreInterface {
 	return &ProductStore{
 		db: db,
 	}
@@ -56,25 +55,25 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort str
 	if err != nil {
 		return nil, err
 	}
-	var rows pgx.Rows
+	var rows *pgx.Rows
 
 	if sort == "priceup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) > ($1, $2) ORDER BY (price, id) LIMIT $3;`, lastProduct.Price, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) > ($1, $2) ORDER BY (price, id) LIMIT $3;`, lastProduct.Price, lastitemid, count)
 	} else if sort == "pricedown" {
 		if lastProduct.Price == 0 {
 			lastProduct.Price = 1e10
 		}
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) < ($1, $2) ORDER BY (price, id) DESC LIMIT $3;`, lastProduct.Price, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (price, id) < ($1, $2) ORDER BY (price, id) DESC LIMIT $3;`, lastProduct.Price, lastitemid, count)
 	} else if sort == "ratingup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) > ($1, $2) ORDER BY (rating, id) ASC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) > ($1, $2) ORDER BY (rating, id) ASC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
 	} else if sort == "ratingdown" {
 		if lastitemid == 0 {
 			lastitemid = 1e9
 			lastProduct.Rating = 10
 		}
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) < ($1, $2) ORDER BY (rating, id) DESC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (rating, id) < ($1, $2) ORDER BY (rating, id) DESC LIMIT $3;`, lastProduct.Rating, lastitemid, count)
 	} else {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id > $1 LIMIT $2;`, lastitemid, count)
 	}
 
 	defer rows.Close()
@@ -96,28 +95,28 @@ func (ps *ProductStore) GetProductsFromStore(lastitemid int, count int, sort str
 
 func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastitemid int, count int, sort string) ([]*model.Product, error) {
 	products := []*model.Product{}
-	var rows pgx.Rows
+	var rows *pgx.Rows
 	lastProduct, err := ps.GetProductFromStoreByID(lastitemid)
 	if err != nil {
 		return nil, err
 	}
 	if sort == "priceup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (price, id) > ($2, $3) ORDER BY (price, id) LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (price, id) > ($2, $3) ORDER BY (price, id) LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
 	} else if sort == "pricedown" {
 		if lastProduct.Price == 0 {
 			lastProduct.Price = 1e10
 		}
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (price, id) < ($2, $3) ORDER BY (price, id) DESC LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (price, id) < ($2, $3) ORDER BY (price, id) DESC LIMIT $4;`, category, lastProduct.Price, lastitemid, count)
 	} else if sort == "ratingup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) > ($2, $3) ORDER BY (rating, id) ASC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) > ($2, $3) ORDER BY (rating, id) ASC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
 	} else if sort == "ratingdown" {
 		if lastitemid == 0 {
 			lastitemid = 1e9
 			lastProduct.Rating = 10
 		}
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) < ($2, $3) ORDER BY (rating, id) DESC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) < ($2, $3) ORDER BY (rating, id) DESC LIMIT $4;`, category, lastProduct.Rating, lastitemid, count)
 	} else {
-		rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND id > $2 ORDER BY id LIMIT $3;`, category, lastitemid, count)
+		rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND id > $2 ORDER BY id LIMIT $3;`, category, lastitemid, count)
 	}
 
 	defer rows.Close()
@@ -139,7 +138,7 @@ func (ps *ProductStore) GetProductsWithCategoryFromStore(category string, lastit
 
 func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, error) {
 	product := model.Product{}
-	rows, err := ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id = $1;`, itemsID)
+	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE id = $1;`, itemsID)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
@@ -158,7 +157,7 @@ func (ps *ProductStore) GetProductFromStoreByID(itemsID int) (*model.Product, er
 func (ps *ProductStore) GetProductsRatingAndCommsCountFromStore(itemsID int) (float64, int, error) {
 	var rating *float64
 	var commsCount *int
-	rows, err := ps.db.Query(context.Background(), `SELECT COUNT(id), AVG(rating) FROM comments WHERE itemid = $1;`, itemsID)
+	rows, err := ps.db.Query(`SELECT COUNT(id), AVG(rating) FROM comments WHERE itemid = $1;`, itemsID)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return 0, 0, nil
@@ -177,7 +176,7 @@ func (ps *ProductStore) GetProductsRatingAndCommsCountFromStore(itemsID int) (fl
 }
 
 func (ps *ProductStore) CheckIsProductInFavoritesDB(userID int, itemID int) (bool, error) {
-	rows, err := ps.db.Query(context.Background(), `SELECT id FROM favorites WHERE userid = $1 AND itemid = $2;`, userID, itemID)
+	rows, err := ps.db.Query(`SELECT id FROM favorites WHERE userid = $1 AND itemid = $2;`, userID, itemID)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return false, err
@@ -202,7 +201,7 @@ func (ps *ProductStore) GetProductsBySearchFromStore(search string) ([]*model.Pr
 	searchWordsUnite := strings.Join(searchWords, "")
 	searchLetters := strings.Split(searchWordsUnite, "")
 	searchString := strings.ToLower(`%` + strings.Join(searchLetters, "%") + `%`)
-	rows, err := ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE LOWER(name) LIKE $1 LIMIT 20;`, searchString)
+	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE LOWER(name) LIKE $1 LIMIT 20;`, searchString)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
@@ -224,7 +223,7 @@ func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error)
 	suggestions := []string{}
 	searchWords := strings.Split(search, " ")
 	searchString := strings.ToLower(`%` + strings.Join(searchWords, " ") + `%`)
-	rows, err := ps.db.Query(context.Background(), `SELECT name FROM products WHERE LOWER(name) LIKE $1 LIMIT 3;`, searchString)
+	rows, err := ps.db.Query(`SELECT name FROM products WHERE LOWER(name) LIKE $1 LIMIT 3;`, searchString)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
@@ -244,7 +243,7 @@ func (ps *ProductStore) GetSuggestionsFromStore(search string) ([]string, error)
 
 func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem, error) {
 	products := []*model.OrderItem{}
-	rows, err := ps.db.Query(context.Background(), `SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
+	rows, err := ps.db.Query(`SELECT count, pr.id, pr.name, pr.category, orderitems.price, pr.nominalprice, pr.rating, pr.imgsrc FROM orderitems JOIN orders ON orderitems.orderid=orders.id JOIN products pr ON orderitems.itemid = pr.id WHERE orderid = $1;`, orderID)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +262,7 @@ func (ps *ProductStore) GetOrderItemsFromStore(orderID int) ([]*model.OrderItem,
 }
 
 func (ps *ProductStore) CreateCart(userID int) error {
-	_, err := ps.db.Exec(context.Background(), `INSERT INTO orders (userID, orderStatus, paymentStatus, addressID, paymentcardID) VALUES ($1, $2, $3, 1, 1);`, userID, "cart", "not started")
+	_, err := ps.db.Exec(`INSERT INTO orders (userID, orderStatus, paymentStatus, addressID, paymentcardID) VALUES ($1, $2, $3, 1, 1);`, userID, "cart", "not started")
 	if err != nil {
 		return err
 	}
@@ -271,7 +270,7 @@ func (ps *ProductStore) CreateCart(userID int) error {
 }
 
 func (ps *ProductStore) GetCart(userID int) (*model.Order, error) {
-	rows, err := ps.db.Query(context.Background(), `SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate, promocode  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
+	rows, err := ps.db.Query(`SELECT ID, userID, orderStatus, paymentStatus, addressID, paymentcardID, creationDate, deliveryDate, promocode  FROM orders WHERE userID = $1 AND orderStatus = $2;`, userID, "cart")
 	if err != nil {
 		return nil, err
 	}
@@ -307,7 +306,7 @@ func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
 	if err != nil {
 		return err
 	}
-	_, err = ps.db.Exec(context.Background(), `DELETE FROM orderItems WHERE orderID = $1;`, cart.ID)
+	_, err = ps.db.Exec(`DELETE FROM orderItems WHERE orderID = $1;`, cart.ID)
 	if err != nil {
 		return err
 	}
@@ -326,7 +325,7 @@ func (ps *ProductStore) UpdateCart(userID int, items *[]int) error {
 
 func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int, cartID int, count int, isInCartAlready bool) error {
 	if isInCartAlready {
-		_, err := ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cartID, itemID)
+		_, err := ps.db.Exec(`UPDATE orderItems SET count = count+1 WHERE orderID = $1 AND itemID = $2;`, cartID, itemID)
 		if err != nil {
 			return err
 		}
@@ -337,7 +336,7 @@ func (ps *ProductStore) InsertItemIntoCartById(userID int, itemID int, cartID in
 	if err != nil {
 		return nil
 	}
-	_, err = ps.db.Exec(context.Background(), `INSERT INTO orderItems (itemID, orderID, price, count) VALUES ($1, $2, $3, $4);`, itemID, cartID, product.Price, count)
+	_, err = ps.db.Exec(`INSERT INTO orderItems (itemID, orderID, price, count) VALUES ($1, $2, $3, $4);`, itemID, cartID, product.Price, count)
 	if err != nil {
 		return err
 	}
@@ -352,14 +351,14 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 	for _, prod := range cart.Items {
 		if prod.Item.ID == itemID {
 			if prod.Count != 1 {
-				_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET count = count-1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
+				_, err = ps.db.Exec(`UPDATE orderItems SET count = count-1 WHERE orderID = $1 AND itemID = $2;`, cart.ID, itemID)
 				if err != nil {
 					return err
 				}
 				return nil
 			}
 
-			_, err = ps.db.Exec(context.Background(), `DELETE FROM orderItems WHERE itemID = $1 AND orderID = $2;`, itemID, cart.ID)
+			_, err = ps.db.Exec(`DELETE FROM orderItems WHERE itemID = $1 AND orderID = $2;`, itemID, cart.ID)
 			if err != nil {
 				return err
 			}
@@ -372,7 +371,7 @@ func (ps *ProductStore) DeleteItemFromCartById(userID int, itemID int) error {
 
 func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.CommentDB, error) {
 	comments := []*model.CommentDB{}
-	rows, err := ps.db.Query(context.Background(), `SELECT userid, pros, cons, comment, rating FROM comments WHERE itemid = $1;`, productID)
+	rows, err := ps.db.Query(`SELECT userid, pros, cons, comment, rating FROM comments WHERE itemid = $1;`, productID)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
@@ -391,7 +390,7 @@ func (ps *ProductStore) GetCommentsFromStore(productID int) ([]*model.CommentDB,
 }
 
 func (ps *ProductStore) CreateCommentInStore(in *model.CreateComment) error {
-	_, err := ps.db.Exec(context.Background(), `INSERT INTO comments (itemID, userID, pros, cons, comment, rating) VALUES ($1, $2, $3, $4, $5, $6);`, in.ItemID, in.UserID, in.Pros, in.Cons, in.Comment, in.Rating)
+	_, err := ps.db.Exec(`INSERT INTO comments (itemID, userID, pros, cons, comment, rating) VALUES ($1, $2, $3, $4, $5, $6);`, in.ItemID, in.UserID, in.Pros, in.Cons, in.Comment, in.Rating)
 	if err != nil {
 		return err
 	}
@@ -403,7 +402,7 @@ func (ps *ProductStore) UpdateProductRatingInStore(itemID int) error {
 	if err != nil {
 		return err
 	}
-	_, err = ps.db.Exec(context.Background(), `UPDATE products SET rating = $1 WHERE id = $2;`, rating, itemID)
+	_, err = ps.db.Exec(`UPDATE products SET rating = $1 WHERE id = $2;`, rating, itemID)
 	if err != nil {
 		return err
 	}
@@ -411,7 +410,7 @@ func (ps *ProductStore) UpdateProductRatingInStore(itemID int) error {
 }
 
 func (ps *ProductStore) CheckPromocodeUsage(userID int, promocode string) error {
-	rows, err := ps.db.Query(context.Background(), `SELECT id, userid, promocode FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, promocode)
+	rows, err := ps.db.Query(`SELECT id, userid, promocode FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, promocode)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return err
@@ -438,27 +437,27 @@ func (ps *ProductStore) SetPromocodeDB(userID int, promocode string) error {
 		return err
 	}
 	if promocode == "" {
-		_, err = ps.db.Exec(context.Background(), `DELETE FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, cart.Promocode)
+		_, err = ps.db.Exec(`DELETE FROM usedpromocodes WHERE userid = $1 AND promocode = $2;`, userID, cart.Promocode)
 		if err != nil {
 			return err
 		}
-		_, err = ps.db.Exec(context.Background(), `UPDATE orders SET promocode = $1 WHERE id = $2;`, nil, cart.ID)
+		_, err = ps.db.Exec(`UPDATE orders SET promocode = $1 WHERE id = $2;`, nil, cart.ID)
 		if err != nil {
 			return err
 		}
 		return nil
 	} else if cart.Promocode != nil {
-		_, err = ps.db.Exec(context.Background(), `UPDATE usedpromocodes SET promocode = $1 WHERE userid = $2 AND promocode = $3;`, promocode, userID, cart.Promocode)
+		_, err = ps.db.Exec(`UPDATE usedpromocodes SET promocode = $1 WHERE userid = $2 AND promocode = $3;`, promocode, userID, cart.Promocode)
 		if err != nil {
 			return err
 		}
 	} else {
-		_, err = ps.db.Exec(context.Background(), `INSERT INTO usedpromocodes (userid, promocode) VALUES ($1, $2);`, userID, promocode)
+		_, err = ps.db.Exec(`INSERT INTO usedpromocodes (userid, promocode) VALUES ($1, $2);`, userID, promocode)
 		if err != nil {
 			return err
 		}
 	}
-	_, err = ps.db.Exec(context.Background(), `UPDATE orders SET promocode = $1 WHERE id = $2;`, promocode, cart.ID)
+	_, err = ps.db.Exec(`UPDATE orders SET promocode = $1 WHERE id = $2;`, promocode, cart.ID)
 	if err != nil {
 		return err
 	}
@@ -471,25 +470,25 @@ func (ps *ProductStore) GetFavoritesDB(userID int, lastitemid int, count int, so
 	if err != nil {
 		return nil, err
 	}
-	var rows pgx.Rows
+	var rows *pgx.Rows
 
 	if sort == "priceup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (price, products.id) > ($1, $2) AND userid = $3 ORDER BY (price, products.id) LIMIT $4;`, lastProduct.Price, lastitemid, userID, count)
+		rows, err = ps.db.Query(`SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (price, products.id) > ($1, $2) AND userid = $3 ORDER BY (price, products.id) LIMIT $4;`, lastProduct.Price, lastitemid, userID, count)
 	} else if sort == "pricedown" {
 		if lastProduct.Price == 0 {
 			lastProduct.Price = 1e10
 		}
-		rows, err = ps.db.Query(context.Background(), `SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (price, products.id) < ($1, $2) AND userid = $3 ORDER BY (price, products.id) DESC LIMIT $4;`, lastProduct.Price, lastitemid, userID, count)
+		rows, err = ps.db.Query(`SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (price, products.id) < ($1, $2) AND userid = $3 ORDER BY (price, products.id) DESC LIMIT $4;`, lastProduct.Price, lastitemid, userID, count)
 	} else if sort == "ratingup" {
-		rows, err = ps.db.Query(context.Background(), `SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (rating, products.id) > ($1, $2) AND userid = $3 ORDER BY (rating, products.id) ASC LIMIT $4;`, lastProduct.Rating, lastitemid, userID, count)
+		rows, err = ps.db.Query(`SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (rating, products.id) > ($1, $2) AND userid = $3 ORDER BY (rating, products.id) ASC LIMIT $4;`, lastProduct.Rating, lastitemid, userID, count)
 	} else if sort == "ratingdown" {
 		if lastitemid == 0 {
 			lastitemid = 1e9
 			lastProduct.Rating = 10
 		}
-		rows, err = ps.db.Query(context.Background(), `SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (rating, products.id) < ($1, $2) AND userid = $3 ORDER BY (rating, products.id) DESC LIMIT $4;`, lastProduct.Rating, lastitemid, userID, count)
+		rows, err = ps.db.Query(`SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE (rating, products.id) < ($1, $2) AND userid = $3 ORDER BY (rating, products.id) DESC LIMIT $4;`, lastProduct.Rating, lastitemid, userID, count)
 	} else {
-		rows, err = ps.db.Query(context.Background(), `SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE products.id > $1 AND userid = $2 LIMIT $3;`, lastitemid, userID, count)
+		rows, err = ps.db.Query(`SELECT products.id, name, category, price, nominalprice, rating, imgsrc FROM products JOIN favorites ON products.id = favorites.itemid WHERE products.id > $1 AND userid = $2 LIMIT $3;`, lastitemid, userID, count)
 	}
 
 	defer rows.Close()
@@ -511,7 +510,7 @@ func (ps *ProductStore) GetFavoritesDB(userID int, lastitemid int, count int, so
 
 func (ps *ProductStore) InsertItemIntoFavoritesDB(userID int, itemID int) error {
 	id := 0
-	rows, err := ps.db.Query(context.Background(), `SELECT id FROM favorites WHERE userid = $1 AND itemid = $2`, userID, itemID)
+	rows, err := ps.db.Query(`SELECT id FROM favorites WHERE userid = $1 AND itemid = $2`, userID, itemID)
 	if err != nil {
 		return err
 	}
@@ -525,7 +524,7 @@ func (ps *ProductStore) InsertItemIntoFavoritesDB(userID int, itemID int) error 
 	if id != 0 {
 		return nil
 	}
-	_, err = ps.db.Exec(context.Background(), `INSERT INTO favorites (userID, itemID) VALUES ($1, $2);`, userID, itemID)
+	_, err = ps.db.Exec(`INSERT INTO favorites (userID, itemID) VALUES ($1, $2);`, userID, itemID)
 	if err != nil {
 		return err
 	}
@@ -533,7 +532,7 @@ func (ps *ProductStore) InsertItemIntoFavoritesDB(userID int, itemID int) error 
 }
 
 func (ps *ProductStore) DeleteItemFromFavoritesDB(userID int, itemID int) error {
-	_, err := ps.db.Exec(context.Background(), `DELETE FROM favorites WHERE userid = $1 AND itemid = $2;`, userID, itemID)
+	_, err := ps.db.Exec(`DELETE FROM favorites WHERE userid = $1 AND itemid = $2;`, userID, itemID)
 	if err != nil {
 		return err
 	}
@@ -542,25 +541,25 @@ func (ps *ProductStore) DeleteItemFromFavoritesDB(userID int, itemID int) error 
 
 func (ps *ProductStore) GetProductPropertiesFromStore(itemID int, itemCategory string) ([]*model.Property, error) {
 	properties := []*model.Property{}
-	var rows pgx.Rows
+	var rows *pgx.Rows
 	var err error
 
 	propertiesDB := make([]model.Property, 6)
 	switch itemCategory {
 	case "monitors":
-		rows, err = ps.db.Query(context.Background(), `SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN monitors cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN monitors cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
 	case "phones":
-		rows, err = ps.db.Query(context.Background(), `SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN phones cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN phones cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
 	case "tvs":
-		rows, err = ps.db.Query(context.Background(), `SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN tvs cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN tvs cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
 	case "computers":
-		rows, err = ps.db.Query(context.Background(), `SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN computers cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN computers cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
 	case "watches":
-		rows, err = ps.db.Query(context.Background(), `SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN watches cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN watches cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
 	case "tablets":
-		rows, err = ps.db.Query(context.Background(), `SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN tablets cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN tablets cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
 	case "accessories":
-		rows, err = ps.db.Query(context.Background(), `SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN accessories cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
+		rows, err = ps.db.Query(`SELECT propname1, propname2, propname3, propname4, propname5, propname6, propdesc1, propdesc2, propdesc3, propdesc4, propdesc5, propdesc6 FROM properties JOIN accessories cattable ON properties.category = $1 WHERE cattable.itemid = $2;`, itemCategory, itemID)
 
 	}
 
@@ -591,7 +590,7 @@ func (ps *ProductStore) GetProductsWithBiggestDiscountFromStore(lastitemid int, 
 		lastProduct.NominalPrice = 1
 		lastProduct.ID = 1e9
 	}
-	rows, err := ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (1 - price/nominalprice, id) < ($1, $2) ORDER BY (1 - price/nominalprice, id) DESC LIMIT $3;`, 1-lastProduct.Price/lastProduct.NominalPrice, lastProduct.ID, count)
+	rows, err := ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE (1 - price/nominalprice, id) < ($1, $2) ORDER BY (1 - price/nominalprice, id) DESC LIMIT $3;`, 1-lastProduct.Price/lastProduct.NominalPrice, lastProduct.ID, count)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
@@ -615,14 +614,14 @@ func (ps *ProductStore) GetRecommendationProductsFromStore(itemID int) ([]*model
 	if err != nil {
 		return nil, err
 	}
-	var rows pgx.Rows
+	var rows *pgx.Rows
 	lastitemid := 1e9
 	lastProductRating := 10
 	categoryproductsCount := 10
 	accessoriesCount := 20
 
 	// products from same category
-	rows, err = ps.db.Query(context.Background(), `SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) < ($2, $3) ORDER BY (rating, id) DESC LIMIT $4;`, product.Category, lastProductRating, lastitemid, categoryproductsCount)
+	rows, err = ps.db.Query(`SELECT id, name, category, price, nominalprice, rating, imgsrc FROM products WHERE category = $1 AND (rating, id) < ($2, $3) ORDER BY (rating, id) DESC LIMIT $4;`, product.Category, lastProductRating, lastitemid, categoryproductsCount)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
@@ -638,7 +637,7 @@ func (ps *ProductStore) GetRecommendationProductsFromStore(itemID int) ([]*model
 		products = append(products, &dat)
 	}
 	// accessories for product
-	rows, err = ps.db.Query(context.Background(), `SELECT products.id, name, products.category, price, nominalprice, rating, imgsrc FROM products JOIN accessories ON products.id=accessories.itemID WHERE accessories.category = $1 ORDER BY (rating, products.id) DESC LIMIT $2;`, product.Category, accessoriesCount)
+	rows, err = ps.db.Query(`SELECT products.id, name, products.category, price, nominalprice, rating, imgsrc FROM products JOIN accessories ON products.id=accessories.itemID WHERE accessories.category = $1 ORDER BY (rating, products.id) DESC LIMIT $2;`, product.Category, accessoriesCount)
 	if err != nil {
 		log.Println("err get rows: ", err)
 		return nil, err
@@ -667,19 +666,19 @@ func (ps *ProductStore) UpdatePricesOrderItemsInStore(userID int, category strin
 		return err
 	}
 	for _, item := range orderItems {
-		_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET price = (SELECT price FROM products WHERE id = $1) WHERE orderID = $2 AND itemID = $3;`, item.Item.ID, orderID, item.Item.ID)
+		_, err = ps.db.Exec(`UPDATE orderItems SET price = (SELECT price FROM products WHERE id = $1) WHERE orderID = $2 AND itemID = $3;`, item.Item.ID, orderID, item.Item.ID)
 		if err != nil {
 			return err
 		}
 		switch category {
 		case "all":
-			_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(math.Ceil(item.Item.NominalPrice*float64(100-discount)/100), item.Item.Price), orderID, item.Item.ID)
+			_, err = ps.db.Exec(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(math.Ceil(item.Item.NominalPrice*float64(100-discount)/100), item.Item.Price), orderID, item.Item.ID)
 			if err != nil {
 				return err
 			}
 		default:
 			if item.Item.Category == category {
-				_, err = ps.db.Exec(context.Background(), `UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(math.Ceil(item.Item.NominalPrice*float64(100-discount)/100), item.Item.Price), orderID, item.Item.ID)
+				_, err = ps.db.Exec(`UPDATE orderItems SET price = $1 WHERE orderID = $2 AND itemID = $3;`, math.Min(math.Ceil(item.Item.NominalPrice*float64(100-discount)/100), item.Item.Price), orderID, item.Item.ID)
 				if err != nil {
 					return err
 				}
