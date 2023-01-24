@@ -62,7 +62,7 @@ func main() {
 		ConnConfig:     conn,
 		MaxConnections: 120,
 		AfterConnect:   nil,
-		AcquireTimeout: 0,
+		AcquireTimeout: 5000000000,
 	})
 	if err != nil {
 		log.Println("could not connect to database: ", err)
