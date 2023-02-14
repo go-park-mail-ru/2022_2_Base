@@ -63,7 +63,7 @@ services:
     volumes:
       - './_postgres:/docker-entrypoint'
       - 'dbData:/var/lib/postgresql/data'
-    command: "postgres -c config_file=/docker-entrypoint/postgres.conf"
+    # command: "postgres -c config_file=/docker-entrypoint/postgres.conf"
 
   session:
     build:

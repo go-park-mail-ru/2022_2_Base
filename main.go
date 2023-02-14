@@ -60,9 +60,9 @@ func main() {
 	}
 	db, err := pgx.NewConnPool(pgx.ConnPoolConfig{
 		ConnConfig:     conn,
-		MaxConnections: 120,
+		MaxConnections: 70,
 		AfterConnect:   nil,
-		AcquireTimeout: 5000000000,
+		AcquireTimeout: 1000,
 	})
 	if err != nil {
 		log.Println("could not connect to database: ", err)
