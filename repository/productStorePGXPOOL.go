@@ -615,7 +615,7 @@ func (ps *ProductStore) GetRecommendationProductsFromStore(itemID int) ([]*model
 		return nil, err
 	}
 	var rows *pgx.Rows
-	lastitemid := 1e9
+	var lastitemid int = 1e9
 	lastProductRating := 10
 	categoryproductsCount := 10
 	accessoriesCount := 20
