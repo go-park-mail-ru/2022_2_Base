@@ -11,10 +11,10 @@ INSERT INTO users (email, username, password) VALUES
 ('Master@mail.com', 'Мастер ', 'FFFFFFFFFFFFFFFffffkffkfkkkfkfkfkkmgdkgmmb');
 
 INSERT INTO address (userID, city, street, house, flat, priority) VALUES
-(1, 'default', 'default', 'default', 'default', false);
+(1, 'default', 'default', 'default', 'default', true);
 
 INSERT INTO payment (userID, paymentType, number, expiryDate, priority) VALUES
-(1, 'Card', 'default', '1975-08-19T23:15:30.000Z', false);
+(1, 'Card', 'default', '1975-08-19T23:15:30.000Z', true);
 
 
 INSERT INTO products (name, category, nominalPrice, price, imgsrc) VALUES

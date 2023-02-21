@@ -87,7 +87,7 @@ func (api *SessionHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !checkPass(byteUserPass, req.Password) {
-		log.Println("get Password ", err)
+		log.Println("Password is not correct", err)
 		ReturnErrorJSON(w, baseErrors.ErrUnauthorized401, 401)
 		return
 	}
@@ -228,7 +228,8 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	b64Pass := base64.RawStdEncoding.EncodeToString(hashedPass)
 	req.Password = b64Pass
 
-	userID, err := api.usecase.AddUser(&req)
+	//userID, err := api.usecase.AddUser(&req)
+	_, err = api.usecase.AddUser(&req)
 	if err != nil {
 		log.Println("error while adding user to db: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
@@ -264,18 +265,18 @@ func (api *SessionHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, cookie)
 	w.WriteHeader(201)
 
-	RegisterMail := model.Mail{Type: "greeting", Username: req.Username, Useremail: req.Email}
-	promo := api.usecase.GenPromocode(userID)
-	PromoMail := model.Mail{Type: "promocode", Username: req.Username, Useremail: req.Email, Promocode: promo}
+	// RegisterMail := model.Mail{Type: "greeting", Username: req.Username, Useremail: req.Email}
+	// promo := api.usecase.GenPromocode(userID)
+	// PromoMail := model.Mail{Type: "promocode", Username: req.Username, Useremail: req.Email, Promocode: promo}
 
-	err = api.usecase.SendMail(RegisterMail)
-	if err != nil {
-		log.Println("error sending greeting email ", err)
-	}
-	err = api.usecase.SendMail(PromoMail)
-	if err != nil {
-		log.Println("error sending promocode email ", err)
-	}
+	// err = api.usecase.SendMail(RegisterMail)
+	// if err != nil {
+	// 	log.Println("error sending greeting email ", err)
+	// }
+	// err = api.usecase.SendMail(PromoMail)
+	// if err != nil {
+	// 	log.Println("error sending promocode email ", err)
+	// }
 
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
 	if err != nil {

@@ -264,6 +264,16 @@ func (api *ProductUsecase) UpdateOrder(userID int, items *[]int) error {
 	if err != nil {
 		return err
 	}
+	if cart == nil || cart.ID == 0 {
+		err = api.store.CreateCart(userID)
+		if err != nil {
+			return err
+		}
+		cart, err = api.store.GetCart(userID)
+		if err != nil {
+			return err
+		}
+	}
 	err = api.store.UpdateCart(userID, items)
 	if err != nil {
 		return err
@@ -349,10 +359,35 @@ func (api *ProductUsecase) AddToOrder(userID int, itemID int) error {
 	if err != nil {
 		return err
 	}
-	err = api.store.InsertItemIntoCartById(userID, itemID)
-	if err != nil {
-		return err
+	if cart == nil || cart.ID == 0 {
+		err = api.store.CreateCart(userID)
+		if err != nil {
+			return err
+		}
+		cart, err = api.store.GetCart(userID)
+		if err != nil {
+			return err
+		}
 	}
+	flag := true
+	for _, prod := range cart.Items {
+		if prod.Item.ID == itemID {
+			flag = false
+			err = api.store.InsertItemIntoCartById(userID, itemID, cart.ID, 1, true)
+			if err != nil {
+				return err
+			}
+			break
+		}
+	}
+	// item wasn't in cart
+	if flag {
+		err = api.store.InsertItemIntoCartById(userID, itemID, cart.ID, 1, false)
+		if err != nil {
+			return err
+		}
+	}
+
 	if cart.Promocode != nil {
 		return api.RecalculatePrices(userID, *cart.Promocode)
 	}
@@ -368,6 +403,16 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	if cart == nil || cart.ID == 0 {
+		err = api.store.CreateCart(in.UserID)
+		if err != nil {
+			return 0, err
+		}
+		cart, err = api.store.GetCart(in.UserID)
+		if err != nil {
+			return 0, err
+		}
+	}
 	remainedItemsIDs := []int{}
 	boughtItemsIDs := []int{}
 	boughtItemsIDsINT32 := []int32{}
@@ -381,15 +426,11 @@ func (api *ProductUsecase) MakeOrder(in *model.MakeOrder) (int, error) {
 			}
 		}
 		if flag {
-			for i := 0; i < orderItem.Count; i++ {
-				remainedItemsIDs = append(remainedItemsIDs, orderItem.Item.ID)
-			}
+			remainedItemsIDs = append(remainedItemsIDs, orderItem.Item.ID)
 		}
 		if flag2 {
-			for i := 0; i < orderItem.Count; i++ {
-				boughtItemsIDs = append(boughtItemsIDs, orderItem.Item.ID)
-				boughtItemsIDsINT32 = append(boughtItemsIDsINT32, int32(orderItem.Item.ID))
-			}
+			boughtItemsIDs = append(boughtItemsIDs, orderItem.Item.ID)
+			boughtItemsIDsINT32 = append(boughtItemsIDsINT32, int32(orderItem.Item.ID))
 		}
 	}
 

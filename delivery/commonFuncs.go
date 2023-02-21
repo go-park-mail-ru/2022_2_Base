@@ -356,19 +356,19 @@ func (api *OrderHandler) MakeOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	orderID, err := api.prHandler.usecase.MakeOrder(&req)
+	_, err = api.prHandler.usecase.MakeOrder(&req)
 	if err != nil {
 		log.Println("db error: ", err)
 		ReturnErrorJSON(w, baseErrors.ErrServerError500, 500)
 		return
 	}
 
-	RegisterMail := model.Mail{Type: "orderstatus", Username: oldUserData.Username, Useremail: oldUserData.Email, OrderID: orderID, OrderStatus: "created"}
+	// RegisterMail := model.Mail{Type: "orderstatus", Username: oldUserData.Username, Useremail: oldUserData.Email, OrderID: orderID, OrderStatus: "created"}
 
-	err = api.usHandler.usecase.SendMail(RegisterMail)
-	if err != nil {
-		log.Println("error sending email ", err)
-	}
+	// err = api.usHandler.usecase.SendMail(RegisterMail)
+	// if err != nil {
+	// 	log.Println("error sending email ", err)
+	// }
 
 	_, _, err = easyjson.MarshalToHTTPResponseWriter(&model.Response{}, w)
 	if err != nil {
